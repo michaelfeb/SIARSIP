@@ -28,7 +28,6 @@ class UserController extends Controller
 
         $users = $query->paginate($perPage)->withQueryString();
 
-        // Kondisi 1: Jika request dari fetch/axios (EasyDataTable)
         if ($request->wantsJson()) {
             return response()->json($users);
         }
