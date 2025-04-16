@@ -1,61 +1,110 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Head, router, usePage } from '@inertiajs/vue3'
+import { Head, router, ServerOptions } from '@inertiajs/vue3'
 import EasyDataTable from 'vue3-easy-data-table'
 import { type BreadcrumbItem } from '@/types'
 import 'vue3-easy-data-table/dist/style.css'
 import Heading from '@/components/Heading.vue'
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import Button from '@/components/ui/button/Button.vue'
-import { Eye, Pencil, Trash2, Plus } from 'lucide-vue-next'
-
-
-const props = defineProps<{
-    users: {
-        data: Array<{ id: number; nama: string; email: string }>
-        current_page: number
-        last_page: number
-        per_page: number
-        total: number
-    }
-}>()
+import { Eye, Pencil, Trash2, Plus, KeyRound } from 'lucide-vue-next'
+import axios from 'axios'
+import Swal from 'sweetalert2'
 
 const headers = [
-    { text: "Nama", value: "nama" },
-    { text: "Email", value: "email" },
-    { text: "Aksi", value: "aksi", sortable: false },
+    { text: "Nama", value: "nama", width: 480 },
+    { text: "Email", value: "email", width: 240 },
+    { text: "Jabatan", value: "role", width: 160 },
+    { text: "Aksi", value: "id", sortable: false, width: 200 },
 ]
+
+const items = ref<Item[]>([]);
+const loading = ref(false);
+const serverItemsLength = ref(0);
+const serverOptions = ref<ServerOptions>({
+    page: 1,
+    rowsPerPage: 10,
+});
+const search = ref('')
+
+const loadFromServer = async () => {
+    loading.value = true
+
+    const { data } = await axios.get(route('users.index'), {
+        params: {
+            page: serverOptions.value.page,
+            per_page: serverOptions.value.rowsPerPage,
+            search: search.value,
+        }
+    })
+
+    items.value = data.data
+    serverItemsLength.value = data.total
+    loading.value = false
+}
+
+
+loadFromServer();
+
+watch([serverOptions, search], (value) => { loadFromServer(); }, { deep: true });
 
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Users',
+        title: 'Pengguna',
         href: '/users',
     },
 ]
 
-const search = ref('')
-
 function onSearch() {
-    router.get(route('users.index'), { search: search.value }, {
-        preserveScroll: true,
-        preserveState: true,
-    })
+    serverOptions.value.page = 1 // Reset ke halaman 1 saat search
 }
 
-function onPageChange(page: number) {
-    router.get(route('users.index'), { page }, {
-        preserveScroll: true,
-        preserveState: true,
-    })
+function onCreate() {
+    router.get(route('users.create'))
 }
 
-const customPaginationInfo = (firstItem: number, lastItem: number, total: number): string => {
-  return `Menampilkan ${firstItem} - ${lastItem} dari total ${total} data`
+function onDetail(id: number) {
+    router.visit(route('users.show', id))
 }
 
-function toCreate() {
-  router.get(route('users.create'))
+function onEdit(id: number) {
+    router.visit(route('users.edit', id))
+}
+
+function onDelete(id: number) {
+
+    Swal.fire({
+        icon: 'warning',
+        title: 'Anda yakin?',
+        text: 'Data yang terhapus tidak dapat dikembalikan!',
+        showCancelButton: true,
+        confirmButtonText: 'Hapus',
+        cancelButtonText: 'Batalkan',
+        customClass: {
+            confirmButton: 'swal-confirm-button',
+            cancelButton: 'swal-cancel-button',
+            actions: 'swal-actions-button-group',
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.delete(route('users.destroy', id), {
+                async onSuccess() {
+                    await loadFromServer();
+                    Swal.fire({
+                        title: 'Terhapus!',
+                        text: "Data telah dihapus!",
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'swal-confirm-button',
+                        },
+                    });
+                },
+            });
+        }
+    });
 }
 
 </script>
@@ -72,7 +121,7 @@ function toCreate() {
 
                 <Button
                     class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 transition flex items-center gap-1"
-                    @click="toCreate">
+                    @click="onCreate">
                     <Plus class="h-4 w-4" />
                     <span>Tambah</span>
                 </Button>
@@ -83,9 +132,9 @@ function toCreate() {
                 <input v-model="search" @input="onSearch" type="text" placeholder="Cari nama atau email"
                     class="w-50 h-8 text-sm rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
-            <EasyDataTable :headers="headers" :items="props.users.data" :server-items-length="props.users.total"
-                :rows-per-page="props.users.per_page" :page="props.users.current_page" :loading="false" show-index
-                :pagination-info="customPaginationInfo" rows-per-page-message="Baris data" @update:page="onPageChange">
+
+            <EasyDataTable v-model:server-options="serverOptions" :server-items-length="serverItemsLength"
+                :loading="loading" :headers="headers" :items="items" show-index>
                 <template #loading>
                     <img src="https://i.pinimg.com/originals/94/fd/2b/94fd2bf50097ade743220761f41693d5.gif"
                         style="width: 100px; height: 80px;" />
@@ -93,25 +142,40 @@ function toCreate() {
                 <template #header-index>
                     No
                 </template>
-                <template #item-aksi="{ item }">
+                <template #item-nama="{ nama }">
+                    {{ nama || '-' }}
+                </template>
+
+                <template #item-email="{ email }">
+                    {{ email || '-' }}
+                </template>
+
+                <template #item-role="{ role }">
+                    {{ role?.nama || '-' }}
+                </template>
+                <template #item-id="{ id }">
                     <div class="flex items-center gap-2">
                         <Button
-                            class="group w-6 h-6 bg-white text-blue-500 outline outline-1 outline-blue-500 p-1 rounded hover:bg-blue-500 hover:outline-blue-500"
-                            title="Detail" @click="onDetail(item)">
-                            <Eye class="w-4 h-4 group-hover:text-white transition-colors duration-200" />
+                            class="w-6 h-6 text-blue-500 hover:text-white hover:bg-blue-500 bg-white outline outline-1 outline-blue-500 p-1 rounded"
+                            title="Detail" @click="onDetail(id)">
+                            <Eye class="w-4 h-4" />
                         </Button>
 
-                        <!-- Button Edit -->
                         <Button
                             class="group w-6 h-6 bg-white text-yellow-500 outline outline-1 outline-yellow-500 p-1 rounded hover:bg-yellow-500 hover:outline-yellow-500"
-                            title="Edit" @click="onEdit(item)">
+                            title="Edit" @click="onEdit(id)">
                             <Pencil class="w-4 h-4 group-hover:text-white transition-colors duration-200" />
                         </Button>
 
-                        <!-- Button Hapus -->
+                        <!-- <Button
+                            class="group w-6 h-6 bg-white text-orange-500 outline outline-1 outline-orange-500 p-1 rounded hover:bg-orange-500 hover:outline-orange-500"
+                            title="Reset Password" @click="onResetPassword(id)">
+                            <KeyRound class="w-4 h-4 group-hover:text-white transition-colors duration-200" />
+                        </Button> -->
+
                         <Button
                             class="group w-6 h-6 bg-white text-red-500 outline outline-1 outline-red-500 p-1 rounded hover:bg-red-500 hover:outline-red-500"
-                            title="Hapus" @click="onDelete(item)">
+                            title="Hapus" @click="onDelete(id)">
                             <Trash2 class="w-4 h-4 group-hover:text-white transition-colors duration-200" />
                         </Button>
                     </div>

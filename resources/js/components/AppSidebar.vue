@@ -41,7 +41,7 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'User',
+        title: 'Pengguna',
         href: '/users',
         icon: User,
     },

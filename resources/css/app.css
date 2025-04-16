@@ -211,3 +211,14 @@
   transform: translateY(10px); /* keluar ke bawah sedikit */
 }
 
+.swal-confirm-button {
+  @apply bg-blue-500 text-white px-5 py-2 rounded cursor-pointer hover:bg-blue-600 transition;
+}
+
+.swal-cancel-button {
+  @apply border border-orange-500 text-orange-500 px-5 py-2 rounded cursor-pointer hover:bg-orange-100 transition;
+}
+
+.swal-actions-button-group {
+  @apply flex gap-3 justify-center mt-4;
+}

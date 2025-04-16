@@ -24,6 +24,7 @@ class UserFactory extends Factory
             'password' => bcrypt('asdfghjkl'),
             'waktu_email_terverifikasi' => now(),
             'remember_token' => Str::random(10),
+            'role_id' => fake()->numberBetween(1, 8),
         ];
     }
 }

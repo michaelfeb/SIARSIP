@@ -21,6 +21,7 @@ class User_Seeder extends Seeder
             'email' => 'admin@siarsip.test',
             'password' => Hash::make('asdfghjkl'),
             'waktu_email_terverifikasi' => now(),
+            'role_id' => 8,
             ]
         );
 
