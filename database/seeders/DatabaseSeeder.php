@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             User_Seeder::class,
             JenisSuratSeeder::class,
+            TemplateSuratSeeder::class,
         ]);
     }
 }

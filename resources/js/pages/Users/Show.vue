@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { onMounted, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { useForm, Head, router } from '@inertiajs/vue3'
+import { BreadcrumbItem } from '@/types'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -44,15 +45,15 @@ function toBack() {
                 <h2 class="text-xl font-semibold">Detail User</h2>
                 <table class="w-full table-auto border border-gray-300 mb-0">
                     <tbody class="text-sm">
-                        <tr>
+                        <tr class="border-b">
                             <td class="px-4 py-4 font-medium text-gray-600 w-1/3 border border-gray-200">Nama</td>
                             <td class="px-4 py-4 border border-gray-200">{{ user.nama }}</td>
                         </tr>
-                        <tr>
+                        <tr class="border-b">
                             <td class="px-4 py-4 font-medium text-gray-600 border border-gray-200">Email</td>
                             <td class="px-4 py-4 border border-gray-200">{{ user.email }}</td>
                         </tr>
-                        <tr>
+                        <tr class="border-b">
                             <td class="px-4 py-4 font-medium text-gray-600 border border-gray-200">Role</td>
                             <td class="px-4 py-4 border border-gray-200">{{ user.role?.nama ?? '-' }}</td>
                         </tr>

@@ -37,31 +37,31 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 async function submit() {
     const isEdit = props.mode === 'edit'
-    
+
     form.submit(isEdit ? 'put' : 'post', route('users.save', isEdit ? props.user.id : undefined), {
-            onSuccess: () => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: isEdit ? 'Data telah diperbarui!' : 'Data telah ditambahkan!',
-                    confirmButtonText: 'OK',
-                    customClass: {
-                        confirmButton: 'swal-confirm-button',
-                    },
-                });
-            },
-            onError: () => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal!',
-                    text: isEdit ? 'Gagal memperbarui data!' : 'Gagal menambahkan data!',
-                    confirmButtonText: 'OK',
-                    customClass: {
-                        confirmButton: 'swal-confirm-button',
-                    },
-                });
-            }
-        });
+        onSuccess: () => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: isEdit ? 'Data telah diperbarui!' : 'Data telah ditambahkan!',
+                confirmButtonText: 'OK',
+                customClass: {
+                    confirmButton: 'swal-confirm-button',
+                },
+            });
+        },
+        onError: () => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: isEdit ? 'Gagal memperbarui data!' : 'Gagal menambahkan data!',
+                confirmButtonText: 'OK',
+                customClass: {
+                    confirmButton: 'swal-confirm-button',
+                },
+            });
+        }
+    });
 }
 
 
