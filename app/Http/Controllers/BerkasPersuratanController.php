@@ -184,7 +184,7 @@ class BerkasPersuratanController extends Controller
             $berkas->status = 11;
             $berkas->save();
         }
-        return back();
+        return response()->json(['message' => 'Surat berhasil direset.']);
     }
 
     public function keputusan(Request $request, $id)

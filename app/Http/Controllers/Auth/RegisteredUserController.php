@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
@@ -32,20 +31,21 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'nim' => 'required|digits_between:5,20|unique:users,nim',
+            'email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
             'name' => $request->name,
+            'nim' => $request->nim,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role_id' => 1, // role mahasiswa
         ]);
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return to_route('dashboard');
+        return to_route('login');
     }
 }
