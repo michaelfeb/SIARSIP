@@ -149,8 +149,38 @@ function onAjuan(id: number) {
 }
 
 const onReset = async (id: number) => {
-    await axios.put(route('berkas-persuratan.reset', { id }))
-    await loadFromServer()
+    Swal.fire({
+        icon: 'warning',
+        title: 'Anda yakin?',
+        text: 'Data akan tereset!',
+        showCancelButton: true,
+        confirmButtonText: 'Reset',
+        cancelButtonText: 'Batalkan',
+        customClass: {
+            confirmButton: 'swal-confirm-button',
+            cancelButton: 'swal-cancel-button',
+            actions: 'swal-actions-button-group',
+        },
+        buttonsStyling: false
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            await axios.put(route('berkas-persuratan.reset', { id })).then(
+                async () => {
+                    await Swal.fire({
+                        title: 'Berhasil!',
+                        text: "Data telah tereset!",
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'swal-confirm-button',
+                        },
+                    }).then(async () => {
+                        await loadFromServer()
+                    });
+                }
+            )
+        }
+    });
 }
 
 
@@ -173,6 +203,8 @@ function showAjukanButton(roleId: number, status: number): boolean {
 
     if (roleId === 8) {
         return stageStatus !== 3 && stageStatus !== 2;
+    } else if (status === 11){
+        return false;
     }
 
     return roleId === roleStatus && stageStatus !== 3 && stageStatus !== 2;

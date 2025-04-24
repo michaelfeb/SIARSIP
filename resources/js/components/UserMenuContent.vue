@@ -9,7 +9,12 @@ interface Props {
     user: User;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
+
+console.log('====================================');
+console.log(props);
+console.log('====================================');
+
 </script>
 
 <template>

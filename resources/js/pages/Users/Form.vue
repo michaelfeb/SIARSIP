@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { onMounted, ref } from 'vue'
 import Swal from 'sweetalert2'
 import { BreadcrumbItem } from '@/types'
+import { onlyAllowNumbers } from '@/utils/inputValidatior'
 
 
 const props = defineProps<{
@@ -99,7 +100,7 @@ onMounted(() => {
 
                     <div class="space-y-2">
                         <Label for="nim">NIM/NIP</Label>
-                        <Input v-model="form.nim" id="nim" type="text" placeholder="NIM/NIP pengguna" />
+                        <Input v-model="form.nim" id="nim" type="text" placeholder="NIM/NIP pengguna" @keypress="onlyAllowNumbers"/>
                         <InputError :message="form.errors.nim" />
                     </div>
 
