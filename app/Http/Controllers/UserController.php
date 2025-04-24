@@ -74,8 +74,9 @@ class UserController extends Controller
     {
         $rules = [
             'nama' => 'required|string|max:255',
+            'nim' => ['required', 'numeric', 'digits_between:5,20'],
             'email' => ['required', 'email', 'unique:users,email' . ($id ? ",$id" : '')],
-            'role_id' => 'required|int',
+            'role_id' => 'required|integer',
         ];
 
         if (!$id) {
@@ -88,6 +89,9 @@ class UserController extends Controller
             'nama.required' => 'Nama wajib diisi.',
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
+            'nim.required' => 'NIM/NIP wajib diisi.',
+            'nim.numeric' => 'NIM/NIP harus berupa angka.',
+            'nim.digits_between' => 'NIM/NIP harus terdiri dari 5 sampai 20 digit angka.',
             'email.unique' => 'Email sudah digunakan.',
             'role_id.required' => 'Role wajib dipilih.',
             'password.required' => 'Password wajib diisi.',
@@ -100,6 +104,7 @@ class UserController extends Controller
             $user = User::findOrFail($id);
             $user->update([
                 'nama' => $request->nama,
+                'nim' => $request->nim,
                 'email' => $request->email,
                 'role_id' => $request->role_id,
             ]);
@@ -107,6 +112,7 @@ class UserController extends Controller
         } else {
             User::create([
                 'nama' => $request->nama,
+                'nim' => $request->nim,
                 'email' => $request->email,
                 'role_id' => $request->role_id,
                 'password' => bcrypt($request->password),
@@ -119,5 +125,24 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         $user->delete();
+    }
+
+    public function search_user(Request $request)
+    {
+        $search = $request->input('search');
+
+        if (strlen($search) < 5) {
+            return response()->json([]);
+        }
+
+        $users = \App\Models\User::query()
+            ->where(function ($query) use ($search) {
+                $query->where('nama', 'like', "%{$search}%")
+                    ->orWhere('nim', 'like', "%{$search}%");
+            })
+            ->limit(20)
+            ->get(['id', 'nama', 'nim']);
+
+        return response()->json($users);
     }
 }

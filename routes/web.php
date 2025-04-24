@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BerkasPersuratanController;
 use App\Http\Controllers\JenisSuratController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\TemplateSuratController;
@@ -18,13 +19,17 @@ Route::get('/template-surat/download/{id}', [TemplateSuratController::class, 'do
 
 // User Section
 Route::middleware(['auth'])->group(function () {
-    Route::resource('users', UserController::class);
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::match(['post', 'put'], '/users/save/{id?}', [UserController::class, 'save'])->name('users.save');
+    Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
+    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    Route::prefix('api')->name('api.users.')->group(function () {
+        Route::get('/search-user', [UserController::class, 'search_user'])->name('search-user');
+    });
 });
-Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
-Route::match(['post', 'put'], '/users/save/{id?}', [UserController::class, 'save'])->name('users.save');
-Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
-Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 
 // Jenis Surat
 Route::middleware(['auth'])->group(function () {
@@ -44,6 +49,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/template-surat/{id}', [TemplateSuratController::class, 'show'])->name('template-surat.show');
     Route::get('/template-surat/{id}/edit', [TemplateSuratController::class, 'edit'])->name('template-surat.edit');
     Route::delete('/template-surat/{id}', [TemplateSuratController::class, 'destroy'])->name('template-surat.destroy');
+});
+
+// Berkas Persuratan
+Route::middleware(['auth'])->group(function () {
+    Route::get('berkas-persuratan', [BerkasPersuratanController::class, 'index'])->name('berkas-persuratan.index');
+    Route::get('berkas-persuratan/create', [BerkasPersuratanController::class, 'create'])->name('berkas-persuratan.create');
+    Route::match(['post', 'put'], '/berkas-persuratan/save/{id?}', [BerkasPersuratanController::class, 'save'])->name('berkas-persuratan.save');
+    Route::put('/berkas-persuratan/{id}/keputusan', [BerkasPersuratanController::class, 'keputusan'])->name('berkas-persuratan.keputusan');
+    Route::get('berkas-persuratan/{id}', [BerkasPersuratanController::class, 'show'])->name('berkas-persuratan.show');
+    Route::get('berkas-persuratan/{id}/ajuan', [BerkasPersuratanController::class, 'ajuan'])->name('berkas-persuratan.ajuan');
+    Route::get('/berkas-persuratan/{id}/edit', [BerkasPersuratanController::class, 'edit'])->name('berkas-persuratan.edit');
+    Route::delete('/berkas-persuratan/{id}', [BerkasPersuratanController::class, 'destroy'])->name('berkas-persuratan.destroy');
+    Route::put('berkas-persuratan/{id}/kirim', [BerkasPersuratanController::class, 'kirim'])->name('berkas-persuratan.kirim');
+    Route::put('berkas-persuratan/{id}/reset', [BerkasPersuratanController::class, 'reset'])->name('berkas-persuratan.reset');
 });
 
 require __DIR__ . '/settings.php';

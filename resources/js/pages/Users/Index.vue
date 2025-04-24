@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Head, router, ServerOptions } from '@inertiajs/vue3'
-import EasyDataTable from 'vue3-easy-data-table'
+import EasyDataTable, { Item } from 'vue3-easy-data-table'
 import { type BreadcrumbItem } from '@/types'
 import 'vue3-easy-data-table/dist/style.css'
 import Heading from '@/components/Heading.vue'
@@ -118,7 +118,6 @@ function onDelete(id: number) {
             <div class="container mx-auto flex items-center justify-between mb-4">
                 <Heading title="Manajemen Pengguna" description="Daftar pengguna yang telah terdaftar dalam sistem"
                     class="!mb-0" />
-
                 <Button
                     class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 transition flex items-center gap-1"
                     @click="onCreate">

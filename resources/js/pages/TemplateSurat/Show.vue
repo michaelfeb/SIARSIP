@@ -26,6 +26,8 @@ function toBack() {
     router.visit(route('template-surat.index'))
 }
 
+
+
 onMounted(() => {
     setTimeout(() => {
         show.value = true

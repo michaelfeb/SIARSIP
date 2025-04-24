@@ -1,0 +1,282 @@
+<script setup lang="ts">
+import AppLayout from '@/layouts/AppLayout.vue'
+import { Head, router, ServerOptions } from '@inertiajs/vue3'
+import EasyDataTable, { Item } from 'vue3-easy-data-table'
+import { type BreadcrumbItem } from '@/types'
+import 'vue3-easy-data-table/dist/style.css'
+import Heading from '@/components/Heading.vue'
+import { ref, computed, watch } from 'vue'
+import Button from '@/components/ui/button/Button.vue'
+import { Eye, Trash2, Plus, Pencil, Send, RotateCcw, Check } from 'lucide-vue-next'
+import axios from 'axios'
+import Swal from 'sweetalert2'
+import statusMapping from '@/utils/statusMapping'
+
+const props = defineProps<{
+    auth: any,
+}>()
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Berkas Persuratan',
+        href: '/berkas-persuratan',
+    },
+]
+
+const headers = [
+    { text: "Nomor Surat", value: "nomor_surat", width: 180 },
+    { text: "Mahasiswa | NIM", value: "mahasiswa_nim", },
+    { text: "Jenis Surat", value: "jenis_surat.nama", },
+    { text: "Tanggal Dikirim", value: "tanggal_dikirim", },
+    { text: "Status", value: "status" },
+    { text: "Aksi", value: "id", sortable: false, width: 200 },
+]
+
+
+const items = ref<Item[]>([]);
+const loading = ref(false);
+const serverItemsLength = ref(0);
+const serverOptions = ref<ServerOptions>({
+    page: 1,
+    rowsPerPage: 10,
+});
+const search = ref('')
+
+const loadFromServer = async () => {
+    loading.value = true
+
+    const { data } = await axios.get(route('berkas-persuratan.index'), {
+        params: {
+            page: serverOptions.value.page,
+            per_page: serverOptions.value.rowsPerPage,
+            search: search.value,
+        }
+    })
+
+    items.value = data.data
+    serverItemsLength.value = data.total
+    loading.value = false
+}
+
+loadFromServer();
+
+watch([serverOptions, search], (value) => { loadFromServer(); }, { deep: true });
+
+function onCreate() {
+    router.get(route('berkas-persuratan.create'))
+}
+
+function onDetail(id: number) {
+    router.get(route('berkas-persuratan.show', id))
+}
+
+function onEdit(id: number) {
+    router.visit(route('berkas-persuratan.edit', id))
+}
+
+function onDelete(id: number) {
+
+    Swal.fire({
+        icon: 'warning',
+        title: 'Anda yakin?',
+        text: 'Data yang terhapus tidak dapat dikembalikan!',
+        showCancelButton: true,
+        confirmButtonText: 'Hapus',
+        cancelButtonText: 'Batalkan',
+        customClass: {
+            confirmButton: 'swal-confirm-button',
+            cancelButton: 'swal-cancel-button',
+            actions: 'swal-actions-button-group',
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.delete(route('berkas-persuratan.destroy', id), {
+                async onSuccess() {
+                    await loadFromServer();
+                    Swal.fire({
+                        title: 'Terhapus!',
+                        text: "Data telah dihapus!",
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'swal-confirm-button',
+                        },
+                    });
+                },
+            });
+        }
+    });
+}
+
+const onKirim = async (id: number) => {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Anda yakin?',
+        text: 'Data yang terkirim tidak dapat diedit!',
+        showCancelButton: true,
+        confirmButtonText: 'Kirim',
+        cancelButtonText: 'Batalkan',
+        customClass: {
+            confirmButton: 'swal-confirm-button',
+            cancelButton: 'swal-cancel-button',
+            actions: 'swal-actions-button-group',
+        },
+        buttonsStyling: false
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            await axios.put(route('berkas-persuratan.kirim', { id })).then(
+                async () => {
+                    await Swal.fire({
+                        title: 'Berhasil!',
+                        text: "Data telah terkirim!",
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'swal-confirm-button',
+                        },
+                    }).then(async () => {
+                        await loadFromServer()
+                    });
+                }
+            )
+        }
+    });
+}
+
+function onAjuan(id: number) {
+    router.get(route('berkas-persuratan.ajuan', id))
+}
+
+const onReset = async (id: number) => {
+    await axios.put(route('berkas-persuratan.reset', { id }))
+    await loadFromServer()
+}
+
+
+function formatTanggal(tanggal: string) {
+    if (!tanggal) return '-';
+    const date = new Date(tanggal);
+    return date.toLocaleDateString('id-ID', {
+        weekday: 'long', // Senin, Selasa, etc
+        day: '2-digit',
+        month: 'long',   // Januari, Februari, etc
+        year: 'numeric'
+    });
+}
+
+function showAjukanButton(roleId: number, status: number): boolean {
+
+    const statusStr = status.toString().padStart(2, '0')
+    const roleStatus = parseInt(statusStr[0])
+    const stageStatus = parseInt(statusStr[1])
+
+    if (roleId === 8) {
+        return stageStatus !== 3 && stageStatus !== 2;
+    }
+
+    return roleId === roleStatus && stageStatus !== 3 && stageStatus !== 2;
+}
+
+
+</script>
+
+<template>
+
+    <Head title="Users" />
+
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <div class="p-4 space-y-4">
+            <div class="container mx-auto flex items-center justify-between mb-4">
+                <Heading title="Manajemen Berkas Persuratan"
+                    description="Daftar berkas persuratan yang telah terdaftar dalam sistem" class="!mb-0" />
+
+                <Button
+                    class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 transition flex items-center gap-1"
+                    @click="onCreate">
+                    <Plus class="h-4 w-4" />
+                    <span>Tambah</span>
+                </Button>
+            </div>
+            <div class="container mx-auto flex items-center justify-end gap-4 mb-4">
+                <span class="text-sm font-medium whitespace-nowrap">Cari</span>
+                <input v-model="search" @input="onSearch" type="text" placeholder="Cari nama"
+                    class="w-50 h-8 text-sm rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+
+            <EasyDataTable v-model:server-options="serverOptions" :server-items-length="serverItemsLength"
+                :loading="loading" :headers="headers" :items="items" show-index>
+                <template #loading>
+                    <img src="https://i.pinimg.com/originals/94/fd/2b/94fd2bf50097ade743220761f41693d5.gif"
+                        style="width: 100px; height: 80px;" />
+                </template>
+                <template #header-index>
+                    No
+                </template>
+                <template #item-nomor_surat="{ nomor_surat }">
+                    {{ nomor_surat || '-' }}
+                </template>
+                <template #item-mahasiswa_nim="{ user }">
+                    {{ (user?.nama || '-') + ' | ' + (user?.nim || '-') }}
+                </template>
+                <template #item-status="{ status }">
+                    <div v-if="statusMapping[status]"
+                        :class="`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-${statusMapping[status].color}-100 text-${statusMapping[status].color}-600`">
+                        <component :is="statusMapping[status].icon" :class="`w-3 h-3 mr-1 text-red-400`"
+                            :color="`${statusMapping[status].colorIcon}`" />
+                        {{ statusMapping[status].label }}
+                    </div>
+                    <div v-else>
+                        Status tidak dikenal
+                    </div>
+                </template>
+                <template #item-tanggal_dikirim="{ tanggal_dikirim }">
+                    {{ formatTanggal(tanggal_dikirim) }}
+                </template>
+                <template #item-id="{ status, id }">
+                    <div class="flex items-center gap-2">
+                        <Button
+                            class="w-6 h-6 text-blue-500 hover:text-white hover:bg-blue-500 bg-white outline outline-1 outline-blue-500 p-1 rounded"
+                            title="Detail" @click="onDetail(id)">
+                            <Eye class="w-4 h-4" />
+                        </Button>
+
+                        <Button v-if="showAjukanButton(props.auth.user.role_id, status)"
+                            class="w-6 h-6 text-green-500 hover:text-white hover:bg-green-500 bg-white outline outline-1 outline-green-500 p-1 rounded"
+                            title="Periksa Berkas" @click="onAjuan(id)">
+                            <Check class="w-4 h-4" />
+                        </Button>
+
+                        <Button v-if="props.auth.user.role_id === 1 && status === 11" @click="onKirim(id)"
+                            class="w-6 h-6 text-blue-500 hover:text-white hover:bg-blue-500 bg-white outline outline-1 outline-blue-500 p-1 rounded">
+                            <Send class="w-4 h-4" />
+                        </Button>
+
+                        <Button v-if="props.auth.user.role_id === 1 && status % 10 === 3" @click="onReset(id)"
+                            class="w-6 h-6 text-blue-500 hover:text-white hover:bg-blue-500 bg-white outline outline-1 outline-blue-500 p-1 rounded">
+                            <RotateCcw class="w-4 h-4" />
+                        </Button>
+
+                        <Button v-if="props.auth.user.role_id === 1 && status === 11" @click="onEdit(id)"
+                            class="w-6 h-6 text-yellow-500 hover:text-white hover:bg-yellow-500 bg-white outline outline-1 outline-yellow-500 p-1 rounded">
+                            <Pencil class="w-4 h-4" />
+                        </Button>
+
+                        <Button v-if="props.auth.user.role_id === 1 && status === 11" @click="onDelete(id)"
+                            class="w-6 h-6 text-red-500 hover:text-white hover:bg-red-500 bg-white outline outline-1 outline-red-500 p-1 rounded">
+                            <Trash2 class="w-4 h-4" />
+                        </Button>
+                    </div>
+                </template>
+            </EasyDataTable>
+        </div>
+    </AppLayout>
+</template>
+
+<style>
+.customize-header {
+    display: flex;
+    justify-items: center;
+    align-items: center;
+}
+</style>

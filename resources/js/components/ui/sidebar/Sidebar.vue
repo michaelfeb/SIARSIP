@@ -1,4 +1,4 @@
-<script setup lang="ts">
+''<script setup lang="ts">
 import type { SidebarProps } from '.'
 import { cn } from '@/lib/utils'
 import { Sheet, SheetContent } from '@/components/ui/sheet'

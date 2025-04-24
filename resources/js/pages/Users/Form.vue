@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { onMounted, ref } from 'vue'
 import Swal from 'sweetalert2'
+import { BreadcrumbItem } from '@/types'
 
 
 const props = defineProps<{
@@ -19,6 +20,7 @@ const show = ref(false);
 const form = useForm({
     nama: props.user?.nama ?? '',
     email: props.user?.email ?? '',
+    nim: props.user?.nim ?? '',
     role_id: props.user?.role_id ?? '',
     password: props.user?.password ?? '',
 })
@@ -96,8 +98,14 @@ onMounted(() => {
                     </div>
 
                     <div class="space-y-2">
+                        <Label for="nim">NIM/NIP</Label>
+                        <Input v-model="form.nim" id="nim" type="text" placeholder="NIM/NIP pengguna" />
+                        <InputError :message="form.errors.nim" />
+                    </div>
+
+                    <div class="space-y-2">
                         <Label for="email">Email</Label>
-                        <Input v-model="form.email" id="email" type="email" placeholder="user@example.com" />
+                        <Input v-model="form.email" id="email" type="email" placeholder="Siarsip@gmail.com" />
                         <InputError :message="form.errors.email" />
                     </div>
 
@@ -121,7 +129,6 @@ onMounted(() => {
                         </div>
                         <InputError :message="form.errors.role_id" />
                     </div>
-
 
                     <div v-if="mode === 'create'" class="space-y-2">
                         <Label for="password">Password</Label>

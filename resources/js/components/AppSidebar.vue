@@ -30,34 +30,16 @@ import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, LayoutPanelTop, Mail, User } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import { BookOpen, Folder } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
+import { sidebars } from '@/components/AppSidebarMenu'
+import { computed } from 'vue';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Pengguna',
-        href: '/users',
-        icon: User,
-    },
+const page = usePage();
+const auth = computed(() => page.props.auth);
 
-    {
-        title: 'Template Surat',
-        href: '/template-surat',
-        icon: Mail,
-    },
-    
-    {
-        title: 'Jenis Surat',
-        href: '/jenis-surat',
-        icon: LayoutPanelTop,
-    },
-];
+const mainNavItems: NavItem[] = sidebars[auth.value.user.role_id] || []
 
 const footerNavItems: NavItem[] = [
     {

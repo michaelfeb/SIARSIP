@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Head, router, ServerOptions } from '@inertiajs/vue3'
-import EasyDataTable from 'vue3-easy-data-table'
+import EasyDataTable, { Item } from 'vue3-easy-data-table'
 import { type BreadcrumbItem } from '@/types'
 import 'vue3-easy-data-table/dist/style.css'
 import Heading from '@/components/Heading.vue'
@@ -20,7 +20,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ]
 
 const headers = [
-    { text: "Nama", value: "nama", width: 650 },
+    { text: "Nama", value: "nama",},
     { text: "Status", value: "status", width: 240 },
     { text: "Aksi", value: "id", sortable: false, width: 200 },
 ]
