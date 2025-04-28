@@ -1,16 +1,16 @@
-import {LayoutGrid, LayoutPanelTop, Mail, MailCheck, User } from 'lucide-vue-next';
+import {Folders, LayoutGrid, LayoutPanelTop, Mail, User } from 'lucide-vue-next';
 
 export const sidebars = {
     1: [ // Role ID 1: Mahasiswa
         {
             title: 'Berkas Persuratan',
             href: '/berkas-persuratan',
-            icon: MailCheck,
+            icon: Mail,
         },
         {
             title: 'Template Surat',
-            href: '/template-surat',
-            icon: Mail,
+            href: '/template-surat-mahasiswa',
+            icon: Folders,
         },
     ],
 
@@ -23,12 +23,12 @@ export const sidebars = {
         {
             title: 'Berkas Persuratan',
             href: '/berkas-persuratan',
-            icon: MailCheck,
+            icon: Mail,
         },
         {
             title: 'Template Surat',
             href: '/template-surat',
-            icon: Mail,
+            icon: Folders,
         },
         {
             title: 'Pengguna',
@@ -52,12 +52,12 @@ export const sidebars = {
         {
             title: 'Berkas Persuratan',
             href: '/berkas-persuratan',
-            icon: MailCheck,
+            icon: Mail,
         },
         {
             title: 'Template Surat',
             href: '/template-surat',
-            icon: Mail,
+            icon: Folders,
         },
         {
             title: 'Pengguna',
@@ -81,12 +81,12 @@ export const sidebars = {
         {
             title: 'Berkas Persuratan',
             href: '/berkas-persuratan',
-            icon: MailCheck,
+            icon: Mail,
         },
         {
             title: 'Template Surat',
             href: '/template-surat',
-            icon: Mail,
+            icon: Folders,
         },
         {
             title: 'Pengguna',
@@ -110,12 +110,12 @@ export const sidebars = {
         {
             title: 'Berkas Persuratan',
             href: '/berkas-persuratan',
-            icon: MailCheck,
+            icon: Mail,
         },
         {
             title: 'Template Surat',
             href: '/template-surat',
-            icon: Mail,
+            icon: Folders,
         },
         {
             title: 'Pengguna',
@@ -139,12 +139,12 @@ export const sidebars = {
         {
             title: 'Berkas Persuratan',
             href: '/berkas-persuratan',
-            icon: MailCheck,
+            icon: Mail,
         },
         {
             title: 'Template Surat',
             href: '/template-surat',
-            icon: Mail,
+            icon: Folders,
         },
         {
             title: 'Pengguna',
@@ -168,12 +168,12 @@ export const sidebars = {
         {
             title: 'Berkas Persuratan',
             href: '/berkas-persuratan',
-            icon: MailCheck,
+            icon: Mail,
         },
         {
             title: 'Template Surat',
             href: '/template-surat',
-            icon: Mail,
+            icon: Folders,
         },
         {
             title: 'Pengguna',
@@ -197,12 +197,12 @@ export const sidebars = {
         {
             title: 'Berkas Persuratan',
             href: '/berkas-persuratan',
-            icon: MailCheck,
+            icon: Mail,
         },
         {
             title: 'Template Surat',
             href: '/template-surat',
-            icon: Mail,
+            icon: Folders,
         },
         {
             title: 'Pengguna',

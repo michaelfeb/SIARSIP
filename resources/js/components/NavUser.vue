@@ -13,13 +13,13 @@ const { isMobile, state } = useSidebar();
 </script>
 
 <template>
-    <SidebarMenu class="bg-yellow-300 rounded">
+    <SidebarMenu class="bg-orange-400 rounded">
         <SidebarMenuItem>
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
-                    <SidebarMenuButton size="lg" class="hover:bg-yellow-400 data-[state=open]:bg-yellow-400 data-[state=open]:text-sidebar-accent-foreground">
+                    <SidebarMenuButton size="lg" class="hover:bg-orange-500 data-[state=open]:bg-orange-500 data-[state=open]:text-sidebar-accent-foreground">
                         <UserInfo :user="user" />
-                        <ChevronsUpDown class="ml-auto size-4" />
+                        <ChevronsUpDown class="ml-auto size-4" color="white"/>
                     </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent 

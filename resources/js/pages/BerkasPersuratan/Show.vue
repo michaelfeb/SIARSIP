@@ -29,10 +29,26 @@ const form = useForm({
 })
 
 
-async function submitKeputusan(action: 'terima' | 'tolak') {
-    const statusBaru = action === 'terima'
-        ? props.berkasPersuratan.status + 10
-        : parseInt(String(props.berkasPersuratan.status).charAt(0) + '3')
+async function submitKeputusan(action: 'terima' | 'tolak', mode: 'biasa' | 'disposisi') {
+    let statusBaru: number
+
+    const currentStatus = props.berkasPersuratan.status
+    const currentStage = parseInt(String(currentStatus).charAt(0))
+
+    if (action === 'terima') {
+        if (mode === 'disposisi') {
+            statusBaru = 61
+        } else {
+            if (currentStage >= 7) {
+                statusBaru = 72 // Kalau sudah di layanan, selesai
+            } else {
+                statusBaru = currentStatus + 10
+            }
+        }
+    } else {
+        // Kalau ditolak tetap biasa, stage jadi 3 di belakang
+        statusBaru = parseInt(currentStage.toString() + '3')
+    }
 
     await router.put(route('berkas-persuratan.keputusan', props.berkasPersuratan.id), {
         status: statusBaru,
@@ -49,12 +65,13 @@ async function submitKeputusan(action: 'terima' | 'tolak') {
                 customClass: {
                     confirmButton: 'swal-confirm-button',
                 },
-            }).then(async () => {
+            }).then(() => {
                 router.get(route('berkas-persuratan.index'))
             });
         }
     })
 }
+
 
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -90,6 +107,10 @@ onMounted(() => {
     }, 50)
 })
 
+console.log('====================================');
+console.log();
+console.log('====================================');
+
 </script>
 
 <template>
@@ -110,13 +131,17 @@ onMounted(() => {
             </form>
 
             <div class="mt-6 flex justify-end gap-2">
-                <button @click="submitKeputusan('tolak')"
+                <button @click="submitKeputusan('tolak', 'biasa')"
                     class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
                     Tolak
                 </button>
-                <button @click="submitKeputusan('terima')"
+                <button @click="submitKeputusan('terima', 'biasa')"
                     class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
                     Terima
+                </button>
+                <button @click="submitKeputusan('terima', 'disposisi')"
+                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Terima dan Disposisi
                 </button>
             </div>
         </div>
@@ -173,21 +198,34 @@ onMounted(() => {
                         <tr class="border-b">
                             <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Berkas Mahasiswa</td>
                             <td class="py-4 px-4 border border-gray-200">
-                                <ul class="list-disc list-inside space-y-1">
+                                <label v-if="JSON.parse(props.berkasPersuratan.berkas_mahasiswa) == null" for="">
+                                    -
+                                </label>
+                                <ul v-else class="list-disc list-inside space-y-1">
                                     <li v-for="(file, index) in JSON.parse(props.berkasPersuratan.berkas_mahasiswa || '[]')"
                                         :key="index">
                                         <a :href="`/storage/${file}`" target="_blank"
                                             class="text-blue-600 hover:underline">
                                             Berkas {{ index + 1 }}
                                         </a>
+
+                                        <span> | </span>
+                                        <a :href="`/storage/${file}`" download class="text-blue-600 hover:underline">
+                                            Download
+                                        </a>
                                     </li>
                                 </ul>
                             </td>
                         </tr>
-                        <tr v-if="props.berkasPersuratan.berkas_balasan">
+                        <tr>
                             <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Surat Balasan</td>
                             <td class="py-4 px-4 border border-gray-200">
-                                <ul class="list-disc list-inside space-y-1">
+                                <label
+                                    v-if="JSON.parse(props.berkasPersuratan.berkas_balasan) == null || JSON.parse(props.berkasPersuratan.berkas_balasan) == 0"
+                                    for="">
+                                    Tidak tersedia
+                                </label>
+                                <ul v-else class="list-disc list-inside space-y-1">
                                     <li v-for="(file, index) in JSON.parse(props.berkasPersuratan.berkas_balasan)"
                                         :key="index">
                                         <a :href="`/storage/${file}`" target="_blank"

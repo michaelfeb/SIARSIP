@@ -34,6 +34,30 @@ class TemplateSuratController extends Controller
         ]);
     }
 
+    public function indexMahasiswa(Request $request)
+    {
+        $search = $request->input('search');
+        $perPage = $request->input('per_page', 10);
+
+        $query = TemplateSurat::with('jenisSurat')
+            ->where('status', 1) // hanya ambil yang aktif
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama', 'like', "%{$search}%");
+                });
+            });
+
+        $templates = $query->paginate($perPage)->withQueryString();
+
+        if ($request->wantsJson()) {
+            return response()->json($templates);
+        }
+
+        return Inertia::render('TemplateSurat/IndexMahasiswa', [
+            'templates' => $templates,
+        ]);
+    }
+
     public function show($id)
     {
         $templateSurat = TemplateSurat::with('jenisSurat')->findOrFail($id);

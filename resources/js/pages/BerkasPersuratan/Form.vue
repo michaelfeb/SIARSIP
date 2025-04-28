@@ -38,6 +38,18 @@ const handleUpdateFiles = (files: any[]) => {
     form.berkas_mahasiswa = files.map(fileItem => fileItem.file ?? fileItem.source);
 };
 
+const initialReplyFiles = ref<any[]>([])
+
+const handleUpdateReplyFiles = (files: any[]) => {
+    form.berkas_balasan = files.map(fileItem => fileItem.file ?? fileItem.source);
+};
+
+const initialAdditionalFiles = ref<any[]>([])
+
+const handleUpdateAdditionalFiles = (files: any[]) => {
+    form.berkas_tambahan = files.map(fileItem => fileItem.file ?? fileItem.source);
+};
+
 const userSelected = ref(null)
 const userOptions = ref([])
 
@@ -78,6 +90,7 @@ const form = useForm({
     keterangan: props.berkasPersuratan?.keterangan ?? '',
     berkas_mahasiswa: props.berkasPersuratan?.berkas_mahasiswa ?? [],
     berkas_balasan: props.berkasPersuratan?.berkas_balasan ?? [],
+    berkas_tambahan: props.berkasPersuratan?.berkas_tambahan ?? [],
     status: props.berkasPersuratan?.status ?? 11,
     tanggal_dikirim: props.berkasPersuratan?.tanggal_dikirim ? props.berkasPersuratan.tanggal_dikirim.substring(0, 10) : today,
 })
@@ -130,7 +143,7 @@ async function submit() {
 
 
 function toBack() {
-    router.visit(route('template-surat.index'))
+    router.visit(route('berkas-persuratan.index'))
 }
 
 onMounted(() => {
@@ -138,28 +151,55 @@ onMounted(() => {
         show.value = true;
     }, 50);
 
-    if (props.mode === 'edit' && props.berkasPersuratan?.berkas_mahasiswa) {
-        const files = JSON.parse(props.berkasPersuratan.berkas_mahasiswa);
-        initialFiles.value = files.map((filePath: string) => ({
-            source: `/storage/${filePath}`,
-            options: {
-            }
-        }));
+    if (props.auth.user.role_id === 1) {
+        const option = {
+            label: `${props.auth.user.nama} (${props.auth.user.nim})`,
+            value: props.auth.user.id
+        };
+        userOptions.value = [option]
+        userSelected.value = option.value
+        form.user_id = option.value
     }
 
-    if (props.mode === 'edit' && props.berkasPersuratan?.user) {
+    else if (props.mode === 'edit' && props.berkasPersuratan?.user) {
         const option = {
             label: `${props.berkasPersuratan.user.nama} (${props.berkasPersuratan.user.nim})`,
             value: props.berkasPersuratan.user.id
         };
-
         userOptions.value = [option]
-        userSelected.value = userOptions.value[0].value
+        userSelected.value = option.value
     }
 
-    console.log('====================================');
-    console.log(props);
-    console.log('====================================');
+    if (props.mode === 'edit' && props.berkasPersuratan?.berkas_mahasiswa) {
+        const files = JSON.parse(props.berkasPersuratan.berkas_mahasiswa);
+
+        initialFiles.value = files.map((filePath: string) => ({
+            source: route('berkas-persuratan.download-upload', { filename: filePath }),
+            options: {}
+        }));
+    }
+
+    if (props.mode === 'edit' && props.berkasPersuratan?.berkas_balasan) {
+        const replyFiles = JSON.parse(props.berkasPersuratan.berkas_balasan)
+
+        initialReplyFiles.value = replyFiles.map((filePath: string) => ({
+            source: route('berkas-persuratan.download-upload', { filename: filePath }),
+            options: {}
+        }));
+    }
+
+    if (props.mode === 'edit' && props.berkasPersuratan?.berkas_tambahan) {
+        const additionalFiles = JSON.parse(props.berkasPersuratan.berkas_tambahan);
+
+        if (props.auth.user.role_id > 1) {
+            initialAdditionalFiles.value = additionalFiles.map((filePath: string) => ({
+                source: route('berkas-persuratan.download-upload', { filename: filePath }),
+                options: {}
+            }));
+        } else {
+            initialAdditionalFiles.value = [];
+        }
+    }
 });
 
 
@@ -191,7 +231,9 @@ onMounted(() => {
                         <Label for="user_selected">Mahasiswa</Label>
                         <VueSelect id="user_selected" v-model="userSelected" :options="userOptions" editable
                             placeholder="Cari mahasiswa" class="mt-2 text-sm" @search="onUserOptionSearch"
-                            @option-selected="onUserSelected" />
+                            :is-disabled="auth.user.role_id === 1" @option-selected="onUserSelected" />
+
+                        <InputError :message="form.errors.user_id" />
                     </div>
 
                     <div class="space-y-2">
@@ -229,6 +271,22 @@ onMounted(() => {
                             filePosterMaxHeight="250" @updatefiles="handleUpdateFiles" />
                         <InputError :message="form.errors.berkas_mahasiswa" />
                     </div>
+                    <div v-if="form.status >= 20" class="space-y-2">
+                        <Label>Upload Berkas Tambahan</Label>
+                        <FilePond name="berkas_tambahan[]" multiple
+                            label-idle="Seret & lepas berkas tambahan atau <span class='filepond--label-action'>Telusuri</span>"
+                            :allow-multiple="true" :files="initialAdditionalFiles" accepted-file-types="application/pdf"
+                            filePosterMaxHeight="250" @updatefiles="handleUpdateAdditionalFiles" />
+                        <InputError :message="form.errors.berkas_tambahan" />
+                    </div>
+                    <div v-if="form.status >= 60" class="space-y-2">
+                        <Label>Upload Surat Balasan</Label>
+                        <FilePond name="berkas_balasan[]" multiple
+                            label-idle="Seret & lepas surat balasan atau <span class='filepond--label-action'>Telusuri</span>"
+                            :allow-multiple="true" :files="initialReplyFiles" accepted-file-types="application/pdf"
+                            filePosterMaxHeight="250" @updatefiles="handleUpdateReplyFiles" />
+                        <InputError :message="form.errors.berkas_balasan" />
+                    </div>
                     <div class="space-y-2">
                         <Label for="status">Status</Label>
                         <div class="relative">
@@ -249,12 +307,12 @@ onMounted(() => {
                         <InputError :message="form.errors.tanggal_dikirim" />
                     </div>
                     <div class="w-full flex justify-end gap-2">
-                        <Button type="submit" class="hover:bg-blue-600 bg-blue-500">
-                            Simpan
-                        </Button>
                         <Button type="button" @click="toBack"
                             class="border border-orange-400 text-orange-500 hover:bg-orange-100 bg-white">
                             Kembali
+                        </Button>
+                        <Button type="submit" class="hover:bg-blue-600 bg-blue-500">
+                            Simpan
                         </Button>
                     </div>
                 </form>

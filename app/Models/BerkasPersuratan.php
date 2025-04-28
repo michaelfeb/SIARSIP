@@ -19,6 +19,7 @@ class BerkasPersuratan extends Model
         'keterangan',
         'berkas_mahasiswa',
         'berkas_balasan',
+        'berkas_tambahan',
         'status',
         'tanggal_dikirim',
     ];
@@ -26,6 +27,7 @@ class BerkasPersuratan extends Model
     protected $casts = [
         'berkas_mahasiswa' => 'array',
         'berkas_balasan' => 'array',
+        'berkas_tambahan' => 'array',
         'tanggal_dikirim' => 'date',
     ];
 

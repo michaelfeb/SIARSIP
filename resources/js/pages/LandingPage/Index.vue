@@ -19,7 +19,7 @@ function onLoginPegawai() {
 
 <template>
     <div
-    class="min-h-screen bg-white bg-[url('/images/background-landing-page.png')] bg-repeat bg-center bg-auto flex flex-col items-center justify-center px-4">
+    class="min-h-screen bg-gray-300 bg-[url('/images/background-landing-page-3.png')] bg-repeat bg-center bg-auto flex flex-col items-center justify-center px-4">
         <div class="flex flex-col items-center mb-10 text-center">
             <img src="/images/logo-ulm.png" alt="Logo" class="w-40 h-40 mb-4" />
             <h1 class="text-3xl font-bold text-gray-800">SIARSIP</h1>
@@ -35,8 +35,8 @@ function onLoginPegawai() {
             <div @click="onLoginPegawai"
                 class="w-60 h-60 bg-white shadow-md rounded-xl flex flex-col items-center justify-center text-center border border-gray-200 hover:bg-yellow-300 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer p-4">
                 <BadgeCheck class="w-12 h-12 text-green-600 mb-4" />
-                <span class="text-lg font-semibold text-gray-700">Login Staff</span>
-                <label class="text-base text-sm text-gray-600">Akses login untuk sraff FMIPA</label>
+                <span class="text-lg font-semibold text-gray-700">Login Pegawai</span>
+                <label class="text-base text-sm text-gray-600">Akses login untuk Pegawai FMIPA</label>
             </div>
             <a href="#template-surat"
                 class="w-60 h-60 bg-white shadow-md rounded-xl flex flex-col items-center justify-center text-center border border-gray-200 hover:bg-yellow-300 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer p-4">

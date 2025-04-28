@@ -56,8 +56,6 @@ class JenisSuratController extends Controller
             'status.required' => 'Status wajib diisi.',
         ];
 
-        dd($request);
-
         $validated = $request->validate($rules, $messages);
 
         if ($id) {

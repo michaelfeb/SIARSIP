@@ -7,7 +7,7 @@ import 'vue3-easy-data-table/dist/style.css'
 import Heading from '@/components/Heading.vue'
 import { ref, computed, watch } from 'vue'
 import Button from '@/components/ui/button/Button.vue'
-import { Eye, Trash2, Plus, Pencil, Send, RotateCcw, Check } from 'lucide-vue-next'
+import { Eye, Trash2, Plus, Pencil, Send, RotateCcw, Check, Download } from 'lucide-vue-next'
 import axios from 'axios'
 import Swal from 'sweetalert2'
 import statusMapping from '@/utils/statusMapping'
@@ -24,11 +24,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 ]
 
 const headers = [
-    { text: "Nomor Surat", value: "nomor_surat", width: 180 },
-    { text: "Mahasiswa | NIM", value: "mahasiswa_nim", },
-    { text: "Jenis Surat", value: "jenis_surat.nama", },
-    { text: "Tanggal Dikirim", value: "tanggal_dikirim", },
-    { text: "Status", value: "status" },
+    { text: "Nomor Surat", value: "nomor_surat", width: 180, sortable: true },
+    { text: "Mahasiswa | NIM", value: "mahasiswa_nim", sortable: true },
+    { text: "Jenis Surat", value: "jenis_surat.nama",sortable: true },
+    { text: "Tanggal Dikirim", value: "tanggal_dikirim",sortable: true },
+    { text: "Status", value: "status", sortable: true },
     { text: "Aksi", value: "id", sortable: false, width: 200 },
 ]
 
@@ -202,12 +202,83 @@ function showAjukanButton(roleId: number, status: number): boolean {
     const stageStatus = parseInt(statusStr[1])
 
     if (roleId === 8) {
+        if (status === 11) {
+            return false
+        }
         return stageStatus !== 3 && stageStatus !== 2;
-    } else if (status === 11){
+    } else if (status === 11) {
         return false;
     }
 
     return roleId === roleStatus && stageStatus !== 3 && stageStatus !== 2;
+}
+
+function showEditButton(roleId: number, status: number): boolean {
+    const statusStr = status.toString().padStart(2, '0');
+    const roleStatus = parseInt(statusStr[0]);
+    const stageStatus = parseInt(statusStr[1]);
+
+    // Superadmin bisa edit kapanpun
+    if (roleId === 8) return true;
+
+    if (roleId === 1 && status === 11) return true;
+
+    if ((roleId === 6 || roleId === 7) && roleStatus >= roleId && stageStatus !== 3) {
+        return true;
+    }
+
+    return false;
+}
+
+function showResetButton(roleId: number, status: number): boolean {
+    const statusStr = status.toString().padStart(2, '0');
+    const roleStatus = parseInt(statusStr[0]); // X
+    const stageStatus = parseInt(statusStr[1]); // Y
+
+    if (stageStatus !== 3) return false;
+
+    if (roleId === 8 && stageStatus === 3) return true;
+
+    if (roleId === 1 && roleStatus === 1) return true;
+
+    return false;
+}
+
+async function onDownloadSuratBalasan(id: number) {
+    try {
+        const response = await axios.get(route('berkas-persuratan.download-balasan', id), {
+            responseType: 'blob' // agar bisa tangkap file (PDF / ZIP)
+        });
+
+        // Cek tipe file
+        const blob = new Blob([response.data]);
+        const fileURL = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = fileURL;
+
+        // Nama file default (bisa kamu ubah dinamis kalau mau)
+        link.download = `surat_balasan_${id}.pdf`;
+        link.click();
+        URL.revokeObjectURL(fileURL);
+
+    } catch (error: any) {
+        if (error.response && error.response.status === 404) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Surat balasan tidak tersedia',
+                text: 'Belum ada surat balasan yang diunggah untuk berkas ini.',
+                confirmButtonText: 'OK'
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal mengunduh',
+                text: 'Terjadi kesalahan saat mengunduh surat balasan.',
+                confirmButtonText: 'Tutup'
+            });
+        }
+    }
 }
 
 
@@ -284,12 +355,12 @@ function showAjukanButton(roleId: number, status: number): boolean {
                             <Send class="w-4 h-4" />
                         </Button>
 
-                        <Button v-if="props.auth.user.role_id === 1 && status % 10 === 3" @click="onReset(id)"
+                        <Button v-if="showResetButton(props.auth.user.role_id, status)" @click="onReset(id)"
                             class="w-6 h-6 text-blue-500 hover:text-white hover:bg-blue-500 bg-white outline outline-1 outline-blue-500 p-1 rounded">
                             <RotateCcw class="w-4 h-4" />
                         </Button>
 
-                        <Button v-if="props.auth.user.role_id === 1 && status === 11" @click="onEdit(id)"
+                        <Button v-if="showEditButton(props.auth.user.role_id, status)" @click="onEdit(id)"
                             class="w-6 h-6 text-yellow-500 hover:text-white hover:bg-yellow-500 bg-white outline outline-1 outline-yellow-500 p-1 rounded">
                             <Pencil class="w-4 h-4" />
                         </Button>
@@ -297,6 +368,12 @@ function showAjukanButton(roleId: number, status: number): boolean {
                         <Button v-if="props.auth.user.role_id === 1 && status === 11" @click="onDelete(id)"
                             class="w-6 h-6 text-red-500 hover:text-white hover:bg-red-500 bg-white outline outline-1 outline-red-500 p-1 rounded">
                             <Trash2 class="w-4 h-4" />
+                        </Button>
+
+                        <Button v-if="props.auth.user.role_id === 1 && status === 72"
+                            @click="onDownloadSuratBalasan(id)"
+                            class="w-6 h-6 text-red-500 hover:text-white hover:bg-red-500 bg-white outline outline-1 outline-red-500 p-1 rounded">
+                            <Download class="w-4 h-4" />
                         </Button>
                     </div>
                 </template>
