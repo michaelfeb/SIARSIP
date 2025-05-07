@@ -76,6 +76,7 @@ function onDelete(id: number) {
             cancelButton: 'swal-cancel-button',
             actions: 'swal-actions-button-group',
         },
+        reverseButtons: true,
         buttonsStyling: false
     }).then((result) => {
         if (result.isConfirmed) {

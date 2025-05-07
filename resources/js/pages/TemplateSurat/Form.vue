@@ -24,11 +24,10 @@ const FilePond = vueFilePond(
     FilePondPluginPdfPreview,
 )
 
-const handleUpdateFiles = (files: any[]) => {
-    if (files.length > 0) {
-        form.dokumen_path = files[0].file
-    }
+function handleUpdateFiles(fileItems: any) {
+    form.dokumen_path = fileItems.length > 0 ? fileItems[0].file : null;
 }
+
 
 const today = new Date().toISOString().split('T')[0]
 
@@ -95,10 +94,20 @@ function toBack() {
     router.visit(route('template-surat.index'))
 }
 
+const initialFiles = ref([]);
 onMounted(() => {
     setTimeout(() => {
         show.value = true
     }, 50)
+
+    if (props.mode === 'edit' && props.templateSurat?.dokumen_path) {
+        initialFiles.value = [
+            {
+                source: `/storage/${props.templateSurat.dokumen_path}`,
+                options: {}
+            }
+        ];
+    }
 })
 </script>
 
@@ -162,15 +171,9 @@ onMounted(() => {
 
                         <FilePond name="dokumen_path"
                             label-idle="Seret & lepas dokumen atau <span class='filepond--label-action'>Telusuri</span>"
-                            :files="[
-                                props.mode === 'edit' && props.templateSurat?.dokumen_path
-                                    ? {
-                                        source: `/storage/${props.templateSurat.dokumen_path}`,
-                                    }
-                                    : null
-                            ].filter(Boolean)" :allow-multiple="false" accepted-file-types="application/pdf" filePosterMaxHeight="250"
-                            @updatefiles="handleUpdateFiles" />
-
+                            :allow-multiple="false"
+                            accepted-file-types="application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            filePosterMaxHeight="250" @updatefiles="handleUpdateFiles" :files="initialFiles" />
                         <InputError :message="form.errors.dokumen_path" />
                     </div>
 

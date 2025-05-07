@@ -90,6 +90,7 @@ function onDelete(id: number) {
             cancelButton: 'swal-cancel-button',
             actions: 'swal-actions-button-group',
         },
+        reverseButtons: true,
         buttonsStyling: false
     }).then((result) => {
         if (result.isConfirmed) {
@@ -133,7 +134,7 @@ function onDelete(id: number) {
 
             <div class="container mx-auto flex items-center justify-end gap-4 mb-4">
                 <span class="text-sm font-medium whitespace-nowrap">Cari</span>
-                <input v-model="search" @input="onSearch" type="text" placeholder="Cari nama"
+                <input v-model="search" @input="onSearch" type="text" placeholder="Cari nama & jenis surat"
                     class="w-50 h-8 text-sm rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
 

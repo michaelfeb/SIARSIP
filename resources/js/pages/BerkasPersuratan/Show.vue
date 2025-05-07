@@ -3,63 +3,127 @@ import Button from '@/components/ui/button/Button.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem } from '@/types';
 import { router, useForm } from '@inertiajs/vue3'
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import statusMapping from '@/utils/statusMapping'
 import Swal from 'sweetalert2';
+import Modal from '@/components/ui/modal/Modal.vue';
+import vueFilePond from 'vue-filepond'
+import FilePondPluginPdfPreview from 'filepond-plugin-pdf-preview'
+import axios from 'axios'
+
+import 'filepond/dist/filepond.min.css'
+import 'filepond-plugin-pdf-preview/dist/filepond-plugin-pdf-preview.css'
+import InputError from '@/components/InputError.vue';
+
+const FilePond = vueFilePond(
+    FilePondPluginPdfPreview,
+)
 
 const props = defineProps<{
     berkasPersuratan: any,
     jenisSurat: any,
+    auth: any,
     mode: 'detail' | 'ajuan'
 }>()
 
-const show = ref(false)
-const showModal = ref(false)
-
-function onKeputusan() {
-    showModal.value = true
-}
-
-function onCloseModal() {
-    showModal.value = false
-}
 
 const form = useForm({
+    nomor_surat: props.berkasPersuratan?.nomor_surat ? props.berkasPersuratan?.nomor_surat : '',
     note: '',
+    status: '',
+    berkas_tambahan: null,
+    berkas_balasan: null,
 })
 
+const filepondFiles = reactive({
+    berkas_tambahan: [],
+    berkas_balasan: [],
+});
 
-async function submitKeputusan(action: 'terima' | 'tolak', mode: 'biasa' | 'disposisi') {
-    let statusBaru: number
+function handleUpdateFilesTambahan(files) {
+    form.berkas_tambahan = files.map(f => f.file);
+}
 
+const handleUpdateFilesBalasan = (files) => {
+    const newFiles = files.filter(file => !file?.metadata?.locked);
+    form.berkas_balasan = newFiles.map(file => file.file);
+};
+
+
+const loadExistingFiles = async () => {
+    if (!props.berkasSidangNol?.id) return;
+
+    const response = await axios.get(route('berkas-sidang-nol.get-uploads', props.berkasSidangNol.id));
+    const files = response.data;
+
+    for (const field in files) {
+        if (files[field]) {
+            const filename = files[field]; // nama file saja
+            const lockedFile = {
+                source: route('berkas-sidang-nol.download-upload', { filename }), // URL ke controller
+                options: {
+                    type: 'remote',
+                    metadata: { locked: true }
+                }
+            }
+            filepondFiles[field] = [lockedFile];
+
+            if (field === 'berkas_balasan') {
+                lockedFiles.value = [lockedFile];
+            }
+        }
+    }
+}
+
+const show = ref(false)
+const showModal = ref(false)
+const showModalAkademik = ref(false)
+
+function onKeputusan() {
     const currentStatus = props.berkasPersuratan.status
     const currentStage = parseInt(String(currentStatus).charAt(0))
 
-    if (action === 'terima') {
-        if (mode === 'disposisi') {
-            statusBaru = 61
-        } else {
-            if (currentStage >= 7) {
-                statusBaru = 72 // Kalau sudah di layanan, selesai
-            } else {
-                statusBaru = currentStatus + 10
-            }
-        }
+    if (currentStage >= 6) {
+        showModalAkademik.value = true
     } else {
-        // Kalau ditolak tetap biasa, stage jadi 3 di belakang
-        statusBaru = parseInt(currentStage.toString() + '3')
+        showModal.value = true
+    }
+}
+
+
+
+function onCloseModal() {
+    showModal.value = false
+    showModalAkademik.value = false
+}
+
+
+async function submitKeputusan(action: 'terima' | 'tolak', mode: 'biasa' | 'disposisi') {
+    form.errors = {}
+
+    const currentStatus = props.berkasPersuratan.status
+    const currentStage = parseInt(String(currentStatus).charAt(0))
+    let statusBaru: number
+
+    if (action === 'terima') {
+        statusBaru = mode === 'disposisi' ? 61 : currentStage >= 7 ? 72 : currentStatus + 10
+    } else {
+        statusBaru = parseInt(`${currentStage}3`)
     }
 
-    await router.put(route('berkas-persuratan.keputusan', props.berkasPersuratan.id), {
-        status: statusBaru,
-        note: form.note
-    }, {
+    form.status = statusBaru.toString()
+    const url = route('berkas-persuratan.keputusan', props.berkasPersuratan.id);
+
+    await form.submit('post', url, {
+        forceFormData: true,
+        method: 'post',
         preserveScroll: true,
+        forceFormData: true,
         onSuccess: () => {
             showModal.value = false
             Swal.fire({
                 title: 'Berhasil!',
-                text: "Data telah diubah!",
+                text: 'Keputusan telah ditambahkan!',
                 icon: 'success',
                 confirmButtonText: 'OK',
                 customClass: {
@@ -67,12 +131,69 @@ async function submitKeputusan(action: 'terima' | 'tolak', mode: 'biasa' | 'disp
                 },
             }).then(() => {
                 router.get(route('berkas-persuratan.index'))
-            });
+            })
+        },
+        onError: () => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: 'Gagal memperbarui data!',
+                confirmButtonText: 'OK',
+                customClass: {
+                    confirmButton: 'swal-confirm-button',
+                },
+            })
         }
     })
 }
 
+async function submitKeputusanAkademik(action: 'terima' | 'tolak') {
+    form.errors = {}
+    const currentStatus = props.berkasPersuratan.status
+    const currentStage = parseInt(String(currentStatus).charAt(0))
+    let statusBaru: number
 
+    if (action === 'terima') {
+        statusBaru = currentStatus + 10
+    } else {
+        statusBaru = parseInt(`${currentStage}3`)
+    }
+
+    form.status = statusBaru.toString()
+    const url = route('berkas-persuratan.keputusan', props.berkasPersuratan.id);
+
+    await form.submit('post', url, {
+        forceFormData: true,
+        method: 'post',
+        preserveScroll: true,
+        forceFormData: true,
+        onSuccess: () => {
+            showModal.value = false
+            Swal.fire({
+                title: 'Berhasil!',
+                text: 'Keputusan telah ditambahkan!',
+                icon: 'success',
+                confirmButtonText: 'OK',
+                customClass: {
+                    confirmButton: 'swal-confirm-button',
+                },
+            }).then(() => {
+                router.get(route('berkas-persuratan.index'))
+            })
+        },
+        onError: () => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: 'Gagal memperbarui data!',
+                confirmButtonText: 'OK',
+                customClass: {
+                    confirmButton: 'swal-confirm-button',
+                },
+            })
+        }
+    })
+}
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -105,47 +226,118 @@ onMounted(() => {
     setTimeout(() => {
         show.value = true
     }, 50)
-})
 
-console.log('====================================');
-console.log();
-console.log('====================================');
+    if (typeof props.berkasPersuratan.berkas_balasan === 'string') {
+        try {
+            const parsed = JSON.parse(props.berkasPersuratan.berkas_balasan);
+
+            if (Array.isArray(parsed)) {
+                filepondFiles.berkas_balasan = parsed.map(fullPath => {
+                    const filename = fullPath
+                    return {
+                        source: route('berkas-persuratan.download-upload', { filename }),
+                        options: {
+                            type: 'remote',
+                            metadata: { locked: true },
+                        },
+                    };
+                });
+            }
+        } catch (error) {
+            console.error('Gagal parse JSON berkas_balasan:', error);
+        }
+    }
+})
 
 </script>
 
 <template>
-    <div v-if="showModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 transition-opacity duration-300">
-        <div class="bg-white w-full max-w-md p-6 rounded-lg shadow-xl relative">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-semibold">Tanggapan</h2>
-                <button @click="onCloseModal" class="text-gray-400 hover:text-gray-600 text-xl">
-                    &times;
-                </button>
-            </div>
+    <Modal :show="showModal" @close="onCloseModal">
+        <!-- Header -->
+        <template #header>
+            <h2 class="text-lg font-semibold">Tanggapan</h2>
+        </template>
 
-            <form @submit.prevent="" class="space-y-6">
-                <textarea type="text" v-model="form.note"
-                    placeholder="Opsional. Tulis catatan, saran atau revisi di sini"
-                    class="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
-            </form>
-
-            <div class="mt-6 flex justify-end gap-2">
-                <button @click="submitKeputusan('tolak', 'biasa')"
-                    class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-                    Tolak
-                </button>
-                <button @click="submitKeputusan('terima', 'biasa')"
-                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                    Terima
-                </button>
-                <button @click="submitKeputusan('terima', 'disposisi')"
-                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                    Terima dan Disposisi
-                </button>
-            </div>
+        <div v-if="Object.keys(form.errors).length > 0" class="mb-4 rounded bg-red-100 p-4 text-red-600">
+            <ul class="list-disc pl-5 space-y-1 text-sm">
+                <li v-for="(error, key) in form.errors" :key="key">{{ error }}</li>
+            </ul>
         </div>
-    </div>
+
+        <form @submit.prevent="" class="space-y-4">
+            <label for="note" class="block text-sm font-medium text-gray-700">Notes</label>
+            <textarea v-model="form.note" placeholder="Opsional. Tulis catatan, saran atau revisi di sini"
+                class="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+            <InputError :message="form.errors.note" />
+
+            <label class="block text-sm font-medium text-gray-700 mb-1">Berkas Disposisi</label>
+            <FilePond name="berkas_tambahan"
+                label-idle="Seret & lepas file atau <span class='filepond--label-action'>Telusuri</span>"
+                :allow-multiple="true" :accepted-file-types="['application/pdf']"
+                :files="filepondFiles.berkas_tambahan || []" @updatefiles="handleUpdateFilesTambahan" />
+            <InputError :message="form.errors.berkas_tambahan" />
+        </form>
+
+        <template #footer>
+            <div class="flex justify-end gap-2">
+                <Button @click="submitKeputusan('tolak', 'biasa')" class="bg-red-500 text-white hover:bg-red-600">
+                    Tolak
+                </Button>
+                <Button @click="submitKeputusan('terima', 'biasa')" class="bg-green-500 text-white hover:bg-green-600">
+                    Terima
+                </Button>
+                <Button @click="submitKeputusan('terima', 'disposisi')"
+                    class="bg-green-500 text-white hover:bg-green-600">
+                    Terima dan Disposisi
+                </Button>
+            </div>
+        </template>
+    </Modal>
+
+    <Modal :show="showModalAkademik" @close="onCloseModal">
+        <!-- Header -->
+        <template #header>
+            <h2 class="text-lg font-semibold">Tanggapan</h2>
+        </template>
+
+        <div v-if="Object.keys(form.errors).length > 0" class="mb-4 rounded bg-red-100 p-4 text-red-600">
+            <ul class="list-disc pl-5 space-y-1 text-sm">
+                <li v-for="(error, key) in form.errors" :key="key">{{ error }}</li>
+            </ul>
+        </div>
+
+        <form @submit.prevent="" class="space-y-4 max-h-[70vh] overflow-y-auto">
+            <label for="nomor_surat" class="block text-sm font-medium text-gray-700">Nomor Surat</label>
+            <input v-model="form.nomor_surat" placeholder="Contoh: B-1234/UN1/2025"
+                class="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+            <InputError :message="form.errors.nomor_surat" />
+
+            <label for="note" class="block text-sm font-medium text-gray-700">Notes</label>
+            <textarea v-model="form.note" placeholder="Opsional. Tulis catatan, saran atau revisi di sini"
+                class="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+            <InputError :message="form.errors.note" />
+
+            <label class="block text-sm font-medium text-gray-700 mb-1">Berkas Balasan (.docx)</label>
+            <FilePond name="berkas_balasan"
+                label-idle="Seret & lepas file atau <span class='filepond--label-action'>Telusuri</span>"
+                :allow-multiple="true"
+                :accepted-file-types="['application/vnd.openxmlformats-officedocument.wordprocessingml.document']"
+                :files="filepondFiles.berkas_balasan || []" @updatefiles="handleUpdateFilesBalasan" />
+            <InputError :message="form.errors.berkas_balasan" />
+
+        </form>
+
+        <template #footer>
+            <div class="flex justify-end gap-2">
+                <Button @click="submitKeputusanAkademik('tolak')" class="bg-red-500 text-white hover:bg-red-600">
+                    Tolak
+                </Button>
+                <Button @click="submitKeputusanAkademik('terima')" class="bg-green-500 text-white hover:bg-green-600">
+                    Terima
+                </Button>
+            </div>
+        </template>
+    </Modal>
 
     <!-- Main -->
     <AppLayout :breadcrumbs="breadcrumbs">
@@ -204,20 +396,15 @@ console.log('====================================');
                                 <ul v-else class="list-disc list-inside space-y-1">
                                     <li v-for="(file, index) in JSON.parse(props.berkasPersuratan.berkas_mahasiswa || '[]')"
                                         :key="index">
-                                        <a :href="`/storage/${file}`" target="_blank"
-                                            class="text-blue-600 hover:underline">
+                                        <a :href="route('berkas-persuratan.download-upload', file)"
+                                            class="text-blue-600 hover:underline" target="_blank">
                                             Berkas {{ index + 1 }}
-                                        </a>
-
-                                        <span> | </span>
-                                        <a :href="`/storage/${file}`" download class="text-blue-600 hover:underline">
-                                            Download
                                         </a>
                                     </li>
                                 </ul>
                             </td>
                         </tr>
-                        <tr>
+                        <tr v-if="props.auth.user.role_id !== 1">
                             <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Surat Balasan</td>
                             <td class="py-4 px-4 border border-gray-200">
                                 <label
@@ -228,14 +415,52 @@ console.log('====================================');
                                 <ul v-else class="list-disc list-inside space-y-1">
                                     <li v-for="(file, index) in JSON.parse(props.berkasPersuratan.berkas_balasan)"
                                         :key="index">
-                                        <a :href="`/storage/${file}`" target="_blank"
-                                            class="text-blue-600 hover:underline">
-                                            Balasan {{ index + 1 }}
+                                        <a :href="route('berkas-persuratan.download-upload', file)"
+                                            class="text-blue-600 hover:underline" target="_blank">
+                                            Berkas {{ index + 1 }}
                                         </a>
                                     </li>
                                 </ul>
                             </td>
                         </tr>
+                        <tr v-if="props.auth.user.role_id === 1">
+                            <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Surat Balasan</td>
+                            <td class="py-4 px-4 border border-gray-200">
+                                <label
+                                    v-if="JSON.parse(props.berkasPersuratan.berkas_balasan) == null || JSON.parse(props.berkasPersuratan.berkas_balasan) == 0"
+                                    for="">
+                                    Tidak tersedia
+                                </label>
+                                <ul v-else class="list-disc list-inside space-y-1">
+                                    <li v-for="(file, index) in JSON.parse(props.berkasPersuratan.berkas_balasan).filter(f => f.endsWith('.pdf'))"
+                                        :key="index">
+                                        <a :href="route('berkas-persuratan.download-upload', file)"
+                                            class="text-blue-600 hover:underline" target="_blank">
+                                            Berkas {{ index + 1 }}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr v-if="props.auth.user.role_id !== 1">
+                            <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Berkas Tambahan</td>
+                            <td class="py-4 px-4 border border-gray-200">
+                                <label
+                                    v-if="!props.berkasPersuratan.berkas_tambahan || JSON.parse(props.berkasPersuratan.berkas_tambahan).length === 0">
+                                    Tidak tersedia
+                                </label>
+                                <ul v-else class="list-disc list-inside space-y-1">
+                                    <li v-for="(file, index) in JSON.parse(props.berkasPersuratan.berkas_tambahan)"
+                                        :key="index">
+                                        <a :href="route('berkas-persuratan.download-upload', file)"
+                                            class="text-blue-600 hover:underline" target="_blank">
+                                            Berkas {{ index + 1 }}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </td>
+                        </tr>
+
                         <tr>
                             <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200 align-top">Catatan
                             </td>

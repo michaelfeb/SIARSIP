@@ -10,7 +10,8 @@ import Button from '@/components/ui/button/Button.vue'
 import { Eye, Trash2, Plus, Pencil, Send, RotateCcw, Check, Download } from 'lucide-vue-next'
 import axios from 'axios'
 import Swal from 'sweetalert2'
-import statusMapping from '@/utils/statusMapping'
+import statusMappingSidangNol from '@/utils/statusMappingSidangNol'
+import programStudiMapping from '@/utils/programStudiMapping'
 
 const props = defineProps<{
     auth: any,
@@ -18,20 +19,20 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Berkas Persuratan',
-        href: '/berkas-persuratan',
+        title: 'Berkas Sidang Nol',
+        href: '/berkas-sidang-nol',
     },
 ]
 
 const headers = [
     { text: "Nomor Surat", value: "nomor_surat", width: 180, sortable: true },
-    { text: "Mahasiswa | NIM", value: "mahasiswa_nim", sortable: true },
-    { text: "Jenis Surat", value: "jenis_surat.nama", sortable: true },
+    { text: "Mahasiswa | NIM", value: "mahasiswa_nim", sortable: true, width: 190 },
+    { text: "Program Studi", value: "program_studi", sortable: true },
     { text: "Tanggal Dikirim", value: "tanggal_dikirim", sortable: true },
+    { text: "Tanggal Selesai", value: "tanggal_selesai", sortable: true },
     { text: "Status", value: "status", sortable: true },
     { text: "Aksi", value: "id", sortable: false, width: 200 },
 ]
-
 
 const items = ref<Item[]>([]);
 const loading = ref(false);
@@ -45,7 +46,7 @@ const search = ref('')
 const loadFromServer = async () => {
     loading.value = true
 
-    const { data } = await axios.get(route('berkas-persuratan.index'), {
+    const { data } = await axios.get(route('berkas-sidang-nol.index'), {
         params: {
             page: serverOptions.value.page,
             per_page: serverOptions.value.rowsPerPage,
@@ -62,20 +63,16 @@ loadFromServer();
 
 watch([serverOptions, search], (value) => { loadFromServer(); }, { deep: true });
 
-function onSearch() {
-    serverOptions.value.page = 1
-}
-
 function onCreate() {
-    router.get(route('berkas-persuratan.create'))
+    router.get(route('berkas-sidang-nol.create'))
 }
 
 function onDetail(id: number) {
-    router.get(route('berkas-persuratan.show', id))
+    router.get(route('berkas-sidang-nol.show', id))
 }
 
 function onEdit(id: number) {
-    router.visit(route('berkas-persuratan.edit', id))
+    router.visit(route('berkas-sidang-nol.edit', id))
 }
 
 function onDelete(id: number) {
@@ -96,7 +93,7 @@ function onDelete(id: number) {
         buttonsStyling: false
     }).then((result) => {
         if (result.isConfirmed) {
-            router.delete(route('berkas-persuratan.destroy', id), {
+            router.delete(route('berkas-sidang-nol.destroy', id), {
                 async onSuccess() {
                     await loadFromServer();
                     Swal.fire({
@@ -109,6 +106,17 @@ function onDelete(id: number) {
                         },
                     });
                 },
+                async onError() {
+                    Swal.fire({
+                        title: 'Terhapus!',
+                        text: "Data telah dihapus!",
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'swal-confirm-button',
+                        },
+                    });
+                }
             });
         }
     });
@@ -120,18 +128,18 @@ const onKirim = async (id: number) => {
         title: 'Anda yakin?',
         text: 'Data yang terkirim tidak dapat diedit!',
         showCancelButton: true,
-        confirmButtonText: 'Kirim',
         cancelButtonText: 'Batalkan',
+        confirmButtonText: 'Kirim',
         customClass: {
-            confirmButton: 'swal-confirm-button',
             cancelButton: 'swal-cancel-button',
+            confirmButton: 'swal-confirm-button',
             actions: 'swal-actions-button-group',
         },
         reverseButtons: true,
         buttonsStyling: false
     }).then(async (result) => {
         if (result.isConfirmed) {
-            await axios.put(route('berkas-persuratan.kirim', { id })).then(
+            await axios.put(route('berkas-sidang-nol.kirim', { id })).then(
                 async () => {
                     await Swal.fire({
                         title: 'Berhasil!',
@@ -151,7 +159,7 @@ const onKirim = async (id: number) => {
 }
 
 function onAjuan(id: number) {
-    router.get(route('berkas-persuratan.ajuan', id))
+    router.get(route('berkas-sidang-nol.ajuan', id))
 }
 
 const onReset = async (id: number) => {
@@ -171,7 +179,7 @@ const onReset = async (id: number) => {
         buttonsStyling: false
     }).then(async (result) => {
         if (result.isConfirmed) {
-            await axios.put(route('berkas-persuratan.reset', { id })).then(
+            await axios.put(route('berkas-sidang-nol.reset', { id })).then(
                 async () => {
                     await Swal.fire({
                         title: 'Berhasil!',
@@ -190,106 +198,54 @@ const onReset = async (id: number) => {
     });
 }
 
-function formatTanggal(tanggal: string) {
-    if (!tanggal) return '-';
-    const date = new Date(tanggal);
-    return date.toLocaleDateString('id-ID', {
-        weekday: 'long', 
-        day: '2-digit',
-        month: 'long',   
-        year: 'numeric'
-    });
-}
-
-function showAjukanButton(roleId: number, status: number): boolean {
-    const statusStr = status.toString().padStart(2, '0')
-    const roleStatus = parseInt(statusStr[0])
-    const stageStatus = parseInt(statusStr[1])
-
-    if (roleId === 2 && status === 71) return true
-
-    if (roleId === 7 && status == 81) return true
-
-    if (roleId === 7 && status == 71) return false
-
-    if (roleId === 8) {
-        if (status === 11) {
-            return false
-        }
-        return stageStatus !== 3 && stageStatus !== 2
-    } else if (status === 11) {
-        return false
-    }
-
-    return roleId === roleStatus && stageStatus !== 3 && stageStatus !== 2
-}
-
-
-function showEditButton(roleId: number, status: number): boolean {
-    const statusStr = status.toString().padStart(2, '0');
-    const roleStatus = parseInt(statusStr[0]);
-    const stageStatus = parseInt(statusStr[1]);
-
-    if (roleId === 8) return true;
-
-    if (roleId === 1 && status === 11) return true;
-
-    if (roleId === 7 && status == 71) return false
-
-    if ((roleId === 6 || roleId === 7) && roleStatus >= roleId && stageStatus !== 3) {
-        return true;
-    }
-
-    return false;
-}
-
-function showResetButton(roleId: number, status: number): boolean {
-    const statusStr = status.toString().padStart(2, '0');
-    const roleStatus = parseInt(statusStr[0]); // X
-    const stageStatus = parseInt(statusStr[1]); // Y
-
-    if (stageStatus !== 3) return false;
-
-    if (roleId === 8 && stageStatus === 3) return true;
-
-    if (roleId === 1 && roleStatus === 1) return true;
-
-    return false;
-}
-
-async function onDownloadSuratBalasan(id: number) {
+async function onDownloadSuratSidangNol(id: number, namaUser: string) {
     try {
-        const response = await axios.get(route('berkas-persuratan.download-balasan', id), {
-            responseType: 'blob'
-        });
+        const response = await axios.get(
+            route('berkas-sidang-nol.download-surat-sidang-nol', id),
+            { responseType: 'blob' }
+        )
 
-        const blob = new Blob([response.data]);
-        const fileURL = URL.createObjectURL(blob);
+        const blob = new Blob([response.data], { type: 'application/pdf' }) // ← tambahkan tipe agar pasti PDF
+        const fileURL = URL.createObjectURL(blob)
 
-        const link = document.createElement('a');
-        link.href = fileURL;
-
-        link.download = `surat_balasan_${id}.pdf`;
-        link.click();
-        URL.revokeObjectURL(fileURL);
+        const link = document.createElement('a')
+        link.href = fileURL
+        link.download = `surat_sidang_nol_${namaUser.replace(/\s+/g, '_')}.pdf`
+        document.body.appendChild(link) // ← penting di Safari
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(fileURL)
 
     } catch (error: any) {
-        if (error.response && error.response.status === 404) {
+        if (error.response?.status === 404) {
             Swal.fire({
                 icon: 'warning',
-                title: 'Surat balasan tidak tersedia',
-                text: 'Belum ada surat balasan yang diunggah untuk berkas ini.',
-                confirmButtonText: 'OK'
-            });
+                title: 'Surat sidang nol tidak tersedia',
+                text: 'Belum ada surat sidang nol yang diunggah untuk berkas ini.',
+                confirmButtonText: 'OK',
+            })
         } else {
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal mengunduh',
                 text: 'Terjadi kesalahan saat mengunduh surat balasan.',
-                confirmButtonText: 'Tutup'
-            });
+                confirmButtonText: 'Tutup',
+            })
         }
     }
+}
+
+
+
+function formatTanggal(tanggal: string) {
+    if (!tanggal) return '-';
+    const date = new Date(tanggal);
+    return date.toLocaleDateString('id-ID', {
+        weekday: 'long', // Senin, Selasa, etc
+        day: '2-digit',
+        month: 'long',   // Januari, Februari, etc
+        year: 'numeric'
+    });
 }
 
 
@@ -302,8 +258,8 @@ async function onDownloadSuratBalasan(id: number) {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-4 space-y-4">
             <div class="container mx-auto flex items-center justify-between mb-4">
-                <Heading title="Manajemen Berkas Persuratan"
-                    description="Daftar berkas persuratan yang telah terdaftar dalam sistem" class="!mb-0" />
+                <Heading title="Manajemen Surat Sidang Nol"
+                    description="Daftar surat sidang nol yang telah terdaftar dalam sistem" class="!mb-0" />
 
                 <Button
                     class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 transition flex items-center gap-1"
@@ -324,66 +280,90 @@ async function onDownloadSuratBalasan(id: number) {
                     <img src="https://i.pinimg.com/originals/94/fd/2b/94fd2bf50097ade743220761f41693d5.gif"
                         style="width: 100px; height: 80px;" />
                 </template>
+
                 <template #header-index>
                     No
                 </template>
+
                 <template #item-nomor_surat="{ nomor_surat }">
-                    {{ nomor_surat || '-' }}
+                    {{ nomor_surat }}
                 </template>
+
                 <template #item-mahasiswa_nim="{ user }">
                     {{ (user?.nama || '-') + ' | ' + (user?.nim || '-') }}
                 </template>
-                <template #item-status="{ status }">
-                    <div v-if="statusMapping[status]"
-                        :class="`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-${statusMapping[status].color}-100 text-${statusMapping[status].color}-600`">
-                        <component :is="statusMapping[status].icon" :class="`w-3 h-3 mr-1 text-red-400`"
-                            :color="`${statusMapping[status].colorIcon}`" />
-                        {{ statusMapping[status].label }}
-                    </div>
-                    <div v-else>
-                        Status tidak dikenal
-                    </div>
+
+                <template #item-program_studi="{ user }">
+                    {{ programStudiMapping[user?.program_studi]?.label || '-' }}
                 </template>
+
                 <template #item-tanggal_dikirim="{ tanggal_dikirim }">
-                    {{ formatTanggal(tanggal_dikirim) }}
+                    {{ tanggal_dikirim ? formatTanggal(tanggal_dikirim) : '-' }}
                 </template>
-                <template #item-id="{ status, id }">
+
+                <template #item-tanggal_selesai="{ tanggal_selesai }">
+                    {{ tanggal_selesai ? formatTanggal(tanggal_selesai) : '-' }}
+                </template>
+
+                <template #item-status="{ status }">
+                    <div v-if="statusMappingSidangNol[status]"
+                        :class="`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-${statusMappingSidangNol[status].color}-100 text-${statusMappingSidangNol[status].color}-600`">
+                        <component :is="statusMappingSidangNol[status].icon" :class="`w-3 h-3 mr-1`"
+                            :color="`${statusMappingSidangNol[status].colorIcon}`" />
+                        {{ statusMappingSidangNol[status].label }}
+                    </div>
+                </template>
+
+                <template #item-id="{ status, id, user }">
                     <div class="flex items-center gap-2">
+                        <!-- Tombol Detail -->
                         <Button
                             class="w-6 h-6 text-blue-500 hover:text-white hover:bg-blue-500 bg-white outline outline-1 outline-blue-500 p-1 rounded"
                             title="Detail" @click="onDetail(id)">
                             <Eye class="w-4 h-4" />
                         </Button>
 
-                        <Button v-if="showAjukanButton(props.auth.user.role_id, status)"
+                        <!-- Tombol Periksa Berkas -->
+                        <Button v-if="props.auth.user.role_id !== 1 && status >= 1"
                             class="w-6 h-6 text-green-500 hover:text-white hover:bg-green-500 bg-white outline outline-1 outline-green-500 p-1 rounded"
                             title="Periksa Berkas" @click="onAjuan(id)">
                             <Check class="w-4 h-4" />
                         </Button>
 
-                        <Button v-if="props.auth.user.role_id === 1 && status === 11" @click="onKirim(id)"
-                            class="w-6 h-6 text-blue-500 hover:text-white hover:bg-blue-500 bg-white outline outline-1 outline-blue-500 p-1 rounded">
+                        <!-- Tombol Kirim Surat -->
+                        <Button v-if="status === 0"
+                            class="w-6 h-6 text-blue-500 hover:text-white hover:bg-blue-500 bg-white outline outline-1 outline-blue-500 p-1 rounded"
+                            @click="onKirim(id)" title="Kirim Surat">
                             <Send class="w-4 h-4" />
                         </Button>
 
-                        <Button v-if="showResetButton(props.auth.user.role_id, status)" @click="onReset(id)"
-                            class="w-6 h-6 text-blue-500 hover:text-white hover:bg-blue-500 bg-white outline outline-1 outline-blue-500 p-1 rounded">
+                        <!-- Tombol Reset Status -->
+                        <Button v-if="status === 3"
+                            class="w-6 h-6 text-blue-500 hover:text-white hover:bg-blue-500 bg-white outline outline-1 outline-blue-500 p-1 rounded"
+                            @click="onReset(id)" title="Reset Status">
                             <RotateCcw class="w-4 h-4" />
                         </Button>
 
-                        <Button v-if="showEditButton(props.auth.user.role_id, status)" @click="onEdit(id)"
-                            class="w-6 h-6 text-yellow-500 hover:text-white hover:bg-yellow-500 bg-white outline outline-1 outline-yellow-500 p-1 rounded">
+                        <!-- Tombol Edit -->
+                        <Button
+                            v-if="(props.auth.user.role_id === 1 && status === 0) || (props.auth.user.role_id !== 1)"
+                            class="w-6 h-6 text-yellow-500 hover:text-white hover:bg-yellow-500 bg-white outline outline-1 outline-yellow-500 p-1 rounded"
+                            @click="onEdit(id)" title="Edit Data">
                             <Pencil class="w-4 h-4" />
                         </Button>
 
-                        <Button v-if="props.auth.user.role_id === 1 && status === 11" @click="onDelete(id)"
-                            class="w-6 h-6 text-red-500 hover:text-white hover:bg-red-500 bg-white outline outline-1 outline-red-500 p-1 rounded">
+                        <!-- Tombol Hapus -->
+                        <Button
+                            v-if="(props.auth.user.role_id === 1 && status === 0) || (props.auth.user.role_id !== 1)"
+                            class="w-6 h-6 text-red-500 hover:text-white hover:bg-red-500 bg-white outline outline-1 outline-red-500 p-1 rounded"
+                            @click="onDelete(id)" title="Hapus Data">
                             <Trash2 class="w-4 h-4" />
                         </Button>
 
-                        <Button v-if="props.auth.user.role_id === 1 && status === 91"
-                            @click="onDownloadSuratBalasan(id)"
-                            class="w-6 h-6 text-red-500 hover:text-white hover:bg-red-500 bg-white outline outline-1 outline-red-500 p-1 rounded">
+                        <!-- Tombol Download Surat Balasan -->
+                        <Button v-if="status === 2"
+                            class="w-6 h-6 text-red-500 hover:text-white hover:bg-red-500 bg-white outline outline-1 outline-red-500 p-1 rounded"
+                            @click="onDownloadSuratSidangNol(id, user?.nama)" title="Download Surat Balasan">
                             <Download class="w-4 h-4" />
                         </Button>
                     </div>

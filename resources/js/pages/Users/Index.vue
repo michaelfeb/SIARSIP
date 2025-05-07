@@ -43,7 +43,6 @@ const loadFromServer = async () => {
     loading.value = false
 }
 
-
 loadFromServer();
 
 watch([serverOptions, search], (value) => { loadFromServer(); }, { deep: true });
@@ -86,6 +85,7 @@ function onDelete(id: number) {
             cancelButton: 'swal-cancel-button',
             actions: 'swal-actions-button-group',
         },
+        reverseButtons: true,
         buttonsStyling: false
     }).then((result) => {
         if (result.isConfirmed) {

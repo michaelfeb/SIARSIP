@@ -9,6 +9,7 @@ import { onMounted, ref } from 'vue'
 import Swal from 'sweetalert2'
 import { BreadcrumbItem } from '@/types'
 import { onlyAllowNumbers } from '@/utils/inputValidatior'
+import programStudiMapping from '@/utils/programStudiMapping'
 
 
 const props = defineProps<{
@@ -23,6 +24,7 @@ const form = useForm({
     email: props.user?.email ?? '',
     nim: props.user?.nim ?? '',
     role_id: props.user?.role_id ?? '',
+    program_studi: props.user?.program_studi ?? '',
     password: props.user?.password ?? '',
 })
 
@@ -100,7 +102,8 @@ onMounted(() => {
 
                     <div class="space-y-2">
                         <Label for="nim">NIM/NIP</Label>
-                        <Input v-model="form.nim" id="nim" type="text" placeholder="NIM/NIP pengguna" @keypress="onlyAllowNumbers"/>
+                        <Input v-model="form.nim" id="nim" type="text" placeholder="NIM/NIP pengguna"
+                            @keypress="onlyAllowNumbers" />
                         <InputError :message="form.errors.nim" />
                     </div>
 
@@ -129,6 +132,18 @@ onMounted(() => {
                             </div>
                         </div>
                         <InputError :message="form.errors.role_id" />
+                    </div>
+
+                    <div v-if="form.role_id === 1" class="space-y-2">
+                        <Label for="program_studi">Program Studi</Label>
+                        <select v-model="form.program_studi" id="program_studi"
+                            class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
+                            <option value="">Pilih Program Studi</option>
+                            <option v-for="(value, key) in programStudiMapping" :key="key" :value="value.value">
+                                {{ value.label }}
+                            </option>
+                        </select>
+                        <InputError :message="form.errors.program_studi" />
                     </div>
 
                     <div v-if="mode === 'create'" class="space-y-2">

@@ -19,7 +19,10 @@ class TemplateSuratController extends Controller
         $query = TemplateSurat::with('jenisSurat')
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('nama', 'like', "%{$search}%");
+                    $q->where('nama', 'like', "%{$search}%")
+                        ->orWhereHas('jenisSurat', function ($jenis) use ($search) {
+                            $jenis->where('nama', 'like', "%{$search}%");
+                        });
                 });
             });
 
@@ -96,7 +99,7 @@ class TemplateSuratController extends Controller
             'jenis_surat_id' => 'required|exists:jenis_surat,id',
             'status' => 'required|boolean',
             'tanggal_publish' => 'required|date',
-            'dokumen_path' => 'required|file|mimes:pdf,doc,docx|max:2048',
+            'dokumen_path' => 'required|file|mimes:doc,docx|max:2048',
         ];
 
         $validated = $request->validate($rules);

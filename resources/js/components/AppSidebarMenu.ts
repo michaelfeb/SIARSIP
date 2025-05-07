@@ -1,11 +1,15 @@
-import {Folders, LayoutGrid, LayoutPanelTop, Mail, User } from 'lucide-vue-next';
+import { Folders, LayoutGrid, Mail, Minus, Settings, User } from 'lucide-vue-next';
 
 export const sidebars = {
-    1: [ // Role ID 1: Mahasiswa
+    1: [
+        // Role ID 1: Mahasiswa
         {
-            title: 'Berkas Persuratan',
-            href: '/berkas-persuratan',
+            title: 'Berkas',
             icon: Mail,
+            children: [
+                { title: 'Berkas Sidang Nol', icon: Minus, href: '/berkas-sidang-nol' },
+                { title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' },
+            ],
         },
         {
             title: 'Template Surat',
@@ -14,16 +18,18 @@ export const sidebars = {
         },
     ],
 
-    2: [ 
+    2: [
         {
             title: 'Dashboard',
             href: '/dashboard',
             icon: LayoutGrid,
         },
         {
-            title: 'Berkas Persuratan',
-            href: '/berkas-persuratan',
+            title: 'Berkas',
             icon: Mail,
+            children: [
+                { title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' },
+            ],
         },
         {
             title: 'Template Surat',
@@ -35,24 +41,24 @@ export const sidebars = {
             href: '/users',
             icon: User,
         },
-        
+
         {
-            title: 'Jenis Surat',
-            href: '/jenis-surat',
-            icon: LayoutPanelTop,
+            title: 'Pengaturan',
+            icon: Settings,
+            children: [{ title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' }],
         },
     ],
 
-    3: [ 
+    3: [
         {
             title: 'Dashboard',
             href: '/dashboard',
             icon: LayoutGrid,
         },
         {
-            title: 'Berkas Persuratan',
-            href: '/berkas-persuratan',
+            title: 'Berkas',
             icon: Mail,
+            children: [{ title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' }],
         },
         {
             title: 'Template Surat',
@@ -64,24 +70,24 @@ export const sidebars = {
             href: '/users',
             icon: User,
         },
-        
+
         {
-            title: 'Jenis Surat',
-            href: '/jenis-surat',
-            icon: LayoutPanelTop,
+            title: 'Pengaturan',
+            icon: Settings,
+            children: [{ title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' }],
         },
     ],
 
-    4: [ 
+    4: [
         {
             title: 'Dashboard',
             href: '/dashboard',
             icon: LayoutGrid,
         },
         {
-            title: 'Berkas Persuratan',
-            href: '/berkas-persuratan',
+            title: 'Berkas',
             icon: Mail,
+            children: [{ title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' }],
         },
         {
             title: 'Template Surat',
@@ -93,24 +99,24 @@ export const sidebars = {
             href: '/users',
             icon: User,
         },
-        
+
         {
-            title: 'Jenis Surat',
-            href: '/jenis-surat',
-            icon: LayoutPanelTop,
+            title: 'Pengaturan',
+            icon: Settings,
+            children: [{ title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' }],
         },
     ],
 
-    5: [ 
+    5: [
         {
             title: 'Dashboard',
             href: '/dashboard',
             icon: LayoutGrid,
         },
         {
-            title: 'Berkas Persuratan',
-            href: '/berkas-persuratan',
+            title: 'Berkas',
             icon: Mail,
+            children: [{ title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' }],
         },
         {
             title: 'Template Surat',
@@ -122,24 +128,27 @@ export const sidebars = {
             href: '/users',
             icon: User,
         },
-        
+
         {
-            title: 'Jenis Surat',
-            href: '/jenis-surat',
-            icon: LayoutPanelTop,
+            title: 'Pengaturan',
+            icon: Settings,
+            children: [{ title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' }],
         },
     ],
 
-    6: [ 
+    6: [
         {
             title: 'Dashboard',
             href: '/dashboard',
             icon: LayoutGrid,
         },
         {
-            title: 'Berkas Persuratan',
-            href: '/berkas-persuratan',
+            title: 'Berkas',
             icon: Mail,
+            children: [
+                { title: 'Berkas Sidang Nol', icon: Minus, href: '/berkas-sidang-nol' },
+                { title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' },
+            ],
         },
         {
             title: 'Template Surat',
@@ -151,24 +160,24 @@ export const sidebars = {
             href: '/users',
             icon: User,
         },
-        
+
         {
-            title: 'Jenis Surat',
-            href: '/jenis-surat',
-            icon: LayoutPanelTop,
+            title: 'Pengaturan',
+            icon: Settings,
+            children: [{ title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' }],
         },
     ],
 
-    7: [ 
+    7: [
         {
             title: 'Dashboard',
             href: '/dashboard',
             icon: LayoutGrid,
         },
         {
-            title: 'Berkas Persuratan',
-            href: '/berkas-persuratan',
+            title: 'Berkas',
             icon: Mail,
+            children: [{ title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' }],
         },
         {
             title: 'Template Surat',
@@ -180,40 +189,44 @@ export const sidebars = {
             href: '/users',
             icon: User,
         },
-        
+
         {
-            title: 'Jenis Surat',
-            href: '/jenis-surat',
-            icon: LayoutPanelTop,
+            title: 'Pengaturan',
+            icon: Settings,
+            children: [{ title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' }],
         },
     ],
 
-    8: [ 
+    8: [
         {
             title: 'Dashboard',
             href: '/dashboard',
             icon: LayoutGrid,
         },
         {
-            title: 'Berkas Persuratan',
-            href: '/berkas-persuratan',
+            title: 'Berkas',
             icon: Mail,
+            children: [
+                { title: 'Berkas Sidang Nol', icon: Minus, href: '/berkas-sidang-nol' },
+                { title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' },
+            ],
         },
         {
             title: 'Template Surat',
             href: '/template-surat',
             icon: Folders,
         },
+
         {
             title: 'Pengguna',
             href: '/users',
             icon: User,
         },
-        
+
         {
-            title: 'Jenis Surat',
-            href: '/jenis-surat',
-            icon: LayoutPanelTop,
+            title: 'Pengaturan',
+            icon: Settings,
+            children: [{ title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' }],
         },
     ],
 };
