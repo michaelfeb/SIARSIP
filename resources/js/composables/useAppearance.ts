@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 type Appearance = 'light' | 'dark' | 'system';
 
 export function updateTheme(value: Appearance) {
+    value = 'light'
     if (typeof window === 'undefined') {
         return;
     }

@@ -308,7 +308,7 @@ class BerkasSidangNolController extends Controller
 
             // Generate PDF
             $pdf = Pdf::loadView('pdf.surat_sidang_nol', [
-                'nama' => $berkas->user->nama,
+                'nama' => strtoupper($berkas->user->nama),
                 'nim' => $berkas->user->nim,
                 'prodi' => $programStudi[$berkas->user->program_studi]['label'],
                 'nomor_surat' => $validated['nomor_surat'],

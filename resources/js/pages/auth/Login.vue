@@ -37,7 +37,7 @@ function onRegister() {
 </script>
 
 <template>
-    <AuthBase title="Selamat datang di SIARSIP" :description="`Masukan ${ mode === 'mahasiswa' ? 'NIM' : 'NIP'} yang terdaftar`">
+    <AuthBase title="Selamat datang di PORLAS FMIPA" :description="`Masukan ${ mode === 'mahasiswa' ? 'NIM' : 'NIP'} yang terdaftar`">
 
         <Head title="Log in" />
 
@@ -64,13 +64,6 @@ function onRegister() {
                     <Input id="password" type="password" required :tabindex="2" autocomplete="current-password"
                         v-model="form.password" placeholder="Password" />
                     <InputError :message="form.errors.password" />
-                </div>
-
-                <div class="flex items-center justify-between" :tabindex="3">
-                    <Label for="remember" class="flex items-center space-x-1">
-                        <Checkbox id="remember" v-model="form.remember" :tabindex="4" />
-                        <span>Ingat saya?</span>
-                    </Label>
                 </div>
 
                 <div class="mt-4">
