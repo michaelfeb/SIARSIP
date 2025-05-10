@@ -16,10 +16,6 @@ const props = defineProps<{
 }>()
 const show = ref(false);
 
-console.log('====================================');
-console.log(props.jenis_surat);
-console.log('====================================');
-
 const form = useForm({
     nama: props.jenis_surat?.nama ?? '',
     status: props.jenis_surat?.status ?? '',
@@ -92,13 +88,13 @@ onMounted(() => {
 
                 <form @submit.prevent="submit" class="space-y-4">
                     <div class="space-y-2">
-                        <Label for="nama">Nama</Label>
+                        <Label class="gap-1" for="nama">Nama<span class="text-red-500">*</span></Label>
                         <Input v-model="form.nama" id="nama" type="text" placeholder="Nama" />
                         <InputError :message="form.errors.nama" />
                     </div>
 
                     <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Status</label>
+                        <label class="block text-sm font-medium text-gray-700">Status<span class="text-red-500"> *</span> </label>
                         <div class="flex items-center gap-6">
                             <label class="flex items-center space-x-1 text-sm">
                                 <input type="radio" value="1" v-model="form.status"

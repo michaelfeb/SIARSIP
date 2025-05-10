@@ -243,8 +243,7 @@ class BerkasPersuratanController extends Controller
     public function kirim($id)
     {
         $berkas = BerkasPersuratan::findOrFail($id);
-
-
+        
         if ($berkas->status === 11) {
             $berkas->update(['status' => 21]);
 

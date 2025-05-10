@@ -189,7 +189,7 @@ const fileUrl = (field:any) => {
 
         <form @submit.prevent="submit" class="space-y-6">
             <div class="space-y-2">
-                <label for="nomor_surat" class="block text-sm font-medium text-gray-700">Nomor Surat</label>
+                <label for="nomor_surat" class="block text-sm font-medium text-gray-700">Nomor Surat<span class="text-red-500"> *</span></label>
                 <div class="mt-1 flex rounded-md shadow-sm border border-gray-300 overflow-hidden">
                     <span
                         class="inline-flex items-center px-3 bg-gray-100 text-gray-600 text-sm border-r border-gray-300">
@@ -205,7 +205,7 @@ const fileUrl = (field:any) => {
                 </div>
                 <InputError :message="form.errors.nomor_surat" />
 
-                <label for="pegawai" class="block text-sm font-medium text-gray-700">Pilih Penandatangan</label>
+                <label for="pegawai" class="block text-sm font-medium text-gray-700">Pilih Penandatangan<span class="text-red-500"> *</span></label>
                 <div class="relative">
                     <select id="jenis_surat_id" v-model="form.pegawai"
                         class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">

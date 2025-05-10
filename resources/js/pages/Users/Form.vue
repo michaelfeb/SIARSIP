@@ -95,26 +95,26 @@ onMounted(() => {
 
                 <form @submit.prevent="submit" class="space-y-4">
                     <div class="space-y-2">
-                        <Label for="nama">Nama</Label>
+                        <Label class="gap-1" for="nama">Nama<span class="text-red-500">*</span></Label>
                         <Input v-model="form.nama" id="nama" type="text" placeholder="Nama" />
                         <InputError :message="form.errors.nama" />
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="nim">NIM/NIP</Label>
+                        <Label class="gap-1" for="nim">NIM/NIP<span class="text-red-500">*</span></Label>
                         <Input v-model="form.nim" id="nim" type="text" placeholder="NIM/NIP pengguna"
                             @keypress="onlyAllowNumbers" />
                         <InputError :message="form.errors.nim" />
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="email">Email</Label>
+                        <Label class="gap-1" for="email">Email<span class="text-red-500">*</span></Label>
                         <Input v-model="form.email" id="email" type="email" placeholder="Siarsip@gmail.com" />
                         <InputError :message="form.errors.email" />
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="role">Role</Label>
+                        <Label class="gap-1" for="role">Role<span class="text-red-500">*</span></Label>
                         <div class="relative">
                             <select v-model="form.role_id" id="role"
                                 class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
@@ -135,7 +135,7 @@ onMounted(() => {
                     </div>
 
                     <div v-if="form.role_id === 1" class="space-y-2">
-                        <Label for="program_studi">Program Studi</Label>
+                        <Label class="gap-1" for="program_studi">Program Studi<span class="text-red-500">*</span></Label>
                         <select v-model="form.program_studi" id="program_studi"
                             class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
                             <option value="">Pilih Program Studi</option>
@@ -147,7 +147,7 @@ onMounted(() => {
                     </div>
 
                     <div v-if="mode === 'create'" class="space-y-2">
-                        <Label for="password">Password</Label>
+                        <Label class="gap-1" for="password">Password<span class="text-red-500">*</span></Label>
                         <Input v-model="form.password" id="password" type="password" placeholder="••••••••" />
                         <InputError :message="form.errors.password" />
                     </div>

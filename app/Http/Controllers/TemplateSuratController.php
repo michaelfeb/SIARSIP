@@ -137,6 +137,6 @@ class TemplateSuratController extends Controller
     {
         $template = TemplateSurat::findOrFail($id);
 
-        return Storage::disk('public')->download($template->dokumen_path, $template->nama . '.pdf');
+        return Storage::disk('public')->download($template->dokumen_path, $template->nama . '.docx');
     }
 }

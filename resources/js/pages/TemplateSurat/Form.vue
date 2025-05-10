@@ -125,13 +125,13 @@ onMounted(() => {
 
                 <form @submit.prevent="submit" class="space-y-4">
                     <div class="space-y-2">
-                        <Label for="nama">Nama</Label>
+                        <Label for="nama" class="gap-1">Nama<span class="text-red-500">*</span></Label>
                         <Input v-model="form.nama" id="nama" type="text" placeholder="Nama" />
                         <InputError :message="form.errors.nama" />
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="deskripsi">Deskripsi</Label>
+                        <Label for="deskripsi" class="gap-1">Deskripsi</Label>
                         <textarea v-model="form.deskripsi" id="deskripsi" placeholder="Tulis deskripsi template"
                             rows="4"
                             class="w-full text-sm rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
@@ -139,7 +139,7 @@ onMounted(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="jenis_surat_id">Jenis Surat</Label>
+                        <Label for="jenis_surat_id" class="gap-1">Jenis Surat<span class="text-red-500">*</span></Label>
                         <select id="jenis_surat_id" v-model="form.jenis_surat_id"
                             class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">Pilih Jenis Surat</option>
@@ -151,7 +151,7 @@ onMounted(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Status</label>
+                        <label class="block text-sm font-medium text-gray-700">Status<span class="text-red-500"> *</span></label>
                         <div class="flex items-center gap-6">
                             <label class="flex items-center space-x-1 text-sm">
                                 <input type="radio" value="1" v-model="form.status"
@@ -167,7 +167,7 @@ onMounted(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="dokumen_path">Upload Dokumen</Label>
+                        <Label for="dokumen_path" class="gap-1">Upload Dokumen<span class="text-red-500">*</span></Label>
 
                         <FilePond name="dokumen_path"
                             label-idle="Seret & lepas dokumen atau <span class='filepond--label-action'>Telusuri</span>"
@@ -179,7 +179,7 @@ onMounted(() => {
 
 
                     <div class="space-y-2">
-                        <Label for="tanggal_publish">Tanggal Publish</Label>
+                        <Label for="tanggal_publish" class="gap-1">Tanggal Publish<span class="text-red-500">*</span></Label>
                         <Input id="tanggal_publish" type="date" v-model="form.tanggal_publish" />
                         <InputError :message="form.errors.tanggal_publish" />
                     </div>

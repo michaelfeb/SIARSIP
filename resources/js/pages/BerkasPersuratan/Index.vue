@@ -131,7 +131,7 @@ const onKirim = async (id: number) => {
         buttonsStyling: false
     }).then(async (result) => {
         if (result.isConfirmed) {
-            await axios.put(route('berkas-persuratan.kirim', { id })).then(
+            await axios.post(route('berkas-persuratan.kirim-persuratan', { id })).then(
                 async () => {
                     await Swal.fire({
                         title: 'Berhasil!',
@@ -194,9 +194,9 @@ function formatTanggal(tanggal: string) {
     if (!tanggal) return '-';
     const date = new Date(tanggal);
     return date.toLocaleDateString('id-ID', {
-        weekday: 'long', 
+        weekday: 'long',
         day: '2-digit',
-        month: 'long',   
+        month: 'long',
         year: 'numeric'
     });
 }

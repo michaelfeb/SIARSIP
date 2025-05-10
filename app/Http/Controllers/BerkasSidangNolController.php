@@ -365,8 +365,12 @@ class BerkasSidangNolController extends Controller
     private function penandatanganMap()
     {
         return [ 
-            1 => ['nama' => 'Muhamad Michael Febrian S.Kom., M.Kom.', 'nip' => '21111016210012', 'ttd' => 'ttd_michael.png'],
-            2 => ['nama' => 'Nurul Lathifah', 'nip' => '197809072001122002', 'ttd' => 'ttd_nurul_lathifah.png'],
+            1 => ['nama' => 'Nurul Lathifah', 'nip' => '197809072001122002', 'ttd' => 'ttd_ibu_ipah.png'],
+            2 => ['nama' => 'Razmeirahmini', 'nip' => '197905272000122002', 'ttd' => 'ttd_ibu_mini.png'],
+            3 => ['nama' => 'Yuyun Magfirah', 'nip' => '197910142001122002', 'ttd' => 'ttd_ibu_yuyun.png'],
+            4 => ['nama' => "Nie'mattul Ridha", 'nip' => '198511052010012017', 'ttd' => 'ttd_ibu_ridha.png'],
+            5 => ['nama' => 'Risda Faulina', 'nip' => '198403062014092003', 'ttd' => 'ttd_ibu_risda.png'],
+            6 => ['nama' => 'Fitri Subiaktanti', 'nip' => '197211232006042001', 'ttd' => 'ttd_ibu_fitri.png'],
         ];
     }
 }

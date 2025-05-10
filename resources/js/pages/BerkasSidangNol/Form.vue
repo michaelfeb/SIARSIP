@@ -220,7 +220,7 @@ onMounted(() => {
 
                 <form @submit.prevent="submit" class="space-y-6">
                     <div class="space-y-2">
-                        <Label for="nomor_surat">Nomor Surat</Label>
+                        <Label class="gap-1" for="nomor_surat">Nomor Surat<span class="text-red-500">*</span></Label>
                         <Input id="nomor_surat" type="text" v-model="form.nomor_surat"
                             placeholder="Nomor surat akan diisi oleh operator"
                             :disabled="![2, 6, 7, 8].includes(props.auth.user.role_id)"
@@ -229,7 +229,7 @@ onMounted(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="user_selected">Mahasiswa</Label>
+                        <Label class="gap-1" for="user_selected">Mahasiswa <span class="text-red-500">*</span></Label>
                         <VueSelect id="user_selected" v-model="userSelected" :options="userOptions" editable
                             placeholder="Cari mahasiswa" class="mt-2 text-sm" @search="onUserOptionSearch"
                             :is-disabled="auth.user.role_id === 1" @option-selected="onUserSelected" />
@@ -237,7 +237,7 @@ onMounted(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="dokumen_hasil_studi">Dokumen Hasil Studi</Label>
+                        <Label class="gap-1" for="dokumen_hasil_studi">Dokumen Hasil Studi<span class="text-red-500">*</span></Label>
 
                         <div class="page-dokumen-hasil-studi">
                             <FilePond name="dokumen_hasil_studi"
@@ -261,7 +261,7 @@ onMounted(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="dokumen_data_diri">Dokumen Data Diri</Label>
+                        <Label class="gap-1" for="dokumen_data_diri">Dokumen Data Diri<span class="text-red-500">*</span></Label>
 
                         <FilePond name="dokumen_data_diri"
                             label-idle="Seret & lepas dokumen atau <span class='filepond--label-action'>Telusuri</span>"
@@ -281,7 +281,7 @@ onMounted(() => {
 
                     <!-- Dokumen PDDIKTI + UKT -->
                     <div class="space-y-2">
-                        <Label for="dokumen_pddikti_ukt">Dokumen Tampilan PDDIKTI & Bukti Pembayaran UKT</Label>
+                        <Label class="gap-1" for="dokumen_pddikti_ukt">Dokumen Tampilan PDDIKTI & Bukti Pembayaran UKT<span class="text-red-500">*</span></Label>
 
                         <FilePond name="dokumen_pddikti_ukt"
                             label-idle="Seret & lepas dokumen atau <span class='filepond--label-action'>Telusuri</span>"
@@ -300,8 +300,8 @@ onMounted(() => {
 
                     <!-- Dokumen Ruang Baca + Laboratorium + PKKMB + SKPI -->
                     <div class="space-y-2">
-                        <Label for="dokumen_ruangbaca_laboratorium_pkkmb_skpi">Dokumen Ruang Baca, Laboratorium, PKKMB,
-                            dan SKPI</Label>
+                        <Label class="gap-1" for="dokumen_ruangbaca_laboratorium_pkkmb_skpi">Dokumen Ruang Baca, Laboratorium, PKKMB,
+                            dan SKPI<span class="text-red-500">*</span></Label>
 
                         <FilePond name="dokumen_ruangbaca_laboratorium_pkkmb_skpi"
                             label-idle="Seret & lepas dokumen atau <span class='filepond--label-action'>Telusuri</span>"
@@ -322,7 +322,7 @@ onMounted(() => {
 
                     <!-- Dokumen Office + TOEFL -->
                     <div class="space-y-2">
-                        <Label for="dokumen_office_toefl">Dokumen Sertifikat Office dan TOEFL</Label>
+                        <Label class="gap-1" for="dokumen_office_toefl">Dokumen Sertifikat Office dan TOEFL<span class="text-red-500">*</span></Label>
 
                         <FilePond name="dokumen_office_toefl"
                             label-idle="Seret & lepas dokumen atau <span class='filepond--label-action'>Telusuri</span>"
@@ -341,7 +341,7 @@ onMounted(() => {
 
                     <!-- Dokumen Tambahan (Opsional) -->
                     <div class="space-y-2">
-                        <Label for="dokumen_tambahan">Dokumen Tambahan dari Prodi (Opsional)</Label>
+                        <Label class="gap-1" for="dokumen_tambahan">Dokumen Tambahan dari Prodi</Label>
 
                         <FilePond name="dokumen_tambahan"
                             label-idle="Seret & lepas dokumen atau <span class='filepond--label-action'>Telusuri</span>"
@@ -352,7 +352,7 @@ onMounted(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="status">Status</Label>
+                        <Label class="gap-1" for="status">Status<span class="text-red-500">*</span></Label>
                         <div class="relative">
                             <select id="status" v-model="form.status" disabled
                                 class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-gray-100">
@@ -364,14 +364,14 @@ onMounted(() => {
                         <InputError :message="form.errors.status" />
                     </div>
                     <div class="space-y-2">
-                        <Label for="tanggal_dikirim">Tanggal Dikirim</Label>
+                        <Label class="gap-1" for="tanggal_dikirim">Tanggal Dikirim<span class="text-red-500">*</span></Label>
                         <Input id="tanggal_dikirim" type="date" v-model="form.tanggal_dikirim"
                             class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 bg-gray-100 text-gray-700"
                             readonly />
                         <InputError :message="form.errors.tanggal_dikirim" />
                     </div>
                     <div class="space-y-2">
-                        <Label for="tanggal_selesai">Tanggal Selesai</Label>
+                        <Label class="gap-1" for="tanggal_selesai">Tanggal Selesai<span class="text-red-500">*</span></Label>
                         <Input id="tanggal_selesai" type="date" v-model="form.tanggal_selesai"
                             class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 bg-gray-100 text-gray-700"
                             readonly />

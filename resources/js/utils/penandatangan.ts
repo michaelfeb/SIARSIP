@@ -9,21 +9,39 @@ export const daftarPenandatangan: Record<
 > = [
     {
         value: 1,
-        label: 'Muhamad Michael Febrian S.Kom., M.Kom.',
-        nip: '21111016210012',
-        ttd: 'ttd_michael.png',
+        label: 'Nurul Lathifah',
+        nip: '197809072001122002',
+        ttd: 'ttd_ibu_ipah.png',
     },
     {
         value: 2,
-        label: 'Nurul Lathifah',
-        nip: '197809072001122002',
-        ttd: 'ttd_nurul_lathifah.png',
+        label: 'Razmeirahmini',
+        nip: '197905272000122002',
+        ttd: 'ttd_ibu_mini.png',
     },
     {
         value: 3,
-        label: 'Prof. Dr. Kusrini, M.Kom.',
-        nip: '196804261993032002',
-        ttd: 'ttd_kusrini.png',
+        label: 'Yuyun Magfirah',
+        nip: '197910142001122002',
+        ttd: 'ttd_ibu_yuyun.png',
+    },
+    {
+        value: 4,
+        label: "Nie'mattul Ridha",
+        nip: '198511052010012017',
+        ttd: 'ttd_ibu_ridha.png',
+    },
+    {
+        value: 5,
+        label: 'Risda Faulina',
+        nip: '198403062014092003',
+        ttd: 'ttd_ibu_risda.png',
+    },
+    {
+        value: 6,
+        label: 'Fitri Subiaktanti',
+        nip: '197211232006042001',
+        ttd: 'ttd_ibu_fitri.png',
     },
 ];
 

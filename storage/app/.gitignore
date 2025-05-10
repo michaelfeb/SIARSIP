@@ -1,4 +1,10 @@
+# Ignore semua
 *
+
+# Kecualikan file/folder penting
+!.gitignore
 !private/
 !public/
-!.gitignore
+!secure_storage/
+!secure_storage/ttd/
+!secure_storage/ttd/**
