@@ -25,7 +25,7 @@ export const statusMapping: Record<
     61: { label: 'Menunggu Sub Akademik', color: 'blue', colorIcon: "blue", icon: HelpCircle },
     62: { label: 'Diterima Sub Akademik', color: 'green', colorIcon: "green", icon: CheckCircle },
     63: { label: 'Ditolak Sub Akademik', color: 'red', colorIcon: "red", icon: XCircle },
-    71: { label: 'Menunggu TTD', color: 'blue', colorIcon: "blue", icon: HelpCircle },
+    71: { label: 'Menunggu Tandatangan', color: 'blue', colorIcon: "blue", icon: HelpCircle },
     81: { label: 'Menunggu Sub Layanan', color: 'blue', colorIcon: "blue", icon: HelpCircle },
     91: { label: 'Selesai', color: 'green', colorIcon: "green", icon: CheckCircle },
 };

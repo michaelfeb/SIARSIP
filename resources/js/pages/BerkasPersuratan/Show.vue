@@ -349,7 +349,7 @@ onMounted(() => {
                     <tbody class="text-sm">
                         <tr class="border-b">
                             <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Nomor Surat</td>
-                            <td class="py-4 px-4 border border-gray-200">{{ props.berkasPersuratan.nomor_surat || '-' }}
+                            <td class="py-4 px-4 border border-gray-200">{{ props.berkasPersuratan.nomor_surat || 'Belum ada' }}
                             </td>
                         </tr>
                         <tr class="border-b">
@@ -366,7 +366,8 @@ onMounted(() => {
                         </tr>
                         <tr class="border-b">
                             <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Keterangan</td>
-                            <td class="py-4 px-4 border border-gray-200">{{ props.berkasPersuratan.keterangan || '-' }}
+                            <td class="py-4 px-4 border border-gray-200"
+                                v-html="props.berkasPersuratan.keterangan ? props.berkasPersuratan.keterangan.replace(/\n/g, '<br>') : '-'">
                             </td>
                         </tr>
                         <tr class="border-b">

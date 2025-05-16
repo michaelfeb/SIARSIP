@@ -229,4 +229,19 @@ export const sidebars = {
             children: [{ title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' }],
         },
     ],
+
+    9: [
+        {
+            title: 'Dashboard',
+            href: '/dashboard',
+            icon: LayoutGrid,
+        },
+        {
+            title: 'Berkas',
+            icon: Mail,
+            children: [
+                { title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' },
+            ],
+        },
+    ],
 };

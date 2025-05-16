@@ -20,7 +20,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ]
 
 const headers = [
-    { text: "Nama", value: "nama",},
+    { text: "Nama", value: "nama", },
     { text: "Status", value: "status", width: 240 },
     { text: "Aksi", value: "id", sortable: false, width: 200 },
 ]
@@ -80,20 +80,30 @@ function onDelete(id: number) {
         buttonsStyling: false
     }).then((result) => {
         if (result.isConfirmed) {
-            router.delete(route('jenis-surat.destroy', id), {
-                async onSuccess() {
-                    await loadFromServer();
+            axios.delete(route('jenis-surat.destroy', id))
+                .then(response => {
                     Swal.fire({
                         title: 'Terhapus!',
-                        text: "Data telah dihapus!",
+                        text: response.data.message,
                         icon: 'success',
                         confirmButtonText: 'OK',
                         customClass: {
                             confirmButton: 'swal-confirm-button',
                         },
                     });
-                },
-            });
+                    loadFromServer();
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Gagal!',
+                        text: error.response.data.message,
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'swal-confirm-button',
+                        },
+                    });
+                });
         }
     });
 }

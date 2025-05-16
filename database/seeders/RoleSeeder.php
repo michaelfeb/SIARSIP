@@ -22,6 +22,7 @@ class RoleSeeder extends Seeder
             'Bagian Akademik',
             'Bagian Layanan',
             'Super Admin',
+            'Admin TTPS'
         ];
 
         foreach ($roles as $role) {

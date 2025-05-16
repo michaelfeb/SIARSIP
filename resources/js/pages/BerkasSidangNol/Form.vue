@@ -211,13 +211,9 @@ onMounted(() => {
                         <li v-for="(error, key) in form.errors" :key="key">{{ error }}</li>
                     </ul>
                 </div>
-
-
                 <h2 class="text-xl font-semibold">
                     {{ props.mode === 'edit' ? 'Edit Berkas Sidang Nol' : 'Tambah Berkas Sidang Nol' }}
                 </h2>
-
-
                 <form @submit.prevent="submit" class="space-y-6">
                     <div class="space-y-2">
                         <Label class="gap-1" for="nomor_surat">Nomor Surat<span class="text-red-500">*</span></Label>

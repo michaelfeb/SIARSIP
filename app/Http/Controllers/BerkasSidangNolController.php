@@ -104,6 +104,16 @@ class BerkasSidangNolController extends Controller
         ]);
     }
 
+    public function reset($id)
+    {
+        $berkas = BerkasSidangNol::findOrFail($id);
+        if ($berkas->status === 3) {
+            $berkas->status = 0;
+            $berkas->save();
+        }
+        return response()->json(['message' => 'Surat berhasil direset.']);
+    }
+
     public function destroy($id)
     {
         $berkasSidangNol = \App\Models\BerkasSidangNol::with('user')->findOrFail($id);
@@ -196,6 +206,10 @@ class BerkasSidangNolController extends Controller
 
         $idOrTemp = $berkas->id ?? 'temp';
         $folderPath = "berkas_sidang_nol/{$user->nim}_{$idOrTemp}";
+
+        if (!$id && auth()->user()->role_id !== 1) {
+            $validated['status'] = 1;
+        }
 
         if (!$id) {
             $berkas->save();
@@ -364,7 +378,7 @@ class BerkasSidangNolController extends Controller
 
     private function penandatanganMap()
     {
-        return [ 
+        return [
             1 => ['nama' => 'Nurul Lathifah', 'nip' => '197809072001122002', 'ttd' => 'ttd_ibu_ipah.png'],
             2 => ['nama' => 'Razmeirahmini', 'nip' => '197905272000122002', 'ttd' => 'ttd_ibu_mini.png'],
             3 => ['nama' => 'Yuyun Magfirah', 'nip' => '197910142001122002', 'ttd' => 'ttd_ibu_yuyun.png'],

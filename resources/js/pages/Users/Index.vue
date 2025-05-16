@@ -12,7 +12,8 @@ import axios from 'axios'
 import Swal from 'sweetalert2'
 
 const headers = [
-    { text: "Nama", value: "nama", width: 480 },
+    { text: "Nama", value: "nama", width: 380 },
+    { text: "NIP", value: "nim", width: 100},
     { text: "Email", value: "email", width: 240 },
     { text: "Jabatan", value: "role", width: 160 },
     { text: "Aksi", value: "id", sortable: false, width: 200 },
@@ -144,7 +145,9 @@ function onDelete(id: number) {
                 <template #item-nama="{ nama }">
                     {{ nama || '-' }}
                 </template>
-
+                <template #item-nim="{ nim }">
+                    {{ nim || '-' }}
+                </template>
                 <template #item-email="{ email }">
                     {{ email || '-' }}
                 </template>

@@ -219,7 +219,7 @@ onMounted(() => {
                 </h2>
                 <form @submit.prevent="submit" class="space-y-6">
                     <div class="space-y-2">
-                        <Label for="nomor_surat">Nomor Surat</Label>
+                        <Label class="gap-1" for="nomor_surat">Nomor Surat</Label>
                         <Input id="nomor_surat" type="text" v-model="form.nomor_surat"
                             placeholder="Nomor surat akan diisi oleh operator"
                             :disabled="![2, 6, 7, 8].includes(props.auth.user.role_id)"
@@ -228,7 +228,7 @@ onMounted(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="user_selected">Mahasiswa</Label>
+                        <Label class="gap-1" for="user_selected">Mahasiswa<span class="text-red-500">*</span></Label>
                         <VueSelect id="user_selected" v-model="userSelected" :options="userOptions" editable
                             placeholder="Cari mahasiswa" class="mt-2 text-sm" @search="onUserOptionSearch"
                             :is-disabled="auth.user.role_id === 1" @option-selected="onUserSelected" />
@@ -237,7 +237,7 @@ onMounted(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="jenis_surat_id">Jenis Surat</Label>
+                        <Label class="gap-1" for="jenis_surat_id">Jenis Surat<span class="text-red-500">*</span></Label>
                         <div class="relative">
                             <select id="jenis_surat_id" v-model="form.jenis_surat_id"
                                 class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
@@ -257,14 +257,15 @@ onMounted(() => {
                         <InputError :message="form.errors.jenis_surat_id" />
                     </div>
                     <div class="space-y-2">
-                        <Label for="keterangan">Keterangan</Label>
+                        <Label class="gap-1" for="keterangan">Keterangan<span class="text-red-500">*</span></Label>
                         <textarea id="keterangan" v-model="form.keterangan" rows="4"
                             class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Isi alasan/keterangan surat..."></textarea>
+                            placeholder="Jika nama tidak diisi maka wajib&#10;&#10;1. Nama (NIM)"></textarea>
                         <InputError :message="form.errors.keterangan" />
                     </div>
                     <div class="space-y-2">
-                        <Label>Upload Berkas Mahasiswa</Label>
+                        <Label class="gap-1">Upload Berkas Mahasiswa<span class="text-red-500">*</span> <span
+                                class="text-[12px]">{{ "( Max 1 MB )" }}</span></Label>
                         <FilePond name="berkas_mahasiswa[]" multiple
                             label-idle="Seret & lepas dokumen atau <span class='filepond--label-action'>Telusuri</span>"
                             :allow-multiple="true" :files="initialFiles" accepted-file-types="application/pdf"
@@ -272,7 +273,7 @@ onMounted(() => {
                         <InputError :message="form.errors.berkas_mahasiswa" />
                     </div>
                     <div v-if="form.status >= 20" class="space-y-2">
-                        <Label>Upload Berkas Tambahan</Label>
+                        <Label class="gap-1">Upload Berkas Tambahan</Label>
                         <FilePond name="berkas_tambahan[]" multiple
                             label-idle="Seret & lepas berkas tambahan atau <span class='filepond--label-action'>Telusuri</span>"
                             :allow-multiple="true" :files="initialAdditionalFiles" accepted-file-types="application/pdf"
@@ -288,7 +289,7 @@ onMounted(() => {
                         <InputError :message="form.errors.berkas_balasan" />
                     </div>
                     <div class="space-y-2">
-                        <Label for="status">Status</Label>
+                        <Label class="gap-1" for="status">Status<span class="text-red-500">*</span></Label>
                         <div class="relative">
                             <select id="status" v-model="form.status" disabled
                                 class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-gray-100">
@@ -300,7 +301,8 @@ onMounted(() => {
                         <InputError :message="form.errors.status" />
                     </div>
                     <div class="space-y-2">
-                        <Label for="tanggal_dikirim">Tanggal Dikirim</Label>
+                        <Label class="gap-1" for="tanggal_dikirim">Tanggal Dikirim<span
+                                class="text-red-500">*</span></Label>
                         <Input id="tanggal_dikirim" type="date" v-model="form.tanggal_dikirim"
                             class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 bg-gray-100 text-gray-700"
                             readonly />

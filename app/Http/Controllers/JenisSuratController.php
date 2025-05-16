@@ -76,8 +76,24 @@ class JenisSuratController extends Controller
 
     public function destroy($id)
     {
-        $jenis_surat = JenisSurat::findOrFail($id);
-        $jenis_surat->delete();
+        $jenisSurat = JenisSurat::findOrFail($id);
+
+        $usedTemplate = $jenisSurat->templateSurat()->exists();
+        $usedBerkas   = $jenisSurat->berkasPersuratan()->exists();
+
+        if ($usedTemplate || $usedBerkas) {
+            return response()->json([
+                'message' => 'Jenis surat tidak dapat dihapus karena sudah digunakan.',
+                'status' => 'error',
+            ], 422);
+        }
+
+        $jenisSurat->delete();
+
+        return response()->json([
+            'message' => 'Jenis surat berhasil dihapus.',
+            'status' => 'success',
+        ]);
     }
 
     public function toggle($id)

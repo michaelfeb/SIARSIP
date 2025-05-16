@@ -9,7 +9,7 @@ use App\Http\Controllers\TemplateSuratController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware(['auth', 'role:2,3,4,5,6,7,8']);
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware(['auth', 'role:2,3,4,5,6,7,8,9']);
 
 Route::get('/', [LandingPageController::class, 'index'])->name('home');
 
@@ -74,8 +74,10 @@ Route::middleware(['auth'])->group(function () {
             Route::get('berkas-sidang-nol/create', [BerkasSidangNolController::class, 'create'])->name('berkas-sidang-nol.create');
             Route::match(['post', 'put'], 'berkas-sidang-nol/save/{id?}', [BerkasSidangNolController::class, 'save'])->name('berkas-sidang-nol.save');
             Route::get('berkas-sidang-nol/{id}/edit', [BerkasSidangNolController::class, 'edit'])->name('berkas-sidang-nol.edit');
-            Route::put('berkas-persuratan/{id}/kirim', [BerkasSidangNolController::class, 'kirim'])->name('berkas-sidang-nol.kirim');
+            Route::put('berkas-sidang-nol/{id}/kirim', [BerkasSidangNolController::class, 'kirim'])->name('berkas-sidang-nol.kirim');
             Route::get('berkas-sidang-nol/{id}', [BerkasSidangNolController::class, 'show'])->name('berkas-sidang-nol.show');
+            Route::delete('/berkas-sidang-nol/{id}', [BerkasSidangNolController::class, 'destroy'])->name('berkas-sidang-nol.destroy');
+            Route::put('berkas-sidang-nol/{id}/reset', [BerkasSidangNolController::class, 'reset'])->name('berkas-sidang-nol.reset');
             Route::get('berkas-sidang-nol/get-uploads/{id}', [BerkasSidangNolController::class, 'getUploads'])->name('berkas-sidang-nol.get-uploads');
             Route::get('berkas-sidang-nol/{id}/download-surat', [BerkasSidangNolController::class, 'downloadSurat'])->name('berkas-sidang-nol.download-surat-sidang-nol');
         });

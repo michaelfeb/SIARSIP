@@ -15,4 +15,14 @@ class JenisSurat extends Model
         'nama',
         'status',
     ];
+
+    public function templateSurat()
+    {
+        return $this->hasMany(TemplateSurat::class, 'jenis_surat_id');
+    }
+
+    public function berkasPersuratan()
+    {
+        return $this->hasMany(BerkasPersuratan::class, 'jenis_surat_id');
+    }
 }

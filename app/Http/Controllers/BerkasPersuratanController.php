@@ -8,6 +8,7 @@ use App\Models\Note;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
 class BerkasPersuratanController extends Controller
@@ -32,20 +33,28 @@ class BerkasPersuratanController extends Controller
                         $userQuery->where('nim', 'like', "%{$search}%")
                             ->orWhere('nama', 'like', "%{$search}%");
                     })
-                        ->orWhere('nomor_surat', 'like', "%{$search}%");
+                        ->orWhere('nomor_surat', 'like', "%{$search}%")
+                        ->orWhere('keterangan', 'like', "%{$search}%");
                 });
             });
-
         if ($user->role_id === 2) {
             $query->orderByRaw("
-                    CASE 
-                        WHEN FLOOR(status / 10) = 2 THEN 0
-                        WHEN FLOOR(status / 10) = 7 THEN 1
-                        ELSE 2
-                    END ASC,
-                    status ASC,
-                    tanggal_dikirim DESC
-                ");
+                CASE 
+                    WHEN status = 21 THEN 0
+                    WHEN status = 71 THEN 0
+                    WHEN FLOOR(status / 10) = 2 THEN 1
+                    WHEN FLOOR(status / 10) = 3 THEN 2
+                    WHEN FLOOR(status / 10) = 4 THEN 3
+                    WHEN FLOOR(status / 10) = 5 THEN 4
+                    WHEN FLOOR(status / 10) = 6 THEN 5
+                    WHEN FLOOR(status / 10) = 7 THEN 6
+                    WHEN FLOOR(status / 10) = 8 THEN 7
+                    WHEN FLOOR(status / 10) = 9 THEN 8
+                    ELSE 9
+                END ASC,
+                status ASC,
+                tanggal_dikirim DESC
+            ");
         } elseif ($user->role_id === 7) {
             $query->orderByRaw("
                     CASE 
@@ -94,16 +103,16 @@ class BerkasPersuratanController extends Controller
     {
 
         $rules = [
-            'user_id' => 'required|exists:users,id',
+            'user_id' => ['nullable', 'exists:users,id'],
             'nomor_surat' => 'nullable|string',
             'jenis_surat_id' => 'required|exists:jenis_surat,id',
-            'keterangan' => 'nullable|string',
+            'keterangan' => 'required|string',
             'berkas_mahasiswa' => 'required|array',
-            'berkas_mahasiswa.*' => 'file|mimes:pdf|max:5120',
+            'berkas_mahasiswa.*' => 'file|mimes:pdf|max:1024',
             'berkas_balasan' => 'nullable',
-            'berkas_balasan.*' => 'file|mimes:pdf|max:5120',
+            'berkas_balasan.*' => 'file|mimes:pdf|max:1024',
             'berkas_tambahan' => 'nullable',
-            'berkas_tambahan.*' => 'file|mimes:pdf|max:5120',
+            'berkas_tambahan.*' => 'file|mimes:pdf|max:1024',
             'status' => 'required|integer',
             'tanggal_dikirim' => 'required|date',
         ];
@@ -113,18 +122,57 @@ class BerkasPersuratanController extends Controller
             'user_id.exists' => 'Mahasiswa tidak ditemukan.',
             'nomor_surat.string' => 'Nomor surat harus berupa teks.',
             'jenis_surat_id.required' => 'Jenis surat wajib diisi.',
+            'keterangan.required' => 'Keterangan wajib diisi.',
             'berkas_mahasiswa.required' => 'Upload berkas wajib diunggah.',
             'berkas_mahasiswa.*.mimes' => 'Berkas hanya boleh dalam format PDF.',
-            'berkas_mahasiswa.*.max' => 'Ukuran setiap berkas maksimal 5MB.',
+            'berkas_mahasiswa.*.max' => 'Ukuran setiap berkas maksimal 1MB.',
             'berkas_balasan.*.mimes' => 'Berkas hanya boleh dalam format PDF.',
-            'berkas_balasan.*.max' => 'Ukuran setiap berkas maksimal 5MB.',
+            'berkas_balasan.*.max' => 'Ukuran setiap berkas maksimal 1MB.',
             'berkas_tambahan.*.mimes' => 'Berkas hanya boleh dalam format PDF.',
-            'berkas_tambahan.*.max' => 'Ukuran setiap berkas maksimal 5MB.',
+            'berkas_tambahan.*.max' => 'Ukuran setiap berkas maksimal 1MB.',
             'status.required' => 'Status wajib diisi.',
             'tanggal_dikirim.required' => 'Tanggal dikirim wajib diisi.',
         ];
 
-        $validated = $request->validate($rules, $messages);
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        $isCreate = !$id;
+        $isStaff = auth()->user()->role_id !== 1;
+        $userId = $request->input('user_id');
+        $keterangan = trim($request->input('keterangan'));
+
+        if ($isCreate && $isStaff) {
+            if (empty($userId)) {
+                // user_id tidak diisi → keterangan wajib dan harus sesuai format
+                if (!$keterangan) {
+                    $validator->errors()->add('keterangan', 'Keterangan wajib diisi jika mahasiswa tidak dipilih.');
+                } else {
+                    // Format harus: n. Nama (NIM)
+                    $lines = explode("\n", $keterangan);
+                    foreach ($lines as $index => $line) {
+                        if (trim($line) === '') continue;
+                        if (!preg_match('/^\d+\.\s.+\(\d+\)$/', trim($line))) {
+                            $validator->errors()->add('keterangan', "Format baris " . ($index + 1) . " tidak valid. Gunakan format: " . ($index + 1) . ". Nama (NIM)");
+                            break;
+                        }
+                    }
+                }
+            } else {
+                // user_id diisi → user_id harus valid, keterangan bebas
+                $rules['user_id'] = ['required', 'exists:users,id'];
+            }
+        } else {
+            if (auth()->user()->role_id === 1) {
+                $rules['user_id'] = ['required', 'exists:users,id'];
+                $rules['keterangan'] = ['required', 'string'];
+            } else {
+                $rules['user_id'] = ['nullable', 'exists:users,id'];
+                $rules['keterangan'] = ['nullable', 'string'];
+            }
+        }
+
+        $validator->setRules($rules);
+        $validated = $validator->validate();
 
         $berkasLama = [];
         $replyFilesLama = [];
@@ -187,6 +235,10 @@ class BerkasPersuratanController extends Controller
         $validated['berkas_balasan'] = json_encode($uploadedReplyFiles);
         $validated['berkas_tambahan'] = json_encode($uploadedAdditionalFiles);
 
+        if (!$id && auth()->user()->role_id !== 1) {
+            $validated['status'] = 21;
+        }
+
         if ($id) {
             $berkas->update($validated);
         } else {
@@ -243,7 +295,7 @@ class BerkasPersuratanController extends Controller
     public function kirim($id)
     {
         $berkas = BerkasPersuratan::findOrFail($id);
-        
+
         if ($berkas->status === 11) {
             $berkas->update(['status' => 21]);
 
@@ -353,56 +405,56 @@ class BerkasPersuratanController extends Controller
     }
 
     public function downloadBalasan($id)
-{
-    $berkas = BerkasPersuratan::findOrFail($id);
+    {
+        $berkas = BerkasPersuratan::findOrFail($id);
 
-    if (!$berkas->berkas_balasan) {
-        abort(404, 'Berkas balasan tidak ditemukan.');
-    }
-
-    $balasanFiles = json_decode($berkas->berkas_balasan, true);
-
-    // Filter hanya file PDF
-    $pdfFiles = array_filter($balasanFiles, function ($filePath) {
-        return strtolower(pathinfo($filePath, PATHINFO_EXTENSION)) === 'pdf';
-    });
-
-    // Jika hanya satu PDF, langsung download
-    if (count($pdfFiles) === 1) {
-        $filePath = reset($pdfFiles); // ambil elemen pertama
-        $fullPath = storage_path('app/secure_storage/' . $filePath);
-
-        if (!file_exists($fullPath)) {
-            abort(404, 'File tidak ditemukan di penyimpanan.');
+        if (!$berkas->berkas_balasan) {
+            abort(404, 'Berkas balasan tidak ditemukan.');
         }
 
-        return response()->download($fullPath);
-    }
+        $balasanFiles = json_decode($berkas->berkas_balasan, true);
 
-    // Jika banyak PDF, buat ZIP
-    $zipFileName = 'surat_balasan_' . now()->timestamp . '.zip';
-    $zipDirectory = storage_path('app/public/temp');
-    $zipPath = $zipDirectory . "/$zipFileName";
+        // Filter hanya file PDF
+        $pdfFiles = array_filter($balasanFiles, function ($filePath) {
+            return strtolower(pathinfo($filePath, PATHINFO_EXTENSION)) === 'pdf';
+        });
 
-    if (!file_exists($zipDirectory)) {
-        mkdir($zipDirectory, 0755, true);
-    }
-
-    $zip = new \ZipArchive;
-    if ($zip->open($zipPath, \ZipArchive::CREATE) === TRUE) {
-        foreach ($pdfFiles as $filePath) {
+        // Jika hanya satu PDF, langsung download
+        if (count($pdfFiles) === 1) {
+            $filePath = reset($pdfFiles);
             $fullPath = storage_path('app/secure_storage/' . $filePath);
-            if (file_exists($fullPath)) {
-                $zip->addFile($fullPath, basename($filePath));
-            }
-        }
-        $zip->close();
-    } else {
-        abort(500, 'Gagal membuat file zip.');
-    }
 
-    return response()->download($zipPath)->deleteFileAfterSend(true);
-}
+            if (!file_exists($fullPath)) {
+                abort(404, 'File tidak ditemukan di penyimpanan.');
+            }
+
+            return response()->download($fullPath);
+        }
+
+        // Jika banyak PDF, buat ZIP
+        $zipFileName = 'surat_balasan_' . now()->timestamp . '.zip';
+        $zipDirectory = storage_path('app/public/temp');
+        $zipPath = $zipDirectory . "/$zipFileName";
+
+        if (!file_exists($zipDirectory)) {
+            mkdir($zipDirectory, 0755, true);
+        }
+
+        $zip = new \ZipArchive;
+        if ($zip->open($zipPath, \ZipArchive::CREATE) === TRUE) {
+            foreach ($pdfFiles as $filePath) {
+                $fullPath = storage_path('app/secure_storage/' . $filePath);
+                if (file_exists($fullPath)) {
+                    $zip->addFile($fullPath, basename($filePath));
+                }
+            }
+            $zip->close();
+        } else {
+            abort(500, 'Gagal membuat file zip.');
+        }
+
+        return response()->download($zipPath)->deleteFileAfterSend(true);
+    }
 
 
     public function downloadUpload($filename)

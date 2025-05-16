@@ -11,6 +11,7 @@ import { Eye, Trash2, Plus, Pencil, Send, RotateCcw, Check, Download } from 'luc
 import axios from 'axios'
 import Swal from 'sweetalert2'
 import statusMapping from '@/utils/statusMapping'
+import programStudiMapping from '@/utils/programStudiMapping'
 
 const props = defineProps<{
     auth: any,
@@ -24,8 +25,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ]
 
 const headers = [
-    { text: "Nomor Surat", value: "nomor_surat", width: 180, sortable: true },
-    { text: "Mahasiswa | NIM", value: "mahasiswa_nim", sortable: true },
+    { text: "Nomor Surat", value: "nomor_surat", width: 150, sortable: true },
+    { text: "Mahasiswa | NIM", value: "mahasiswa_nim", width: 200, sortable: true },
+    { text: "Keterangan", value: "keterangan", width: 250 },
+    { text: "Program Studi", value: "program_studi", sortable: true },
     { text: "Jenis Surat", value: "jenis_surat.nama", sortable: true },
     { text: "Tanggal Dikirim", value: "tanggal_dikirim", sortable: true },
     { text: "Status", value: "status", sortable: true },
@@ -206,6 +209,8 @@ function showAjukanButton(roleId: number, status: number): boolean {
     const roleStatus = parseInt(statusStr[0])
     const stageStatus = parseInt(statusStr[1])
 
+    if (roleId === 9) return false
+
     if (roleId === 2 && status === 71) return true
 
     if (roleId === 7 && status == 81) return true
@@ -293,6 +298,7 @@ async function onDownloadSuratBalasan(id: number) {
 }
 
 
+
 </script>
 
 <template>
@@ -319,31 +325,44 @@ async function onDownloadSuratBalasan(id: number) {
             </div>
 
             <EasyDataTable v-model:server-options="serverOptions" :server-items-length="serverItemsLength"
-                :loading="loading" :headers="headers" :items="items" show-index>
+                show-index-symbol="No" :loading="loading" :headers="headers" :items="items" show-index>
                 <template #loading>
                     <img src="https://i.pinimg.com/originals/94/fd/2b/94fd2bf50097ade743220761f41693d5.gif"
                         style="width: 100px; height: 80px;" />
-                </template>
-                <template #header-index>
-                    No
                 </template>
                 <template #item-nomor_surat="{ nomor_surat }">
                     {{ nomor_surat || '-' }}
                 </template>
                 <template #item-mahasiswa_nim="{ user }">
-                    {{ (user?.nama || '-') + ' | ' + (user?.nim || '-') }}
+                    <span v-if="user">
+                        {{ user.nama || '-' }} | {{ user.nim || '-' }}
+                    </span>
+                    <span v-else>-</span>
+                </template>
+                <template #item-keterangan="{ keterangan }">
+                    <div v-html="keterangan.replace(/\n/g, '<br>')"></div>
+                </template>
+
+                <template #item-program_studi="{ user }">
+                    <span v-if="user">
+                        {{ programStudiMapping[user?.program_studi].label || 'Program Studi tidak ditemukan' }}
+                    </span>
+                    <span v-else>-</span>
                 </template>
                 <template #item-status="{ status }">
-                    <div v-if="statusMapping[status]"
-                        :class="`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-${statusMapping[status].color}-100 text-${statusMapping[status].color}-600`">
-                        <component :is="statusMapping[status].icon" :class="`w-3 h-3 mr-1 text-red-400`"
-                            :color="`${statusMapping[status].colorIcon}`" />
+                    <span v-if="statusMapping[status]"
+                        class="inline-flex items-center whitespace-nowrap rounded-full px-2 py-1 text-xs font-medium"
+                        :class="[
+                            `bg-${statusMapping[status].color}-100`,
+                            `text-${statusMapping[status].color}-600`
+                        ]">
+                        <component :is="statusMapping[status].icon" class="w-3 h-3 mr-1"
+                            :class="`text-${statusMapping[status].colorIcon}`" />
                         {{ statusMapping[status].label }}
-                    </div>
-                    <div v-else>
-                        Status tidak dikenal
-                    </div>
+                    </span>
+                    <span v-else class="text-xs text-gray-500">Status tidak dikenal</span>
                 </template>
+
                 <template #item-tanggal_dikirim="{ tanggal_dikirim }">
                     {{ formatTanggal(tanggal_dikirim) }}
                 </template>
