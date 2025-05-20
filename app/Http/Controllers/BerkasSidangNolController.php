@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BerkasSidangNol;
+use App\Models\Note;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -69,7 +70,7 @@ class BerkasSidangNolController extends Controller
 
     public function show($id)
     {
-        $berkasSidangNol = BerkasSidangNol::with(['user'])->findOrFail($id);
+        $berkasSidangNol = BerkasSidangNol::with(['user', 'notes.user'])->findOrFail($id);
 
         return Inertia::render('BerkasSidangNol/Show', [
             'berkasSidangNol' => $berkasSidangNol,
@@ -78,7 +79,7 @@ class BerkasSidangNolController extends Controller
 
     public function edit($id)
     {
-        $berkasSidangNol = BerkasSidangNol::with(['user'])->findOrFail($id);
+        $berkasSidangNol = BerkasSidangNol::with(['user', 'notes.user'])->findOrFail($id);
 
         return Inertia::render('BerkasSidangNol/Form', [
             'berkasSidangNol' => $berkasSidangNol,
@@ -124,7 +125,7 @@ class BerkasSidangNolController extends Controller
         \Illuminate\Support\Facades\Storage::disk('secure')->deleteDirectory($folderPath);
         $berkasSidangNol->delete();
 
-        return redirect()->route('berkas-persuratan.index')->with('success', 'Berkas berhasil dihapus.');
+        return redirect()->route('berkas-sidang-nol.index')->with('success', 'Berkas berhasil dihapus.');
     }
 
 
@@ -289,14 +290,24 @@ class BerkasSidangNolController extends Controller
         }
 
         $validated = $request->validate([
-            'status' => 'required|in:2,3',
-            'nomor_surat' => 'required_if:status,2|string',
-            'pegawai' => 'required_if:status,2|in:1,2,3,4,5,6',
-        ], [
-            'nomor_surat.required_if' => 'Nomor surat wajib diisi jika status diterima.',
-            'nomor_surat.string' => 'Nomor surat harus berupa text.',
-            'pegawai.required_if' => 'Pegawai penandatangan wajib dipilih jika status diterima.',
-            'pegawai.in' => 'Pegawai yang dipilih tidak valid.',
+            'status' => 'required|numeric|in:2,3',
+            'nomor_surat' => [
+                'required_if:status,2',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->status == 2 && !is_string($value)) {
+                        $fail('Nomor surat harus berupa text.');
+                    }
+                },
+            ],
+            'pegawai' => [
+                'required_if:status,2',
+                function ($attribute, $value, $fail) {
+                    if ($value !== null && !in_array((int)$value, [1, 2, 3, 4, 5, 6])) {
+                        $fail('Pegawai yang dipilih tidak valid.');
+                    }
+                },
+            ],
+            'note' => 'nullable|string|max:1000',
         ]);
 
         $berkas = BerkasSidangNol::with('user')->findOrFail($id);
@@ -341,6 +352,15 @@ class BerkasSidangNolController extends Controller
         }
 
         $berkas->update($data);
+
+        if ($request->filled('note')) {
+            Note::create([
+                'berkas_id' => $berkas->id,
+                'jenis_berkas' => '2',
+                'user_id' => auth()->id(),
+                'pesan' => $request->note,
+            ]);
+        }
 
         return back()->with('success', 'Keputusan berhasil disimpan dan surat dibuat.');
     }

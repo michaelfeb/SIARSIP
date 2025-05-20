@@ -32,4 +32,9 @@ class BerkasSidangNol extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function notes()
+    {
+        return $this->hasMany(Note::class, 'berkas_id')->where('jenis_berkas', 2);
+    }
 }

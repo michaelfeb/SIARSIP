@@ -9,7 +9,6 @@ import Swal from 'sweetalert2';
 import Modal from '@/components/ui/modal/Modal.vue';
 import vueFilePond from 'vue-filepond'
 import FilePondPluginPdfPreview from 'filepond-plugin-pdf-preview'
-import axios from 'axios'
 
 import 'filepond/dist/filepond.min.css'
 import 'filepond-plugin-pdf-preview/dist/filepond-plugin-pdf-preview.css'
@@ -49,31 +48,6 @@ const handleUpdateFilesBalasan = (files) => {
     form.berkas_balasan = newFiles.map(file => file.file);
 };
 
-
-const loadExistingFiles = async () => {
-    if (!props.berkasSidangNol?.id) return;
-
-    const response = await axios.get(route('berkas-sidang-nol.get-uploads', props.berkasSidangNol.id));
-    const files = response.data;
-
-    for (const field in files) {
-        if (files[field]) {
-            const filename = files[field]; // nama file saja
-            const lockedFile = {
-                source: route('berkas-sidang-nol.download-upload', { filename }), // URL ke controller
-                options: {
-                    type: 'remote',
-                    metadata: { locked: true }
-                }
-            }
-            filepondFiles[field] = [lockedFile];
-
-            if (field === 'berkas_balasan') {
-                lockedFiles.value = [lockedFile];
-            }
-        }
-    }
-}
 
 const show = ref(false)
 const showModal = ref(false)

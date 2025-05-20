@@ -395,7 +395,8 @@ class BerkasPersuratanController extends Controller
 
         if ($request->filled('note')) {
             Note::create([
-                'berkas_persuratan_id' => $berkas->id,
+                'berkas_id' => $berkas->id,
+                'jenis_berkas' => '1',
                 'user_id' => Auth::id(),
                 'pesan' => $request->note,
             ]);

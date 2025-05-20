@@ -174,6 +174,45 @@ function formatTanggal(tanggal: string) {
                                 <template v-else>-</template>
                             </td>
                         </tr>
+                        <tr>
+                            <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200 align-top">Catatan
+                            </td>
+                            <td class="py-4 px-4 border border-gray-200">
+                                <div v-if="props.berkasSidangNol.notes && props.berkasSidangNol.notes.length">
+                                    <table class="text-sm w-full border border-gray-300">
+                                        <thead>
+                                            <tr class="bg-gray-100">
+                                                <th class="border px-3 py-2 text-left">Oleh</th>
+                                                <th class="border px-3 py-2 text-left">Catatan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="note in props.berkasSidangNol.notes" :key="note.id">
+                                                <td class="border px-3 py-2">{{ note.user?.nama || 'Tidak diketahui' }}
+                                                </td>
+                                                <td class="border px-3 py-2">{{ note.pesan }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div v-else>
+                                    <table class="text-sm w-full border border-gray-300">
+                                        <thead>
+                                            <tr class="bg-gray-100">
+                                                <th class="border px-3 py-2 text-left">Oleh</th>
+                                                <th class="border px-3 py-2 text-left">Catatan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="border px-3 py-2"> - </td>
+                                                <td class="border px-3 py-2"> - </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
 

@@ -43,6 +43,6 @@ class BerkasPersuratan extends Model
 
     public function notes()
     {
-        return $this->hasMany(Note::class);
+        return $this->hasMany(Note::class, 'berkas_id')->where('jenis_berkas', 1);
     }
 }

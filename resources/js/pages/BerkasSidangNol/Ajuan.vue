@@ -44,8 +44,9 @@ const today = new Date()
 const currentYear = today.getFullYear()
 
 const form = useForm({
-    nomor_surat: props.berkasSidangNol?.nomor_surat ? props.berkasSidangNol?.nomor_surat.split('SN-')[1]?.split('/')[0] : props.nomorSuratTerakhir,
+    nomor_surat: props.berkasSidangNol?.nomor_surat ? props.berkasSidangNol?.nomor_surat.split('SN-')[1]?.split('/')[0] : (props.nomorSuratTerakhir + 1),
     status: props.berkasSidangNol?.status ?? 1,
+    note: '',
     pegawai: '',
 })
 
@@ -88,6 +89,8 @@ const openModalWithFile = (field) => {
 
 const terimaKeputusan = () => {
     form.status = 2
+    form.nomor_surat = ''
+    form.pegawai = ''
     submit()
 }
 
@@ -110,7 +113,7 @@ const submit = async () => {
                 customClass: {
                     confirmButton: 'swal-confirm-button',
                 },
-            }).then(()=> {
+            }).then(() => {
                 showModalKeputusan.value = false;
                 router.visit(route('berkas-sidang-nol.index'))
             })
@@ -146,7 +149,7 @@ function formatTanggal(tanggal: string) {
     });
 }
 
-const fileUrl = (field:any) => {
+const fileUrl = (field: any) => {
     if (!props.berkasSidangNol[field]) return '#';
     return `${route('berkas-sidang-nol.download-upload')}?path=secure_storage/${props.berkasSidangNol[field]}`;
 };
@@ -189,7 +192,8 @@ const fileUrl = (field:any) => {
 
         <form @submit.prevent="submit" class="space-y-6">
             <div class="space-y-2">
-                <label for="nomor_surat" class="block text-sm font-medium text-gray-700">Nomor Surat<span class="text-red-500"> *</span></label>
+                <label for="nomor_surat" class="block text-sm font-medium text-gray-700">Nomor Surat<span
+                        class="text-red-500"> *</span></label>
                 <div class="mt-1 flex rounded-md shadow-sm border border-gray-300 overflow-hidden">
                     <span
                         class="inline-flex items-center px-3 bg-gray-100 text-gray-600 text-sm border-r border-gray-300">
@@ -205,7 +209,13 @@ const fileUrl = (field:any) => {
                 </div>
                 <InputError :message="form.errors.nomor_surat" />
 
-                <label for="pegawai" class="block text-sm font-medium text-gray-700">Pilih Penandatangan<span class="text-red-500"> *</span></label>
+                <label for="note" class="block text-sm font-medium text-gray-700">Catatan</label>
+                <textarea v-model="form.note" placeholder="Opsional. Tulis catatan, saran atau revisi di sini"
+                    class="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                <InputError :message="form.errors.note" />
+
+                <label for="pegawai" class="block text-sm font-medium text-gray-700">Pilih Penandatangan<span
+                        class="text-red-500"> *</span></label>
                 <div class="relative">
                     <select id="jenis_surat_id" v-model="form.pegawai"
                         class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
@@ -287,7 +297,7 @@ const fileUrl = (field:any) => {
                         <tr class="border-b">
                             <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Status</td>
                             <td class="py-4 px-4 border border-gray-200">
-                                {{ programStudiMapping[props.berkasSidangNol.user.program_studi]?.label || 'Status tidak dikenal' }}
+                                {{ programStudiMapping[props.berkasSidangNol.user.program_studi]?.label || "Program Studi tidak dikenal" }}
                             </td>
                         </tr>
                         <tr v-for="(label, fileField) in {
