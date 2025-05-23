@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { User, BadgeCheck, FileText, BookOpenIcon, ListChecksIcon } from 'lucide-vue-next';
 import { router } from '@inertiajs/vue3';
+import { useBaseUrl } from '@/utils/useBaseUrl';
 
 defineProps({
     templateSurat: Array
 });
+
+const logoUrl = useBaseUrl('images/logo-ulm.png')
+const bgImage = `url('${useBaseUrl('images/background-landing-page-3.png')}')`
 
 function onLoginMahasiswa() {
     router.get(route('login', { mode: 'mahasiswa' }))
@@ -18,10 +22,10 @@ function onLoginPegawai() {
 </script>
 
 <template>
-    <div
-    class="min-h-screen bg-gray-300 bg-[url('/images/background-landing-page-3.png')] bg-repeat bg-center bg-auto flex flex-col items-center justify-center px-4 p-20">
+    <div class="min-h-screen bg-gray-300 bg-repeat bg-center bg-auto flex flex-col items-center justify-center px-4 p-20"
+        :style="{ backgroundImage: bgImage }">
         <div class="flex flex-col items-center mb-10 text-center">
-            <img src="/images/logo-ulm.png" alt="Logo" class="w-40 h-40 mb-4" />
+            <img :src="logoUrl" alt="Logo" class="w-40 h-40 mb-4" />
             <h1 class="text-3xl font-bold text-gray-800">PORLAS FMIPA</h1>
             <label class="text-base text-gray-600">Portal Layanan Surat Akademik FMIPA ULM</label>
         </div>

@@ -89,8 +89,6 @@ const openModalWithFile = (field) => {
 
 const terimaKeputusan = () => {
     form.status = 2
-    form.nomor_surat = ''
-    form.pegawai = ''
     submit()
 }
 
