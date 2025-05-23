@@ -5,6 +5,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { ChevronDown, Minus } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import SidebarMenuSubButton from './ui/sidebar/SidebarMenuSubButton.vue';
+import { removeBasePrefix, useBaseUrl } from '@/utils/useBaseUrl';
 
 const props = defineProps<{ items: NavItem[] }>()
 
@@ -23,6 +24,8 @@ function toggleGroup(title: string) {
 function isOpen(title: string) {
     return expanded.value.includes(title)
 }
+
+const normalizedPageUrl = removeBasePrefix(page.url)
 
 watch(
     () => page.url,
@@ -58,8 +61,8 @@ watch(
 
                     <div v-show="isOpen(item.title)" class="ml-6 mt-1 space-y-1">
                         <SidebarMenuSubButton v-for="sub in item.children" :key="sub.title" as-child
-                            :is-active="page.url.startsWith(sub.href)">
-                            <Link :href="sub.href" class="flex items-center gap-2">
+                            :is-active="normalizedPageUrl.startsWith(sub.href)">
+                            <Link :href="useBaseUrl(sub.href)" class="flex items-center gap-2">
                             <component :is="sub.icon" class="w-6 h-6" />
                             <span>{{ sub.title }}</span>
                             </Link>
@@ -68,8 +71,8 @@ watch(
                 </template>
 
                 <template v-else>
-                    <SidebarMenuButton as-child :is-active="page.url.startsWith(item.href ?? '')" :tooltip="item.title">
-                        <Link :href="item.href">
+                    <SidebarMenuButton as-child :is-active="normalizedPageUrl.startsWith(item.href)" :tooltip="item.title">
+                        <Link :href="useBaseUrl(item.href)">
                         <component :is="item.icon" />
                         <span>{{ item.title }}</span>
                         </Link>

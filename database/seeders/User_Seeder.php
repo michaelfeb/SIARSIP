@@ -15,15 +15,16 @@ class User_Seeder extends Seeder
     public function run(): void
     {
         // Admin
-        User::create(
-            [
-            'nama' => 'Admin SIARSIP',
-            'email' => 'admin@siarsip.test',
-            'password' => Hash::make('asdfghjkl'),
-            'waktu_email_terverifikasi' => now(),
+        User::create([
+            'id' => 20,
             'role_id' => 8,
-            ]
-        );
+            'program_studi' => null,
+            'nama' => 'Admin SIARSIP',
+            'email' => 'admin2@siarsip.test',
+            'nomor_telpon' => '08976488192',
+            'nim' => '8',
+            'password' => Hash::make('asdfghjkl') // atau sesuaikan default passwordnya
+        ]);
 
         // Dummy user
         User::factory(10)->create();
