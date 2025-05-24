@@ -115,6 +115,7 @@ class BerkasPersuratanController extends Controller
             'berkas_tambahan.*' => 'file|mimes:pdf|max:1024',
             'status' => 'required|integer',
             'tanggal_dikirim' => 'required|date',
+            'program_studi' => 'required|in:1,2,3,4,5,6,7,8',
         ];
 
         $messages = [
@@ -132,6 +133,8 @@ class BerkasPersuratanController extends Controller
             'berkas_tambahan.*.max' => 'Ukuran setiap berkas maksimal 1MB.',
             'status.required' => 'Status wajib diisi.',
             'tanggal_dikirim.required' => 'Tanggal dikirim wajib diisi.',
+            'program_studi.required' => 'Program studi wajib diisi.',
+            'program_studi.in' => 'Program studi tidak valid.',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);

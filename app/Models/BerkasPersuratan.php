@@ -22,6 +22,7 @@ class BerkasPersuratan extends Model
         'berkas_tambahan',
         'status',
         'tanggal_dikirim',
+        'program_studi',
     ];
 
     protected $casts = [

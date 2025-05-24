@@ -237,9 +237,11 @@ function showEditButton(roleId: number, status: number): boolean {
 
     if (roleId === 8) return true;
 
+    if(roleId === 9 && roleStatus === 2) return true;;
+
     if (roleId === 1 && status === 11) return true;
 
-    if (roleId === 7 && status == 71) return false
+    if (roleId === 7 && status == 71) return false;
 
     if ((roleId === 6 || roleId === 7) && roleStatus >= roleId && stageStatus !== 3) {
         return true;
@@ -343,9 +345,9 @@ async function onDownloadSuratBalasan(id: number) {
                     <div v-html="keterangan.replace(/\n/g, '<br>')"></div>
                 </template>
 
-                <template #item-program_studi="{ user }">
-                    <span v-if="user">
-                        {{ programStudiMapping[user?.program_studi].label || 'Program Studi tidak ditemukan' }}
+                <template #item-program_studi="{ program_studi }">
+                    <span v-if="program_studi">
+                        {{ programStudiMapping[program_studi].label || 'Program Studi tidak ditemukan' }}
                     </span>
                     <span v-else>-</span>
                 </template>

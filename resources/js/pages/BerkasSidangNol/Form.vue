@@ -257,7 +257,8 @@ onMounted(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label class="gap-1" for="dokumen_data_diri">Dokumen Data Diri<span class="text-red-500">*</span></Label>
+                        <Label class="gap-1" for="dokumen_data_diri">Dokumen Data Diri<span class="text-red-500">*</span><span
+                                class="text-[12px]">{{ "( Max 1 MB )" }}</span></Label>
 
                         <FilePond name="dokumen_data_diri"
                             label-idle="Seret & lepas dokumen atau <span class='filepond--label-action'>Telusuri</span>"
@@ -277,7 +278,8 @@ onMounted(() => {
 
                     <!-- Dokumen PDDIKTI + UKT -->
                     <div class="space-y-2">
-                        <Label class="gap-1" for="dokumen_pddikti_ukt">Dokumen Tampilan PDDIKTI & Bukti Pembayaran UKT<span class="text-red-500">*</span></Label>
+                        <Label class="gap-1" for="dokumen_pddikti_ukt">Dokumen Tampilan PDDIKTI & Bukti Pembayaran UKT<span class="text-red-500">*</span><span
+                                class="text-[12px]">{{ "( Max 1 MB )" }}</span></Label>
 
                         <FilePond name="dokumen_pddikti_ukt"
                             label-idle="Seret & lepas dokumen atau <span class='filepond--label-action'>Telusuri</span>"
@@ -297,7 +299,8 @@ onMounted(() => {
                     <!-- Dokumen Ruang Baca + Laboratorium + PKKMB + SKPI -->
                     <div class="space-y-2">
                         <Label class="gap-1" for="dokumen_ruangbaca_laboratorium_pkkmb_skpi">Dokumen Ruang Baca, Laboratorium, PKKMB,
-                            dan SKPI<span class="text-red-500">*</span></Label>
+                            dan SKPI<span class="text-red-500">*</span><span
+                                class="text-[12px]">{{ "( Max 1 MB )" }}</span></Label>
 
                         <FilePond name="dokumen_ruangbaca_laboratorium_pkkmb_skpi"
                             label-idle="Seret & lepas dokumen atau <span class='filepond--label-action'>Telusuri</span>"
@@ -318,7 +321,8 @@ onMounted(() => {
 
                     <!-- Dokumen Office + TOEFL -->
                     <div class="space-y-2">
-                        <Label class="gap-1" for="dokumen_office_toefl">Dokumen Sertifikat Office dan TOEFL<span class="text-red-500">*</span></Label>
+                        <Label class="gap-1" for="dokumen_office_toefl">Dokumen Sertifikat Office dan TOEFL<span class="text-red-500">*</span><span
+                                class="text-[12px]">{{ "( Max 1 MB )" }}</span></Label>
 
                         <FilePond name="dokumen_office_toefl"
                             label-idle="Seret & lepas dokumen atau <span class='filepond--label-action'>Telusuri</span>"
@@ -337,7 +341,8 @@ onMounted(() => {
 
                     <!-- Dokumen Tambahan (Opsional) -->
                     <div class="space-y-2">
-                        <Label class="gap-1" for="dokumen_tambahan">Dokumen Tambahan dari Prodi</Label>
+                        <Label class="gap-1" for="dokumen_tambahan">Dokumen Tambahan dari Prodi<span
+                                class="text-[12px]">{{ "( Max 1 MB )" }}</span></Label>
 
                         <FilePond name="dokumen_tambahan"
                             label-idle="Seret & lepas dokumen atau <span class='filepond--label-action'>Telusuri</span>"

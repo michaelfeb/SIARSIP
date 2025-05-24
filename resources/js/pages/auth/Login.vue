@@ -7,9 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
+import { Eye, EyeClosed, LoaderCircle } from 'lucide-vue-next';
 import { onlyAllowNumbers } from '@/utils/inputValidatior'
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps<{
     status?: string;
@@ -25,11 +25,26 @@ const form = useForm({
     remember: false,
 });
 
+const showPassword = ref(false)
+
+import Swal from 'sweetalert2'
+
 const submit = () => {
     form.post(route('login'), {
-        onFinish: () => form.reset('password'),
+        onError: () => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Login Gagal',
+                text: 'NIM/NIP atau password salah',
+                confirmButtonText: 'OK',
+                customClass: {
+                    confirmButton: 'swal-confirm-button',
+                },
+            });
+        },
     });
 };
+
 
 function onRegister() {
     router.visit(route('register'))
@@ -37,7 +52,8 @@ function onRegister() {
 </script>
 
 <template>
-    <AuthBase title="Selamat datang di PORLAS FMIPA" :description="`Masukan ${ mode === 'mahasiswa' ? 'NIM' : 'NIP'} yang terdaftar`">
+    <AuthBase title="Selamat datang di PORLAS FMIPA"
+        :description="`Masukan ${mode === 'mahasiswa' ? 'NIM' : 'NIP'} yang terdaftar`">
 
         <Head title="Log in" />
 
@@ -61,10 +77,19 @@ function onRegister() {
                             Lupa Password?
                         </TextLink> -->
                     </div>
-                    <Input id="password" type="password" required :tabindex="2" autocomplete="current-password"
-                        v-model="form.password" placeholder="Password" />
-                    <InputError :message="form.errors.password" />
+                    <div class="relative">
+                        <Input :type="showPassword ? 'text' : 'password'" id="password" required :tabindex="2"
+                            autocomplete="current-password" v-model="form.password" placeholder="Password"
+                            class="pr-10" />
+
+                        <button type="button" @click="showPassword = !showPassword"
+                            class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500" :tabindex="-1">
+                            <Eye v-if="showPassword" color="black" class="h-5 w-5"></Eye>
+                            <EyeClosed v-else color="black" class="h-5 w-5"></EyeClosed>
+                        </button>
+                    </div>
                 </div>
+
 
                 <div class="mt-4">
                     <Button type="submit" class=" w-full hover:bg-orange-500 bg-orange-400" :tabindex="4"

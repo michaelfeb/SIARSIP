@@ -39,7 +39,7 @@ onMounted(() => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Transition name="slide-up" mode="out-in">
             <div v-if="show" class="p-4 space-y-4">
-                <h2 class="text-xl font-semibold">Detail User</h2>
+                <h2 class="text-xl font-semibold">Detail Tempalte Surat</h2>
                 <table class="w-full table-auto border border-gray-300 mb-0">
                     <tbody class="text-sm">
                         <tr class="border-b">

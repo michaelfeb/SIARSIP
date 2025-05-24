@@ -4,7 +4,7 @@
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="route('dashboard')">
+                        <Link :href="auth.user.role_id === 1 ? route('home') : route('dashboard')">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>

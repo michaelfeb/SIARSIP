@@ -34,9 +34,12 @@ const props = defineProps<{
     }
     persuratanMonth: number,
     persuratanYear: number,
+    auth: any,
 }>()
 
-const activeDashboard = ref<'sidang' | 'persuratan'>('sidang')
+const roleId = props.auth?.user.role_id;
+
+const activeDashboard = ref<'sidang' | 'persuratan'>(roleId === 9 ? 'persuratan' : 'sidang')
 
 const selectedYear = ref(props.selectedYear)
 const selectedMonth = ref(props.selectedMonth);
@@ -166,7 +169,9 @@ const pieChartOptions = {
                     <h1 class="text-2xl font-semibold text-gray-800">
                         {{ activeDashboard === 'sidang' ? 'Berkas Sidang Nol' : 'Berkas Persuratan' }}
                     </h1>
-                    <span class="cursor-pointer text-sm font-medium text-blue-600 hover:underline transition"
+
+                    <span v-if="roleId !== 9"
+                        class="cursor-pointer text-sm font-medium text-blue-600 hover:underline transition"
                         @click="activeDashboard = activeDashboard === 'sidang' ? 'persuratan' : 'sidang'">
                         {{ activeDashboard === 'sidang' ? 'Lihat Berkas Persuratan' : 'Lihat Berkas Sidang Nol' }}
                     </span>

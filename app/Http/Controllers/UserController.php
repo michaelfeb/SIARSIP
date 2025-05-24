@@ -146,7 +146,7 @@ class UserController extends Controller
                     ->orWhere('nim', 'like', "%{$search}%");
             })
             ->limit(20)
-            ->get(['id', 'nama', 'nim']);
+            ->get(['id', 'nama', 'nim', 'program_studi']);
 
         return response()->json($users);
     }

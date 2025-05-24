@@ -1,21 +1,31 @@
 <script setup lang="ts">
 import { User, BadgeCheck, FileText, BookOpenIcon, ListChecksIcon } from 'lucide-vue-next';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { useBaseUrl } from '@/utils/useBaseUrl';
+import { computed } from 'vue';
 
 defineProps({
-    templateSurat: Array
+    templateSurat: Array,
 });
+
+const page = usePage()
+const user = computed(() => page.props.auth?.user ?? null)
+
+function redirectBasedOnLogin(mode: 'mahasiswa' | 'pegawai') {
+    if (user.value?.role_id === 1) return router.get(route('berkas-persuratan.index'));
+    if (user.value) return router.get(route('dashboard'));
+    return router.get(route('login', { mode }));
+}
 
 const logoUrl = useBaseUrl('images/logo-ulm.png')
 const bgImage = `url('${useBaseUrl('images/background-landing-page-3.png')}')`
 
 function onLoginMahasiswa() {
-    router.get(route('login', { mode: 'mahasiswa' }))
+    redirectBasedOnLogin('mahasiswa');
 }
 
 function onLoginPegawai() {
-    router.get(route('login', { mode: 'pegawai' }))
+    redirectBasedOnLogin('pegawai');
 }
 
 
@@ -25,7 +35,6 @@ function onLoginPegawai() {
     <div class="min-h-screen bg-gray-300 bg-repeat bg-center bg-auto flex flex-col items-center justify-center px-4 p-20"
         :style="{ backgroundImage: bgImage }">
         <div class="flex flex-col items-center mb-10 text-center">
-            <img :src="logoUrl" alt="Logo" class="w-40 h-40 mb-4" />
             <h1 class="text-3xl font-bold text-gray-800">PORLAS FMIPA</h1>
             <label class="text-base text-gray-600">Portal Layanan Surat Akademik FMIPA ULM</label>
         </div>
@@ -50,13 +59,13 @@ function onLoginPegawai() {
             </a>
         </div>
         <div class="flex flex-col mt-5 md:flex-row gap-6 md:gap-8 items-center mb-5">
-            <a href="https://docs.google.com/spreadsheets/d/1iAdYIFxzsyOOuxww8swZkH4oPGapzRqqgo3WrnR8ozk/edit?resourcekey=&gid=1010985936#gid=1010985936"
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLScbKorjuW0t6RXcuB9RwLuyxOjgW2AhKyFsRhgICztaMYmT6Q/viewform"
                 class="w-60 h-60 bg-white shadow-md rounded-xl flex flex-col items-center justify-center text-center border border-gray-200 hover:bg-yellow-300 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer p-4">
                 <BookOpenIcon class="w-12 h-12 text-orange-600 mb-4" />
                 <span class="text-lg font-semibold text-gray-700">Bebas Ruang Baca</span>
                 <label class="text-base text-sm text-gray-600">Link pendaftaraan</label>
             </a>
-            <a href="https://docs.google.com/forms/d/1X2Qk4PPaxzycAhcRI4qfFvK3n6ec7ujSVU4LNO_orvc/edit"
+            <a href="https://docs.google.com/forms/d/1X2Qk4PPaxzycAhcRI4qfFvK3n6ec7ujSVU4LNO_orvc/viewform"
                 class="w-60 h-60 bg-white shadow-md rounded-xl flex flex-col items-center justify-center text-center border border-gray-200 hover:bg-yellow-300 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer p-4">
                 <ListChecksIcon class="w-12 h-12 text-purple-600 mb-4" />
                 <span class="text-lg font-semibold text-gray-700">Mahasiswa Daftar Wisuda</span>

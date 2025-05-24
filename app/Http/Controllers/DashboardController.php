@@ -22,10 +22,21 @@ class DashboardController extends Controller
         $persuratanMonth = $request->query('persuratan_month', now()->month);
         $persuratanYear = $request->query('persuratan_year', now()->year);
 
-        // SIDANG NOL data
-        $menunggu = BerkasSidangNol::where('status', 1)->count();
-        $diterima = BerkasSidangNol::where('status', 2)->count();
-        $ditolak  = BerkasSidangNol::where('status', 3)->count();
+        $menunggu = BerkasSidangNol::where('status', 1)
+            ->whereYear('tanggal_dikirim', $year)
+            ->whereMonth('tanggal_dikirim', $month)
+            ->count();
+
+        $diterima = BerkasSidangNol::where('status', 2)
+            ->whereYear('tanggal_dikirim', $year)
+            ->whereMonth('tanggal_dikirim', $month)
+            ->count();
+
+        $ditolak = BerkasSidangNol::where('status', 3)
+            ->whereYear('tanggal_dikirim', $year)
+            ->whereMonth('tanggal_dikirim', $month)
+            ->count();
+
 
         $rawPerMonth = BerkasSidangNol::whereYear('tanggal_dikirim', $year)
             ->where('status', '>=', 1)
@@ -52,49 +63,55 @@ class DashboardController extends Controller
                 'total' => $item->total,
             ]);
 
-        // PERSURATAN data
-        // 1. Menunggu: status = 21 (baru masuk ke resepsionis)
         $persuratanMasuk = DB::table('berkas_persuratan')
             ->where('status', 21)
+            ->whereYear('created_at', $persuratanYear)
+            ->whereMonth('created_at', $persuratanMonth)
             ->count();
 
-        // 2. Diproses: status antara 30 sampai 89
         $persuratanProses = DB::table('berkas_persuratan')
             ->whereBetween('status', [30, 89])
+            ->whereYear('created_at', $persuratanYear)
+            ->whereMonth('created_at', $persuratanMonth)
             ->count();
 
-        // 3. Ditolak: semua status yang berakhiran angka 3 (23, 33, 43, ..., 93)
         $persuratanDitolak = DB::table('berkas_persuratan')
             ->whereRaw('MOD(status, 10) = 3')
+            ->whereYear('created_at', $persuratanYear)
+            ->whereMonth('created_at', $persuratanMonth)
             ->count();
 
-        $persuratanSelesai = DB::table('berkas_persuratan')->where('status', 91)->count();
+        $persuratanSelesai = DB::table('berkas_persuratan')
+            ->where('status', 91)
+            ->whereYear('created_at', $persuratanYear)
+            ->whereMonth('created_at', $persuratanMonth)
+            ->count();
 
         $rawPersuratanPerMonth = DB::table('berkas_persuratan')
             ->whereYear('created_at', $persuratanYear)
-            ->where('status', '>=', 10)
+            ->where('status', '>=', 20)
             ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
             ->groupBy('month')
             ->pluck('total', 'month')
             ->toArray();
 
-            $bulanPersuratanList = collect(range(1, 12))->map(fn($m) => [
-                'bulan' => \Carbon\Carbon::create()->month((int) $m)->translatedFormat('F'),
-                'total' => $rawPersuratanPerMonth[$m] ?? 0,
-            ]);
+        $bulanPersuratanList = collect(range(1, 12))->map(fn($m) => [
+            'bulan' => \Carbon\Carbon::create()->month((int) $m)->translatedFormat('F'),
+            'total' => $rawPersuratanPerMonth[$m] ?? 0,
+        ]);
 
         $prodiPersuratanThisMonth = DB::table('berkas_persuratan')
-            ->join('users', 'berkas_persuratan.user_id', '=', 'users.id')
-            ->whereYear('berkas_persuratan.created_at', $persuratanYear)
-            ->whereMonth('berkas_persuratan.created_at', $persuratanMonth)
-            ->where('berkas_persuratan.status', '>=', 10)
-            ->select('users.program_studi', DB::raw('COUNT(*) as total'))
-            ->groupBy('users.program_studi')
+            ->whereYear('created_at', $persuratanYear)
+            ->whereMonth('created_at', $persuratanMonth)
+            ->where('status', '>=', 20)
+            ->select('program_studi', DB::raw('COUNT(*) as total'))
+            ->groupBy('program_studi')
             ->get()
             ->map(fn($item) => [
                 'label' => $this->programStudiLabel((int) $item->program_studi),
                 'total' => $item->total,
             ]);
+
 
         return Inertia::render('Dashboard/Index', [
             'summary' => [

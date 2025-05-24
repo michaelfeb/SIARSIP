@@ -5,7 +5,7 @@ import InputError from '@/components/InputError.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import Swal from 'sweetalert2'
 import { BreadcrumbItem } from '@/types'
 import vueFilePond from 'vue-filepond'
@@ -24,6 +24,7 @@ import FilePondPluginImagePreview from 'filepond-plugin-image-preview'
 import 'filepond/dist/filepond.min.css'
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css'
 import 'filepond-plugin-pdf-preview/dist/filepond-plugin-pdf-preview.css'
+import programStudiMapping from '@/utils/programStudiMapping'
 
 
 const FilePond = vueFilePond(
@@ -62,7 +63,8 @@ const onUserOptionSearch = async (searchText: string) => {
         const response = await axios.get(route('api.users.search-user', { search: searchText }));
         userOptions.value = response.data.map((user: any) => ({
             label: `${user.nama} (${user.nim})`,
-            value: user.id
+            value: user.id,
+            program_studi: user.program_studi,
         }))
     } catch (error) {
         console.error(error)
@@ -71,7 +73,25 @@ const onUserOptionSearch = async (searchText: string) => {
 
 const onUserSelected = (optionSelected: any) => {
     form.user_id = optionSelected.value;
+    form.program_studi = optionSelected.program_studi;
 }
+
+const onDeselected = () => {
+    form.program_studi = '';
+    form.user_id = '';
+}
+
+const nomorSuratPlaceholder = computed(() => {
+    return props.auth.user.role_id === 1
+        ? 'Nomor surat akan diisi oleh operator'
+        : 'Nomor surat (kosongkan jika tidak ada)'
+})
+
+const keteranganPlaceholder = computed(() => {
+    return props.auth.user.role_id === 1
+        ? 'Keterangan'
+        : `Jika kolom mahasiswa tidak diisi maka wajib mengisi keterangan dengan format \nContoh Format:\n1. Michael Febrian (2111016210012)`
+})
 
 const today = new Date().toISOString().split('T')[0]
 
@@ -93,6 +113,7 @@ const form = useForm({
     berkas_tambahan: props.berkasPersuratan?.berkas_tambahan ?? [],
     status: props.berkasPersuratan?.status ?? 11,
     tanggal_dikirim: props.berkasPersuratan?.tanggal_dikirim ? props.berkasPersuratan.tanggal_dikirim.substring(0, 10) : today,
+    program_studi: props.berkasPersuratan?.program_studi ?? props.auth.user.program_studi ?? '',
 })
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -202,7 +223,6 @@ onMounted(() => {
     }
 });
 
-
 </script>
 
 <template>
@@ -220,21 +240,45 @@ onMounted(() => {
                 <form @submit.prevent="submit" class="space-y-6">
                     <div class="space-y-2">
                         <Label class="gap-1" for="nomor_surat">Nomor Surat</Label>
-                        <Input id="nomor_surat" type="text" v-model="form.nomor_surat"
-                            placeholder="Nomor surat akan diisi oleh operator"
-                            :disabled="![2, 6, 7, 8].includes(props.auth.user.role_id)"
+                        <Input id="nomor_surat" type="text" v-model="form.nomor_surat" :placeholder="nomorSuratPlaceholder"
+                            :disabled="![2, 6, 7, 8, 9].includes(props.auth.user.role_id)"
                             class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed" />
                         <InputError :message="form.errors.nomor_surat" />
                     </div>
 
                     <div class="space-y-2">
-                        <Label class="gap-1" for="user_selected">Mahasiswa<span class="text-red-500">*</span></Label>
+                        <Label class="gap-1" for="user_selected">Mahasiswa<span v-if="[1].includes(props.auth.user.role_id)" class="text-red-500">*</span></Label>
                         <VueSelect id="user_selected" v-model="userSelected" :options="userOptions" editable
                             placeholder="Cari mahasiswa" class="mt-2 text-sm" @search="onUserOptionSearch"
-                            :is-disabled="auth.user.role_id === 1" @option-selected="onUserSelected" />
+                            :is-disabled="auth.user.role_id === 1" @option-selected="onUserSelected" @option-deselected="onDeselected"/>
 
                         <InputError :message="form.errors.user_id" />
                     </div>
+
+                    <div class="space-y-2">
+                        <Label class="gap-1" for="program_studi">Program Studi<span
+                                class="text-red-500">*</span></Label>
+                        <div class="relative">
+                            <select id="program_studi" v-model="form.program_studi"
+                                :disabled="props.auth.user.role_id === 1 || (form.user_id !== null && form.user_id !== '')"
+                                class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none disabled:bg-gray-100 disabled:text-gray-500">
+                                <option disabled value="">Pilih Program Studi</option>
+                                <option v-for="(data, id) in programStudiMapping" :key="id" :value="data.value">
+                                    {{ data.label }}
+                                </option>
+                            </select>
+
+                            <div
+                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                        <InputError :message="form.errors.program_studi" />
+                    </div>
+
 
                     <div class="space-y-2">
                         <Label class="gap-1" for="jenis_surat_id">Jenis Surat<span class="text-red-500">*</span></Label>
@@ -260,7 +304,7 @@ onMounted(() => {
                         <Label class="gap-1" for="keterangan">Keterangan<span class="text-red-500">*</span></Label>
                         <textarea id="keterangan" v-model="form.keterangan" rows="4"
                             class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Jika nama tidak diisi maka wajib&#10;&#10;1. Nama (NIM)"></textarea>
+                            :placeholder="keteranganPlaceholder"></textarea>
                         <InputError :message="form.errors.keterangan" />
                     </div>
                     <div class="space-y-2">
