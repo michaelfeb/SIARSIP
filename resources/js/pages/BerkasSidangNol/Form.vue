@@ -99,8 +99,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 async function submit() {
     const isEdit = props.mode === 'edit'
     const url = isEdit
-        ? route('berkas-sidang-nol.save', { id: props.berkasSidangNol.id })
-        : route('berkas-sidang-nol.save')
+        ? route('berkas-sidang-nol.saveEdit', { id: props.berkasSidangNol.id })
+        : route('berkas-sidang-nol.saveCreate')
 
     await form.submit(isEdit ? 'post' : 'post', url, { // selalu POST
         forceFormData: true,

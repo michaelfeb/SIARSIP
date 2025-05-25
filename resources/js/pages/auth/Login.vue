@@ -42,6 +42,9 @@ const submit = () => {
                 },
             });
         },
+        onSuccess: () => {
+            route('berkas-persuratan.index')
+        }
     });
 };
 

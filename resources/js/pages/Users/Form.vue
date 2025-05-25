@@ -153,14 +153,14 @@ onMounted(() => {
                     </div>
 
                     <div class="w-full flex justify-end gap-2">
+                        <Button type="button" @click="toBack"
+                            class="mt-4 border border-orange-400 text-orange-500 hover:bg-orange-100 bg-white-500">
+                            <span>Kembali</span>
+                        </Button>
                         <Button type="submit" class="mt-4 hover:bg-blue-600 bg-blue-500" :tabindex="4"
                             :disabled="form.processing">
                             <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                             Simpan
-                        </Button>
-                        <Button type="button" @click="toBack"
-                            class="mt-4 border border-orange-400 text-orange-500 hover:bg-orange-100 bg-white-500">
-                            <span>Kembali</span>
                         </Button>
                     </div>
                 </form>

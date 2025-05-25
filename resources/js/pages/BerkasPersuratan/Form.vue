@@ -131,8 +131,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 async function submit() {
     const isEdit = props.mode === 'edit'
     const url = isEdit
-        ? route('berkas-persuratan.save', { id: props.berkasPersuratan.id })
-        : route('berkas-persuratan.save')
+        ? route('berkas-persuratan.saveEdit', { id: props.berkasPersuratan.id })
+        : route('berkas-persuratan.saveCreate')
 
     await form.submit(isEdit ? 'post' : 'post', url, { // selalu POST
         forceFormData: true,

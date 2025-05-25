@@ -7,6 +7,6 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
         <AppLogoIcon class="size-5 bg-white-100 fill-current text-white dark:text-black" />
     </div>
     <div class="ml-1 grid flex-1 text-left text-lg">
-        <span class="truncate font-semibold leading-none">SIARSIP</span>
+        <span class="truncate font-semibold leading-none">PORLAS FMIPA</span>
     </div>
 </template>

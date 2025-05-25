@@ -17,6 +17,7 @@ Route::get('/template-surat/download/{id}', [TemplateSuratController::class, 'do
 
 Route::middleware(['auth', 'role:2,3,4,5,6,7,8'])->group(function () {
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users-mahasiswa', [UserController::class, 'indexMahasiswa'])->name('users-mahasiswa.index');
     Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::match(['post', 'put'], '/users/save/{id?}', [UserController::class, 'save'])->name('users.save');
@@ -50,21 +51,21 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('berkas-persuratan', [BerkasPersuratanController::class, 'index'])->name('berkas-persuratan.index');
     Route::get('berkas-persuratan/create', [BerkasPersuratanController::class, 'create'])->name('berkas-persuratan.create');
-    Route::match(['post', 'put'], '/berkas-persuratan/save/{id?}', [BerkasPersuratanController::class, 'save'])->name('berkas-persuratan.save');
-    Route::post('/berkas-persuratan/{id}/keputusan', [BerkasPersuratanController::class, 'keputusan'])->name('berkas-persuratan.keputusan')->middleware('role:2,3,4,5,6,7,8');
-    Route::get('berkas-persuratan/{id}', [BerkasPersuratanController::class, 'show'])->name('berkas-persuratan.show');
-    Route::get('berkas-persuratan/{id}/ajuan', [BerkasPersuratanController::class, 'ajuan'])->name('berkas-persuratan.ajuan')->middleware('role:2,3,4,5,6,7,8');
-    Route::get('/berkas-persuratan/{id}/edit', [BerkasPersuratanController::class, 'edit'])->name('berkas-persuratan.edit');
-    Route::post('/berkas-persuratan/{id}/kirim', [BerkasPersuratanController::class, 'kirim'])->name('berkas-persuratan.kirim-persuratan');
-    Route::delete('/berkas-persuratan/{id}', [BerkasPersuratanController::class, 'destroy'])->name('berkas-persuratan.destroy');
-    Route::put('berkas-persuratan/{id}/reset', [BerkasPersuratanController::class, 'reset'])->name('berkas-persuratan.reset');
-    Route::get('/berkas-persuratan/{id}/download-balasan', [BerkasPersuratanController::class, 'downloadBalasan'])->name('berkas-persuratan.download-balasan');
+    Route::match(['post', 'put'], 'berkas-persuratan/save', [BerkasPersuratanController::class, 'store'])->name('berkas-persuratan.saveCreate');
+    Route::match(['post', 'put'], 'berkas-persuratan/save/{berkasPersuratan}', [BerkasPersuratanController::class, 'update'])->name('berkas-persuratan.saveEdit')->can('update', 'berkasPersuratan');
+    Route::post('/berkas-persuratan/{berkasPersuratan}/keputusan', [BerkasPersuratanController::class, 'keputusan'])->name('berkas-persuratan.keputusan')->middleware('role:2,3,4,5,6,7,8');
+    Route::get('berkas-persuratan/{berkasPersuratan}', [BerkasPersuratanController::class, 'show'])->name('berkas-persuratan.show')->can('view', 'berkasPersuratan');
+    Route::get('berkas-persuratan/{berkasPersuratan}/ajuan', [BerkasPersuratanController::class, 'ajuan'])->name('berkas-persuratan.ajuan')->middleware('role:2,3,4,5,6,7,8');
+    Route::get('/berkas-persuratan/{berkasPersuratan}/edit', [BerkasPersuratanController::class, 'edit'])->name('berkas-persuratan.edit')->can('view', 'berkasPersuratan');
+    Route::post('/berkas-persuratan/{berkasPersuratan}/kirim', [BerkasPersuratanController::class, 'kirim'])->name('berkas-persuratan.kirim-persuratan')->can('update', 'berkasPersuratan');
+    Route::delete('/berkas-persuratan/{berkasPersuratan}', [BerkasPersuratanController::class, 'destroy'])->name('berkas-persuratan.destroy')->can('delete', 'berkasPersuratan');
+    Route::put('berkas-persuratan/{berkasPersuratan}/reset', [BerkasPersuratanController::class, 'reset'])->name('berkas-persuratan.reset')->can('update', 'berkasPersuratan');
+    Route::get('/berkas-persuratan/{berkasPersuratan}/download-balasan', [BerkasPersuratanController::class, 'downloadBalasan'])->name('berkas-persuratan.download-balasan')->can('view', 'berkasPersuratan');
 
     Route::get('berkas-persuratan/download-upload/{filename}', [BerkasPersuratanController::class, 'downloadUpload'])
         ->where('filename', '.*')
         ->name('berkas-persuratan.download-upload');
 });
-
 
 Route::middleware('auth')->group(function () {
     Route::get('berkas-sidang-nol/download-upload', [BerkasSidangNolController::class, 'downloadUpload'])->name('berkas-sidang-nol.download-upload');
@@ -72,22 +73,22 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:1,6,8')->group(function () {
         Route::get('berkas-sidang-nol', [BerkasSidangNolController::class, 'index'])->name('berkas-sidang-nol.index');
         Route::get('berkas-sidang-nol/create', [BerkasSidangNolController::class, 'create'])->name('berkas-sidang-nol.create');
-        Route::match(['post', 'put'], 'berkas-sidang-nol/save/{id?}', [BerkasSidangNolController::class, 'save'])->name('berkas-sidang-nol.save');
-        Route::get('berkas-sidang-nol/{id}/edit', [BerkasSidangNolController::class, 'edit'])->name('berkas-sidang-nol.edit');
-        Route::put('berkas-sidang-nol/{id}/kirim', [BerkasSidangNolController::class, 'kirim'])->name('berkas-sidang-nol.kirim');
-        Route::get('berkas-sidang-nol/{id}', [BerkasSidangNolController::class, 'show'])->name('berkas-sidang-nol.show');
-        Route::delete('berkas-sidang-nol/{id}', [BerkasSidangNolController::class, 'destroy'])->name('berkas-sidang-nol.destroy');
-        Route::put('berkas-sidang-nol/{id}/reset', [BerkasSidangNolController::class, 'reset'])->name('berkas-sidang-nol.reset');
-        Route::get('berkas-sidang-nol/get-uploads/{id}', [BerkasSidangNolController::class, 'getUploads'])->name('berkas-sidang-nol.get-uploads');
-        Route::get('berkas-sidang-nol/{id}/download-surat', [BerkasSidangNolController::class, 'downloadSurat'])->name('berkas-sidang-nol.download-surat-sidang-nol');
+        Route::match(['post', 'put'], 'berkas-sidang-nol/save', [BerkasSidangNolController::class, 'save'])->name('berkas-sidang-nol.saveCreate');
+        Route::match(['post', 'put'], 'berkas-sidang-nol/save/{berkasSidangNol}', [BerkasSidangNolController::class, 'save'])->name('berkas-sidang-nol.saveEdit');
+        Route::get('berkas-sidang-nol/{berkasSidangNol}/edit', [BerkasSidangNolController::class, 'edit'])->name('berkas-sidang-nol.edit');
+        Route::put('berkas-sidang-nol/{berkasSidangNol}/kirim', [BerkasSidangNolController::class, 'kirim'])->name('berkas-sidang-nol.kirim');
+        Route::get('berkas-sidang-nol/{berkasSidangNol}', [BerkasSidangNolController::class, 'show'])->name('berkas-sidang-nol.show');
+        Route::delete('berkas-sidang-nol/{berkasSidangNol}', [BerkasSidangNolController::class, 'destroy'])->name('berkas-sidang-nol.destroy');
+        Route::put('berkas-sidang-nol/{berkasSidangNol}/reset', [BerkasSidangNolController::class, 'reset'])->name('berkas-sidang-nol.reset');
+        Route::get('berkas-sidang-nol/get-uploads/{berkasSidangNol}', [BerkasSidangNolController::class, 'getUploads'])->name('berkas-sidang-nol.get-uploads');
+        Route::get('berkas-sidang-nol/{berkasSidangNol}/download-surat', [BerkasSidangNolController::class, 'downloadSurat'])->name('berkas-sidang-nol.download-surat-sidang-nol');
     });
 
     Route::middleware('role:6,8')->group(function () {
-        Route::get('berkas-sidang-nol/{id}/ajuan', [BerkasSidangNolController::class, 'ajuan'])->name('berkas-sidang-nol.ajuan');
-        Route::post('berkas-sidang-nol/keputusan/{id}', [BerkasSidangNolController::class, 'keputusan'])->name('berkas-sidang-nol.keputusan');
+        Route::get('berkas-sidang-nol/{berkasSidangNol}/ajuan', [BerkasSidangNolController::class, 'ajuan'])->name('berkas-sidang-nol.ajuan')->can('view', 'berkasSidangNol');
+        Route::post('berkas-sidang-nol/keputusan/{berkasSidangNol}', [BerkasSidangNolController::class, 'keputusan'])->name('berkas-sidang-nol.keputusan')->can('update', 'berkasSidangNol');
     });
 });
-
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

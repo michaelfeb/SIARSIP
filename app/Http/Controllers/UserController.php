@@ -19,6 +19,33 @@ class UserController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $query = \App\Models\User::with('role')
+            ->where('role_id', '!=', 1) // ⬅️ hanya pengguna bukan mahasiswa
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            });
+
+
+        $users = $query->paginate($perPage)->withQueryString();
+
+        if ($request->wantsJson()) {
+            return response()->json($users);
+        }
+
+        return Inertia::render('Users/Index', [
+            'users' => $users,
+        ]);
+    }
+
+    public function indexMahasiswa(Request $request)
+    {
+        $search = $request->input('search');
+        $perPage = $request->input('per_page', 10);
+
+        $query = \App\Models\User::with('role')
+            ->where('role_id', 1)
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('nama', 'like', "%{$search}%")
@@ -78,7 +105,7 @@ class UserController extends Controller
             'email' => ['required', 'email', 'unique:users,email' . ($id ? ",$id" : '')],
             'role_id' => 'required|integer',
             'program_studi' => 'required_if:role_id,1|nullable|integer|in:1,2,3,4,5,6,7,8',
-        ];        
+        ];
 
         if (!$id) {
             $rules['password'] = 'required|min:6';
@@ -99,7 +126,7 @@ class UserController extends Controller
             'program_studi.in' => 'Program studi tidak valid.',
             'password.required' => 'Password wajib diisi.',
             'password.min' => 'Password minimal 6 karakter.',
-        ];        
+        ];
 
         $validated = $request->validate($rules, $messages);
 
@@ -111,7 +138,7 @@ class UserController extends Controller
                 'email' => $request->email,
                 'role_id' => $request->role_id,
                 'program_studi' => $request->role_id == 1 ? $request->program_studi : null,
-            ]);            
+            ]);
             return redirect()->route('users.index')->with('success', 'Data pengguna berhasil diperbarui');
         } else {
             User::create([
@@ -121,7 +148,7 @@ class UserController extends Controller
                 'role_id' => $request->role_id,
                 'program_studi' => $request->role_id == 1 ? $request->program_studi : null,
                 'password' => bcrypt($request->password),
-            ]);            
+            ]);
             return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan');
         }
     }

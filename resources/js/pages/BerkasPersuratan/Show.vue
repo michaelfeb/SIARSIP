@@ -291,11 +291,11 @@ onMounted(() => {
                 class="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
             <InputError :message="form.errors.note" />
 
-            <label class="block text-sm font-medium text-gray-700 mb-1">Berkas Balasan (.docx)</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Berkas Balasan (docx/pdf)</label>
             <FilePond name="berkas_balasan"
                 label-idle="Seret & lepas file atau <span class='filepond--label-action'>Telusuri</span>"
                 :allow-multiple="true"
-                :accepted-file-types="['application/vnd.openxmlformats-officedocument.wordprocessingml.document']"
+                :accepted-file-types="['application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/pdf']"
                 :files="filepondFiles.berkas_balasan || []" @updatefiles="handleUpdateFilesBalasan" />
             <InputError :message="form.errors.berkas_balasan" />
 

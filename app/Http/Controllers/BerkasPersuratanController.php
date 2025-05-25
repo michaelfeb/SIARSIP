@@ -8,6 +8,7 @@ use App\Models\Note;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
@@ -88,9 +89,9 @@ class BerkasPersuratanController extends Controller
         ]);
     }
 
-    public function edit($id)
+    public function edit(BerkasPersuratan $berkasPersuratan)
     {
-        $berkasPersuratan = BerkasPersuratan::with(['user', 'jenisSurat'])->findOrFail($id);
+        $berkasPersuratan->load(['user', 'jenisSurat']);
 
         return Inertia::render('BerkasPersuratan/Form', [
             'berkasPersuratan' => $berkasPersuratan,
@@ -99,9 +100,19 @@ class BerkasPersuratanController extends Controller
         ]);
     }
 
+    public function store(Request $request)
+    {
+        return $this->save($request);
+    }
+
+    public function update(Request $request, BerkasPersuratan $berkasPersuratan)
+    {
+        $berkasPersuratan->load(['user', 'jenisSurat']);
+        return $this->save($request, $berkasPersuratan->id);
+    }
+
     public function save(Request $request, $id = null)
     {
-
         $rules = [
             'user_id' => ['nullable', 'exists:users,id'],
             'nomor_surat' => 'nullable|string',
@@ -262,18 +273,18 @@ class BerkasPersuratanController extends Controller
     }
 
 
-    public function show($id)
+    public function show(BerkasPersuratan $berkasPersuratan)
     {
-        $berkasPersuratan = BerkasPersuratan::with(['user', 'jenisSurat', 'notes.user'])->findOrFail($id);
+        $berkasPersuratan->load(['user', 'jenisSurat', 'notes.user']);
 
         return Inertia::render('BerkasPersuratan/Show', [
             'berkasPersuratan' => $berkasPersuratan,
         ]);
     }
 
-    public function ajuan($id)
+    public function ajuan(BerkasPersuratan $berkasPersuratan)
     {
-        $berkasPersuratan = BerkasPersuratan::with(['user', 'jenisSurat', 'notes.user'])->findOrFail($id);
+        $berkasPersuratan->load(['user', 'jenisSurat', 'notes.user']);
 
         return Inertia::render('BerkasPersuratan/Show', [
             'berkasPersuratan' => $berkasPersuratan,
@@ -281,53 +292,61 @@ class BerkasPersuratanController extends Controller
         ]);
     }
 
-    public function destroy($id)
+    public function destroy(BerkasPersuratan $berkasPersuratan)
     {
-        $berkas = \App\Models\BerkasPersuratan::findOrFail($id);
+        $secureDisk = \Illuminate\Support\Facades\Storage::disk('secure');
 
-        $filesToDelete = json_decode($berkas->berkas_mahasiswa, true) ?? [];
-        foreach ($filesToDelete as $path) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+        $fieldsToDelete = [
+            'berkas_mahasiswa',
+            'berkas_balasan',
+            'berkas_tambahan',
+        ];
+
+        foreach ($fieldsToDelete as $field) {
+            $files = json_decode($berkasPersuratan->{$field}, true) ?? [];
+            foreach ($files as $path) {
+                $secureDisk->delete($path);
+            }
         }
 
-        $berkas->delete();
+        $berkasPersuratan->delete();
 
         return redirect()->route('berkas-persuratan.index')->with('success', 'Berkas berhasil dihapus.');
     }
 
-    public function kirim($id)
-    {
-        $berkas = BerkasPersuratan::findOrFail($id);
 
-        if ($berkas->status === 11) {
-            $berkas->update(['status' => 21]);
+    public function kirim(BerkasPersuratan $berkasPersuratan)
+    {
+        $berkasPersuratan->load(['user', 'jenisSurat', 'notes.user']);
+
+        if ($berkasPersuratan->status === 11) {
+            $berkasPersuratan->update(['status' => 21]);
 
             return response()->json([
                 'message' => 'Surat berhasil dikirim.',
-                'status' => $berkas->status,
+                'status' => $berkasPersuratan->status,
             ]);
         }
 
         return response()->json([
             'message' => 'Surat tidak dapat dikirim karena status tidak valid.',
-            'current_status' => $berkas->status,
+            'current_status' => $berkasPersuratan->status,
         ], 400);
     }
 
 
-    public function reset($id)
+    public function reset(BerkasPersuratan $berkasPersuratan)
     {
-        $berkas = BerkasPersuratan::findOrFail($id);
-        if ($berkas->status % 10 === 3) {
-            $berkas->status = 11;
-            $berkas->save();
+        if ($berkasPersuratan->status % 10 === 3) {
+            $berkasPersuratan->status = 11;
+            $berkasPersuratan->save();
         }
         return response()->json(['message' => 'Surat berhasil direset.']);
     }
 
-    public function keputusan(Request $request, $id)
+
+    public function keputusan(Request $request, BerkasPersuratan $berkasPersuratan)
     {
-        $berkas = BerkasPersuratan::findOrFail($id);
         $statusBaru = (int) $request->input('status');
 
         $rules = [
@@ -336,7 +355,6 @@ class BerkasPersuratanController extends Controller
             'berkas_tambahan.*' => 'nullable|file|mimes:pdf|max:512',
             'berkas_balasan' => 'nullable|array',
             'berkas_balasan.*' => 'file|mimes:doc,docx,pdf|max:512',
-
         ];
 
         $messages = [
@@ -360,10 +378,9 @@ class BerkasPersuratanController extends Controller
 
         $validated = $request->validate($rules, $messages);
 
-        // Tambahkan secara manual field hasil upload ke $validated:
         if ($request->hasFile('berkas_tambahan')) {
-            if ($berkas->berkas_tambahan) {
-                $oldFiles = json_decode($berkas->berkas_tambahan, true);
+            if ($berkasPersuratan->berkas_tambahan) {
+                $oldFiles = json_decode($berkasPersuratan->berkas_tambahan, true);
                 foreach ($oldFiles as $oldPath) {
                     Storage::disk('secure')->delete($oldPath);
                 }
@@ -378,8 +395,8 @@ class BerkasPersuratanController extends Controller
         }
 
         if ($request->hasFile('berkas_balasan')) {
-            if ($berkas->berkas_balasan) {
-                $oldFiles = json_decode($berkas->berkas_balasan, true);
+            if ($berkasPersuratan->berkas_balasan) {
+                $oldFiles = json_decode($berkasPersuratan->berkas_balasan, true);
                 foreach ($oldFiles as $oldPath) {
                     Storage::disk('secure')->delete($oldPath);
                 }
@@ -393,12 +410,12 @@ class BerkasPersuratanController extends Controller
             $validated['berkas_balasan'] = json_encode($paths);
         }
 
-        $berkas->fill($validated);
-        $berkas->save();
+        $berkasPersuratan->fill($validated);
+        $berkasPersuratan->save();
 
         if ($request->filled('note')) {
             Note::create([
-                'berkas_id' => $berkas->id,
+                'berkas_id' => $berkasPersuratan->id,
                 'jenis_berkas' => '1',
                 'user_id' => Auth::id(),
                 'pesan' => $request->note,
@@ -408,22 +425,19 @@ class BerkasPersuratanController extends Controller
         return redirect()->back()->with('success', 'Keputusan berhasil disimpan.');
     }
 
-    public function downloadBalasan($id)
-    {
-        $berkas = BerkasPersuratan::findOrFail($id);
 
-        if (!$berkas->berkas_balasan) {
+    public function downloadBalasan(BerkasPersuratan $berkasPersuratan)
+    {
+        if (!$berkasPersuratan->berkas_balasan) {
             abort(404, 'Berkas balasan tidak ditemukan.');
         }
 
-        $balasanFiles = json_decode($berkas->berkas_balasan, true);
+        $balasanFiles = json_decode($berkasPersuratan->berkas_balasan, true);
 
-        // Filter hanya file PDF
         $pdfFiles = array_filter($balasanFiles, function ($filePath) {
             return strtolower(pathinfo($filePath, PATHINFO_EXTENSION)) === 'pdf';
         });
 
-        // Jika hanya satu PDF, langsung download
         if (count($pdfFiles) === 1) {
             $filePath = reset($pdfFiles);
             $fullPath = storage_path('app/secure_storage/' . $filePath);
@@ -435,7 +449,6 @@ class BerkasPersuratanController extends Controller
             return response()->download($fullPath);
         }
 
-        // Jika banyak PDF, buat ZIP
         $zipFileName = 'surat_balasan_' . now()->timestamp . '.zip';
         $zipDirectory = storage_path('app/public/temp');
         $zipPath = $zipDirectory . "/$zipFileName";
@@ -459,6 +472,7 @@ class BerkasPersuratanController extends Controller
 
         return response()->download($zipPath)->deleteFileAfterSend(true);
     }
+
 
 
     public function downloadUpload($filename)

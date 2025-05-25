@@ -35,6 +35,7 @@ function onLoginPegawai() {
     <div class="min-h-screen bg-gray-300 bg-repeat bg-center bg-auto flex flex-col items-center justify-center px-4 p-20"
         :style="{ backgroundImage: bgImage }">
         <div class="flex flex-col items-center mb-10 text-center">
+            <img :src="logoUrl" alt="Logo" class="w-40 h-40 mb-4" />
             <h1 class="text-3xl font-bold text-gray-800">PORLAS FMIPA</h1>
             <label class="text-base text-gray-600">Portal Layanan Surat Akademik FMIPA ULM</label>
         </div>

@@ -237,7 +237,7 @@ function showEditButton(roleId: number, status: number): boolean {
 
     if (roleId === 8) return true;
 
-    if(roleId === 9 && roleStatus === 2) return true;;
+    if (roleId === 9 && roleStatus === 2) return true;;
 
     if (roleId === 1 && status === 11) return true;
 
@@ -252,16 +252,35 @@ function showEditButton(roleId: number, status: number): boolean {
 
 function showResetButton(roleId: number, status: number): boolean {
     const statusStr = status.toString().padStart(2, '0');
-    const roleStatus = parseInt(statusStr[0]); // X
-    const stageStatus = parseInt(statusStr[1]); // Y
+    const stageStatus = parseInt(statusStr[1]);
 
     if (stageStatus !== 3) return false;
 
-    if (roleId === 8 && stageStatus === 3) return true;
+    if (roleId === 8) return true;
 
-    if (roleId === 1 && roleStatus === 1) return true;
+    if (roleId === 1) return true;
 
-    return false;
+    if (roleId === 9) return true;
+
+    return true;
+}
+
+function showKirimButton(roleId: number, status: number) {
+    if (roleId === 8) return true;
+    return roleId === 1 && status === 11
+}
+
+function showDeleteButton(roleId: number, status: number) {
+    const statusStr = status.toString().padStart(2, '0');
+    const stageStatus = parseInt(statusStr[1]);
+
+    if (roleId === 8) return true;
+    if (roleId === 9 && stageStatus === 3) return true;
+    return roleId === 1 && status === 11
+}
+
+function showDownloadButton(roleId: number, status: number) {
+    return status === 91
 }
 
 async function onDownloadSuratBalasan(id: number) {
@@ -333,7 +352,7 @@ async function onDownloadSuratBalasan(id: number) {
                         style="width: 100px; height: 80px;" />
                 </template>
                 <template #item-nomor_surat="{ nomor_surat }">
-                    {{ nomor_surat || '-' }}
+                    {{ nomor_surat ?? '-' }}
                 </template>
                 <template #item-mahasiswa_nim="{ user }">
                     <span v-if="user">
@@ -382,7 +401,7 @@ async function onDownloadSuratBalasan(id: number) {
                             <Check class="w-4 h-4" />
                         </Button>
 
-                        <Button v-if="props.auth.user.role_id === 1 && status === 11" @click="onKirim(id)"
+                        <Button v-if="showKirimButton(props.auth.user.role_id, status)" @click="onKirim(id)"
                             class="w-6 h-6 text-blue-500 hover:text-white hover:bg-blue-500 bg-white outline outline-1 outline-blue-500 p-1 rounded">
                             <Send class="w-4 h-4" />
                         </Button>
@@ -397,12 +416,12 @@ async function onDownloadSuratBalasan(id: number) {
                             <Pencil class="w-4 h-4" />
                         </Button>
 
-                        <Button v-if="props.auth.user.role_id === 1 && status === 11" @click="onDelete(id)"
+                        <Button v-if="showDeleteButton(props.auth.user.role_id, status)" @click="onDelete(id)"
                             class="w-6 h-6 text-red-500 hover:text-white hover:bg-red-500 bg-white outline outline-1 outline-red-500 p-1 rounded">
                             <Trash2 class="w-4 h-4" />
                         </Button>
 
-                        <Button v-if="props.auth.user.role_id === 1 && status === 91"
+                        <Button v-if="showDownloadButton(props.auth.user.role_id, status)"
                             @click="onDownloadSuratBalasan(id)"
                             class="w-6 h-6 text-red-500 hover:text-white hover:bg-red-500 bg-white outline outline-1 outline-red-500 p-1 rounded">
                             <Download class="w-4 h-4" />

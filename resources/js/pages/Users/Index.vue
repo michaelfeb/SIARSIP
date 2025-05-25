@@ -13,7 +13,7 @@ import Swal from 'sweetalert2'
 
 const headers = [
     { text: "Nama", value: "nama", width: 380 },
-    { text: "NIP", value: "nim", width: 100},
+    { text: "NIP/NIM", value: "nim", width: 100 },
     { text: "Email", value: "email", width: 240 },
     { text: "Jabatan", value: "role", width: 160 },
     { text: "Aksi", value: "id", sortable: false, width: 200 },
@@ -28,10 +28,20 @@ const serverOptions = ref<ServerOptions>({
 });
 const search = ref('')
 
+const activeUser = ref<'pegawai' | 'mahasiswa'>('pegawai')
+
+const activeUserDescription = computed(() => {
+    return activeUser.value === 'mahasiswa'
+        ? 'Daftar mahasiswa yang telah terdaftar dalam sistem'
+        : 'Daftar pegawai yang telah terdaftar dalam sistem'
+})
+
 const loadFromServer = async () => {
     loading.value = true
 
-    const { data } = await axios.get(route('users.index'), {
+    const routeName = activeUser.value === 'pegawai' ? 'users.index' : 'users-mahasiswa.index'
+
+    const { data } = await axios.get(route(routeName), {
         params: {
             page: serverOptions.value.page,
             per_page: serverOptions.value.rowsPerPage,
@@ -46,7 +56,9 @@ const loadFromServer = async () => {
 
 loadFromServer();
 
-watch([serverOptions, search], (value) => { loadFromServer(); }, { deep: true });
+watch([serverOptions, search, activeUser], () => {
+    loadFromServer()
+}, { deep: true })
 
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -117,8 +129,22 @@ function onDelete(id: number) {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-4 space-y-4">
             <div class="container mx-auto flex items-center justify-between mb-4">
-                <Heading title="Manajemen Pengguna" description="Daftar pengguna yang telah terdaftar dalam sistem"
-                    class="!mb-0" />
+                <div class="mb-8 space-y-0.5 !mb-0">
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-xl font-semibold tracking-tight">
+                            {{ activeUser === 'pegawai' ? 'Manajemen Pegawai' : 'Manajemen Mahasiswa' }}
+                        </h2>
+                        <span class="cursor-pointer text-sm font-medium text-blue-600 hover:underline transition"
+                            @click="activeUser = activeUser === 'pegawai' ? 'mahasiswa' : 'pegawai'">
+                            {{ activeUser === 'pegawai' ? 'Lihat Mahasiswa' : 'Lihat Pegawai' }}
+                        </span>
+                    </div>
+                    <p class="text-sm text-muted-foreground">
+                        {{ activeUserDescription }}
+                    </p>
+
+                </div>
+
                 <Button
                     class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 transition flex items-center gap-1"
                     @click="onCreate">
@@ -126,6 +152,7 @@ function onDelete(id: number) {
                     <span>Tambah</span>
                 </Button>
             </div>
+
 
             <div class="container mx-auto flex items-center justify-end gap-4 mb-4">
                 <span class="text-sm font-medium whitespace-nowrap">Cari</span>
