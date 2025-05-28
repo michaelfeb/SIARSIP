@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BerkasPersuratanController;
 use App\Http\Controllers\BerkasSidangNolController;
+use App\Http\Controllers\CarouselController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JenisSuratController;
 use App\Http\Controllers\LandingPageController;
@@ -89,6 +90,17 @@ Route::middleware('auth')->group(function () {
         Route::post('berkas-sidang-nol/keputusan/{berkasSidangNol}', [BerkasSidangNolController::class, 'keputusan'])->name('berkas-sidang-nol.keputusan')->can('update', 'berkasSidangNol');
     });
 });
+
+Route::middleware(['auth', 'role:6,8'])->group(function () {
+    Route::get('/carousel', [CarouselController::class, 'index'])->name('carousel.index');
+    Route::get('/carousel/create', [CarouselController::class, 'create'])->name('carousel.create');
+    Route::match(['post', 'put'], '/carousel/save/{id?}', [CarouselController::class, 'save'])->name('carousel.save');
+    Route::get('/carousel/{id}/edit', [CarouselController::class, 'edit'])->name('carousel.edit');
+    Route::put('/carousel/{id}/toggle', [CarouselController::class, 'toggle'])->name('carousel.toggle');
+    Route::delete('/carousel/{id}', [CarouselController::class, 'destroy'])->name('carousel.destroy');
+});
+
+Route::get('/carousel-image/{filename}', [CarouselController::class, 'showImage'])->name('carousel.image');
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

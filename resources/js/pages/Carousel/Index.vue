@@ -14,13 +14,14 @@ import VueToggles from "vue-toggles";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Jenis Surat',
-        href: '/jenis_surat',
+        title: 'Carousel',
+        href: '/carousel',
     },
 ]
 
 const headers = [
     { text: "Nama", value: "nama", },
+    { text: "Tanggal dipublish", value: "tanggal_publish", },
     { text: "Status", value: "status", width: 240 },
     { text: "Aksi", value: "id", sortable: false, width: 200 },
 ]
@@ -37,7 +38,7 @@ const search = ref('')
 const loadFromServer = async () => {
     loading.value = true
 
-    const { data } = await axios.get(route('jenis-surat.index'), {
+    const { data } = await axios.get(route('carousel.index'), {
         params: {
             page: serverOptions.value.page,
             per_page: serverOptions.value.rowsPerPage,
@@ -52,18 +53,18 @@ const loadFromServer = async () => {
 
 loadFromServer();
 
+watch([serverOptions, search], (value) => { loadFromServer(); }, { deep: true });
+
 function onSearch() {
     serverOptions.value.page = 1
 }
 
-watch([serverOptions, search], (value) => { loadFromServer(); }, { deep: true });
-
 function onCreate() {
-    router.get(route('jenis-surat.create'))
+    router.get(route('carousel.create'))
 }
 
 function onEdit(id: number) {
-    router.visit(route('jenis-surat.edit', id))
+    router.visit(route('carousel.edit', id))
 }
 
 function onDelete(id: number) {
@@ -84,7 +85,7 @@ function onDelete(id: number) {
         buttonsStyling: false
     }).then((result) => {
         if (result.isConfirmed) {
-            axios.delete(route('jenis-surat.destroy', id))
+            axios.delete(route('carousel.destroy', id))
                 .then(response => {
                     Swal.fire({
                         title: 'Terhapus!',
@@ -114,7 +115,7 @@ function onDelete(id: number) {
 
 const toggleStatus = async (id: number) => {
     try {
-        await axios.put(route('jenis-surat.toggle', id))
+        await axios.put(route('carousel.toggle', id))
         await loadFromServer()
     } catch (error) {
         console.error('Gagal mengubah status', error)
@@ -125,13 +126,13 @@ const toggleStatus = async (id: number) => {
 
 <template>
 
-    <Head title="Users" />
+    <Head title="Carousel" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-4 space-y-4">
             <div class="container mx-auto flex items-center justify-between mb-4">
-                <Heading title="Manajemen Jenis Surat"
-                    description="Daftar jenis surat yang telah terdaftar dalam sistem" class="!mb-0" />
+                <Heading title="Manajemen Carousel"
+                    description="Daftar carousel yang telah terdaftar dalam sistem" class="!mb-0" />
 
                 <Button
                     class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 transition flex items-center gap-1"
@@ -155,8 +156,15 @@ const toggleStatus = async (id: number) => {
                 <template #header-index>
                     No
                 </template>
+
                 <template #item-nama="{ nama }">
                     {{ nama || '-' }}
+                </template>
+
+                <template #item-tanggal_publish="{ tanggal_publish }">
+                    {{ tanggal_publish ? new Date(tanggal_publish).toLocaleDateString('id-ID', {
+                        day: '2-digit', month:
+                            'long', year: 'numeric' }) : '-' }}
                 </template>
 
                 <template #item-status="{ id, status }">

@@ -10,6 +10,7 @@ import { LoaderCircle } from 'lucide-vue-next';
 import { onlyAllowNumbers } from '@/utils/inputValidatior'
 import programStudiMapping from '@/utils/programStudiMapping';
 import Swal from 'sweetalert2';
+import { watch } from 'vue';
 
 const form = useForm({
     nama: '',
@@ -54,6 +55,12 @@ const submit = () => {
 function onLogin() {
     router.visit(route('login'))
 }
+
+watch(() => form.nomor_telpon, (value) => {
+    if (value && !value.startsWith('08')) {
+        form.nomor_telpon = '08'
+    }
+})
 </script>
 
 <template>

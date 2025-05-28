@@ -102,7 +102,30 @@ class TemplateSuratController extends Controller
             'dokumen_path' => 'required|file|mimes:doc,docx|max:2048',
         ];
 
-        $validated = $request->validate($rules);
+        $messages = [
+            'nama.required' => 'Nama wajib diisi.',
+            'nama.string' => 'Nama harus berupa teks.',
+            'nama.max' => 'Nama maksimal terdiri dari 255 karakter.',
+
+            'deskripsi.string' => 'Deskripsi harus berupa teks.',
+
+            'jenis_surat_id.required' => 'Jenis surat wajib dipilih.',
+            'jenis_surat_id.exists' => 'Jenis surat tidak valid.',
+
+            'status.required' => 'Status wajib diisi.',
+            'status.boolean' => 'Status harus berupa nilai boolean.',
+
+            'tanggal_publish.required' => 'Tanggal publikasi wajib diisi.',
+            'tanggal_publish.date' => 'Tanggal publikasi harus berupa tanggal yang valid.',
+
+            'dokumen_path.required' => 'Dokumen template surat wajib diunggah.',
+            'dokumen_path.file' => 'Dokumen harus berupa file.',
+            'dokumen_path.mimes' => 'Dokumen hanya boleh berformat DOC atau DOCX.',
+            'dokumen_path.max' => 'Ukuran maksimal dokumen adalah 2MB.',
+        ];
+
+
+        $validated = $request->validate($rules, $messages);
 
         if ($request->hasFile('dokumen_path')) {
             $file = $request->file('dokumen_path');

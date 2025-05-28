@@ -53,6 +53,7 @@
         "vue-filepond": "^7.0.4",
         "vue-toggles": "^2.2.1",
         "vue-upload-component": "^2.8.23",
+        "vue3-carousel": "^0.15.1",
         "vue3-easy-data-table": "^1.5.47",
         "vue3-select-component": "^0.11.6",
         "ziggy-js": "^2.4.2"

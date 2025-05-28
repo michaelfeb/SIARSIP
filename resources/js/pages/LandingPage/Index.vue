@@ -2,10 +2,13 @@
 import { User, BadgeCheck, FileText, BookOpenIcon, ListChecksIcon } from 'lucide-vue-next';
 import { router, usePage } from '@inertiajs/vue3';
 import { useBaseUrl } from '@/utils/useBaseUrl';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
+import 'vue3-carousel/carousel.css'
 
-defineProps({
+const props = defineProps({
     templateSurat: Array,
+    carousel: Array,
 });
 
 const page = usePage()
@@ -28,8 +31,44 @@ function onLoginPegawai() {
     redirectBasedOnLogin('pegawai');
 }
 
+const carouselItems = ref(props.carousel)
+const modalImage = ref(null)
+
+function openImage(item) {
+    modalImage.value = item
+}
+
+const config = {
+    itemsToShow: 2,
+    wrapAround: true,
+    autoplay: 4000,
+    pauseAutoplayOnHover: true,
+    breakpoints: {
+        1024: {
+            itemsToShow: 2,
+            height: 600
+        },
+        768: {
+            itemsToShow: 1,
+            height: 450,
+            gap: 10,
+        },
+        480: {
+            itemsToShow: 1,
+            height: 400,
+            gap: 10,
+        }
+    }
+}
+
 
 </script>
+
+<style scoped>
+.carousel-custom>>>.carousel__slide {
+    transition: transform 0.3s ease-in-out;
+}
+</style>
 
 <template>
     <div class="min-h-screen bg-gray-300 bg-repeat bg-center bg-auto flex flex-col items-center justify-center px-4 p-20"
@@ -75,12 +114,38 @@ function onLoginPegawai() {
         </div>
     </div>
 
+    <section class="mb-10">
+        <div class="relative w-full max-w-5xl mx-auto mt-8 text-center">
+            <h2 class="text-3xl font-extrabold text-gray-800 mb-0 sm:mb-0 md:mb-5">Pengumuman</h2>
+            <Carousel v-bind="config">
+                <Slide v-for="(item, index) in carouselItems" :key="index">
+                    <div @click="openImage(item)" class="cursor-pointer">
+                        <img :src="useBaseUrl(`carousel-image/${item.gambar.split('/').pop()}`)" :alt="item.nama"
+                            class="w-100 transition-transform duration-200 ease-in-out hover:scale-105" />
+                    </div>
+                </Slide>
+                <template #addons>
+                    <Navigation />
+                    <Pagination />
+                </template>
+            </Carousel>
+
+            <!-- Modal preview -->
+            <div v-if="modalImage"
+                class="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center px-4">
+                <img :src="useBaseUrl(`carousel-image/${modalImage.gambar.split('/').pop()}`)"
+                    class="w-full max-w-[90vw] max-h-[90vh] h-auto rounded-xl shadow-xl object-contain" />
+                <button @click="modalImage = null"
+                    class="absolute top-5 right-5 text-white text-3xl font-bold">×</button>
+            </div>
+        </div>
+    </section>
+
     <section id="template-surat" class="py-16 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-3xl font-extrabold text-gray-800 mb-12">Template Surat</h2>
-
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div v-for="template in templateSurat" :key="template.id"
+                <div v-for="template in props.templateSurat" :key="template.id"
                     class="bg-white rounded-lg shadow-md p-6 flex flex-col items-center text-center hover:shadow-lg transition">
                     <FileText class="w-12 h-12 text-purple-600 mb-4" />
                     <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ template.nama }}</h3>

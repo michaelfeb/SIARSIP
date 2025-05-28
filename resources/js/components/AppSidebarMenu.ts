@@ -27,9 +27,7 @@ export const sidebars = {
         {
             title: 'Berkas',
             icon: Mail,
-            children: [
-                { title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' },
-            ],
+            children: [{ title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' }],
         },
         {
             title: 'Template Surat',
@@ -164,7 +162,10 @@ export const sidebars = {
         {
             title: 'Pengaturan',
             icon: Settings,
-            children: [{ title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' }],
+            children: [
+                { title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' },
+                { title: 'Carousel', icon: Minus, href: '/carousel' },
+            ],
         },
     ],
 
@@ -226,7 +227,10 @@ export const sidebars = {
         {
             title: 'Pengaturan',
             icon: Settings,
-            children: [{ title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' }],
+            children: [
+                { title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' },
+                { title: 'Carousel', icon: Minus, href: '/carousel' },
+            ],
         },
     ],
 
@@ -239,9 +243,7 @@ export const sidebars = {
         {
             title: 'Berkas',
             icon: Mail,
-            children: [
-                { title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' },
-            ],
+            children: [{ title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' }],
         },
     ],
 };

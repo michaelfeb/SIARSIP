@@ -3,6 +3,7 @@ import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { type NavItem } from '@/types';
+import { useBaseUrl } from '@/utils/useBaseUrl';
 import { Link, usePage } from '@inertiajs/vue3';
 
 const sidebarNavItems: NavItem[] = [
@@ -19,11 +20,14 @@ const sidebarNavItems: NavItem[] = [
 const page = usePage();
 
 const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.location).pathname : '';
+
+console.log(currentPath);
+
 </script>
 
 <template>
     <div class="px-4 py-6">
-        <Heading title="Pengaturan" description="Manage your profile and account settings" />
+        <Heading title="Pengaturan" description="Ubah profil" />
 
         <div class="flex flex-col space-y-8 md:space-y-0 lg:flex-row lg:space-x-12 lg:space-y-0">
             <aside class="w-full max-w-xl lg:w-48">
@@ -33,9 +37,8 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
                         :key="item.href"
                         variant="ghost"
                         :class="['w-full justify-start', { 'bg-muted': currentPath === item.href }]"
-                        as-child
-                    >
-                        <Link :href="item.href">
+                        as-child>
+                        <Link :href="useBaseUrl(item.href)" class="flex items-center gap-2">
                             {{ item.title }}
                         </Link>
                     </Button>

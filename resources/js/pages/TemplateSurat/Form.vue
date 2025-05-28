@@ -164,11 +164,11 @@ onMounted(() => {
                                 <span>Tidak Aktif</span>
                             </label>
                         </div>
+                        <InputError :message="form.errors.status" />
                     </div>
 
                     <div class="space-y-2">
                         <Label for="dokumen_path" class="gap-1">Upload Dokumen<span class="text-red-500">*</span></Label>
-
                         <FilePond name="dokumen_path"
                             label-idle="Seret & lepas dokumen atau <span class='filepond--label-action'>Telusuri</span>"
                             :allow-multiple="false"

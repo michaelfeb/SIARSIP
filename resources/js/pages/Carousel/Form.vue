@@ -8,27 +8,52 @@ import { Label } from '@/components/ui/label'
 import { onMounted, ref } from 'vue'
 import Swal from 'sweetalert2'
 import { BreadcrumbItem } from '@/types'
+import vueFilePond from 'vue-filepond'
 
+// @ts-expect-error: Already Have
+import FilePondPluginPdfPreview from 'filepond-plugin-pdf-preview'
+import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type'
+import FilePondPluginImagePreview from 'filepond-plugin-image-preview'
+
+import 'filepond/dist/filepond.min.css'
+import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css'
+import 'filepond-plugin-pdf-preview/dist/filepond-plugin-pdf-preview.css'
+
+const FilePond = vueFilePond(
+    FilePondPluginImagePreview,
+    FilePondPluginFileValidateType,
+    FilePondPluginPdfPreview,
+)
+
+const initialFiles = ref([]);
+
+function handleUpdateFiles(fileItems: any) {
+    form.gambar = fileItems.length > 0 ? fileItems[0].file : null;
+}
 
 const props = defineProps<{
-    jenis_surat: any
+    carousel: any
     mode: 'create' | 'edit'
 }>()
 const show = ref(false);
 
+const today = new Date().toISOString().split('T')[0]
+
 const form = useForm({
-    nama: props.jenis_surat?.nama ?? '',
-    status: props.jenis_surat?.status ?? '',
+    nama: props.carousel?.nama ?? '',
+    gambar: props.carousel?.gambar ?? '',
+    status: props.carousel?.status ?? '1',
+    tanggal_publish: props.carousel?.tanggal_publish ? props.carousel.tanggal_publish.substring(0, 10) : today,
 })
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Jenis Surat',
-        href: '/jenis-surat',
+        title: 'Carousel',
+        href: '/carousel',
     },
     ...(props.mode === 'create'
-        ? [{ title: 'Tambah', href: '/jenis-surat' }]
-        : [{ title: 'Ubah', href: '/jenis-surat' }]
+        ? [{ title: 'Tambah', href: '/carousel' }]
+        : [{ title: 'Ubah', href: '/carousel' }]
     )
 ]
 
@@ -36,7 +61,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 async function submit() {
     const isEdit = props.mode === 'edit'
 
-    form.submit(isEdit ? 'put' : 'post', route('jenis-surat.save', isEdit ? props.jenis_surat.id : undefined), {
+    form.post(route('carousel.save', isEdit ? props.carousel.id : undefined), {
+        forceFormData: true,
+        method: isEdit ? 'put' : 'post',
         onSuccess: () => {
             Swal.fire({
                 icon: 'success',
@@ -64,13 +91,22 @@ async function submit() {
 
 
 function toBack() {
-    router.visit(route('jenis-surat.index'))
+    router.visit(route('carousel.index'))
 }
 
 onMounted(() => {
     setTimeout(() => {
         show.value = true
     }, 50)
+
+    if (props.mode === 'edit' && props.carousel?.gambar) {
+        initialFiles.value = [
+            {
+                source: `/storage/${props.carousel.gambar}`,
+                options: {}
+            }
+        ];
+    }
 })
 </script>
 
@@ -84,7 +120,7 @@ onMounted(() => {
                         <li v-for="(error, key) in form.errors" :key="key">{{ error }}</li>
                     </ul>
                 </div>
-                <h2 class="text-xl font-semibold">Tambah Jenis Surat</h2>
+                <h2 class="text-xl font-semibold">Tambah Carousel</h2>
 
                 <form @submit.prevent="submit" class="space-y-4">
                     <div class="space-y-2">
@@ -94,7 +130,18 @@ onMounted(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Status<span class="text-red-500"> *</span> </label>
+                        <Label for="gambar" class="gap-1">Upload Gambar<span class="text-red-500">*</span><span
+                                class="text-[12px]">{{ "( Max 5 MB )" }}</span></Label>
+                        <FilePond name="gambar"
+                            label-idle="Seret & lepas gambar atau <span class='filepond--label-action'>Telusuri</span>"
+                            :allow-multiple="false" accepted-file-types="image/png, image/jpeg, image/jpg"
+                            filePosterMaxHeight="250" @updatefiles="handleUpdateFiles" :files="initialFiles" />
+                        <InputError :message="form.errors.gambar" />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">Status<span class="text-red-500">
+                                *</span> </label>
                         <div class="flex items-center gap-6">
                             <label class="flex items-center space-x-1 text-sm">
                                 <input type="radio" value="1" v-model="form.status"
@@ -108,6 +155,14 @@ onMounted(() => {
                             </label>
                         </div>
                         <InputError :message="form.errors.status" />
+                    </div>
+                    <div class="space-y-2">
+                        <Label class="gap-1" for="tanggal_publish">Tanggal Dipublish<span
+                                class="text-red-500">*</span></Label>
+                        <Input id="tanggal_publish" type="date" v-model="form.tanggal_publish"
+                            class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 bg-gray-100 text-gray-700"
+                            readonly />
+                        <InputError :message="form.errors.tanggal_publish" />
                     </div>
 
                     <div class="w-full flex justify-end gap-2">

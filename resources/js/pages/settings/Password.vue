@@ -35,7 +35,7 @@ const updatePassword = () => {
             Swal.fire({
                 icon: 'success',
                 title: 'Berhasil!',
-                text: 'Profile telah diperbarui',
+                text: 'Password telah diperbarui',
                 confirmButtonText: 'OK',
                 customClass: {
                     confirmButton: 'swal-confirm-button',
