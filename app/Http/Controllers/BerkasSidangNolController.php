@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\BerkasSidangNolExport;
 use App\Models\BerkasSidangNol;
 use App\Models\Note;
 use App\Models\User;
@@ -11,6 +12,7 @@ use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BerkasSidangNolController extends Controller
 {
@@ -406,5 +408,59 @@ class BerkasSidangNolController extends Controller
             5 => ['nama' => 'Risda Faulina', 'nip' => '198403062014092003', 'ttd' => 'ttd_ibu_risda.png'],
             6 => ['nama' => 'Fitri Subiaktanti', 'nip' => '197211232006042001', 'ttd' => 'ttd_ibu_fitri.png'],
         ];
+    }
+
+    public function export(Request $request)
+{
+    $tahun = $request->input('tahun'); // ex: 2024 atau 99
+    $status = $request->input('status'); // 1, 2, 3 atau 99
+    $programStudi = $request->input('program_studi'); // 1-8 atau 99
+
+    // Map status label
+    $statusMap = [
+        1 => 'Dikirim',
+        2 => 'Diterima',
+        3 => 'Ditolak',
+        99 => 'SemuaStatus'
+    ];
+
+    // Map program studi label
+    $prodiMap = [
+        1 => 'Matematika',
+        2 => 'Kimia',
+        3 => 'Biologi',
+        4 => 'Fisika',
+        5 => 'Farmasi',
+        6 => 'IlmuKomputer',
+        7 => 'Statistika',
+        8 => 'ProfesiApoteker',
+        99 => 'SemuaProdi'
+    ];
+
+    // Map tahun
+    $tahunLabel = $tahun == 99 ? 'SemuaTahun' : $tahun;
+    $statusLabel = $statusMap[$status] ?? 'StatusTidakDikenal';
+    $prodiLabel = $prodiMap[$programStudi] ?? 'ProdiTidakDikenal';
+
+    $filename = 'berkas_sidang_nol_' . $tahunLabel . '_' . $statusLabel . '_' . $prodiLabel . '.xlsx';
+
+    return Excel::download(
+        new BerkasSidangNolExport($tahun, $status, $programStudi),
+        $filename
+    );
+}
+
+    public function getDokumen($path)
+    {
+        $fullPath = storage_path('app/secure_storage/berkas_sidang_nol/' . $path);
+
+        if (!$path || !file_exists($fullPath)) {
+            abort(404, 'File not found.');
+        }
+
+        return response()->file($fullPath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . basename($fullPath) . '"',
+        ]);
     }
 }
