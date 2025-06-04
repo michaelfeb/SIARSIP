@@ -7,11 +7,13 @@ import 'vue3-easy-data-table/dist/style.css'
 import Heading from '@/components/Heading.vue'
 import { ref, computed, watch } from 'vue'
 import Button from '@/components/ui/button/Button.vue'
-import { Eye, Trash2, Plus, Pencil, Send, RotateCcw, Check, Download } from 'lucide-vue-next'
+import { Eye, Trash2, Plus, Pencil, Send, RotateCcw, Check, Download, Upload } from 'lucide-vue-next'
 import axios from 'axios'
 import Swal from 'sweetalert2'
 import statusMapping from '@/utils/statusMapping'
 import programStudiMapping from '@/utils/programStudiMapping'
+import { useBaseUrl } from '@/utils/useBaseUrl'
+import Modal from '@/components/ui/modal/Modal.vue'
 
 const props = defineProps<{
     auth: any,
@@ -318,26 +320,134 @@ async function onDownloadSuratBalasan(id: number) {
     }
 }
 
+const showModal = ref(false)
 
+const onOpenModal = () => (showModal.value = true)
+const onCloseModal = () => (showModal.value = false)
+const onExport = () => {
+    const tahun = formExport.value.tahun
+    const status = formExport.value.status
+    const programStudi = formExport.value.program_studi
 
+    const query = new URLSearchParams({
+        tahun,
+        status,
+        program_studi: programStudi
+    }).toString()
+
+    const exportUrl = `/berkas-persuratan/export?${query}`
+    window.open(useBaseUrl(exportUrl), '_blank')
+    onCloseModal()
+}
+
+const currentYear = new Date().getFullYear()
+const tahunOptions = Array.from({ length: 5 }, (_, i) => currentYear - i)
+
+const formExport = ref({
+    tahun: 99,
+    status: 99,
+    program_studi: 99
+})
 </script>
 
 <template>
+
+    <Modal :show="showModal" @close="onCloseModal">
+        <template #header>
+            <h2 class="text-lg font-semibold">Export Excel</h2>
+        </template>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block mb-1 text-sm font-medium">Tahun</label>
+                <div class="relative">
+                    <select v-model="formExport.tahun"
+                        class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none">
+                        <option :value="99">Semua</option>
+                        <option v-for="tahun in tahunOptions" :key="tahun" :value="tahun">{{ tahun }}</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label class="block mb-1 text-sm font-medium">Status</label>
+                <div class="relative">
+                    <select v-model="formExport.status"
+                        class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none">
+                        <option value="99">Seluruh</option>
+                        <option value="1">Dikirim</option>
+                        <option value="2">Diterima</option>
+                        <option value="3">Ditolak</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label class="block mb-1 text-sm font-medium">Program Studi</label>
+                <div class="relative">
+                    <select v-model="formExport.program_studi"
+                        class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-orange-500 appearance-none">
+                        <option value="99">Seluruh</option>
+                        <option v-for="(value, key) in programStudiMapping" :key="key" :value="value.value">
+                            {{ value.label }}
+                        </option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <template #footer>
+            <div class="flex justify-end gap-2">
+                <Button type="button" @click="onCloseModal"
+                    class="mt-4 border border-orange-400 text-orange-500 hover:bg-orange-100 bg-white-500">
+                    <span>Kembali</span>
+                </Button>
+                <Button type="button" @click="onExport"
+                    class="mt-4 border border-green-400 text-white hover:bg-green-100 bg-green-500">
+                    <span>Download</span>
+                </Button>
+            </div>
+        </template>
+    </Modal>
 
     <Head title="Users" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-4 space-y-4">
             <div class="container mx-auto flex items-center justify-between mb-4">
-                <Heading title="Manajemen Berkas Persuratan"
-                    description="Daftar berkas persuratan yang telah terdaftar dalam sistem" class="!mb-0" />
+                <Heading title="Manajemen Surat Sidang Nol"
+                    description="Daftar surat sidang nol yang telah terdaftar dalam sistem" class="!mb-0" />
 
-                <Button
-                    class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 transition flex items-center gap-1"
-                    @click="onCreate">
-                    <Plus class="h-4 w-4" />
-                    <span>Tambah</span>
-                </Button>
+                <div class="flex items-center gap-2">
+                    <Button v-if="props.auth.user.role_id === 6 || props.auth.user.role_id === 8"
+                        class="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600 transition flex items-center gap-1"
+                        @click="onOpenModal">
+                        <Upload class="h-4 w-4" />
+                        <span>Export</span>
+                    </Button>
+
+                    <Button
+                        class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 transition flex items-center gap-1"
+                        @click="onCreate">
+                        <Plus class="h-4 w-4" />
+                        <span>Tambah</span>
+                    </Button>
+                </div>
             </div>
             <div class="container mx-auto flex items-center justify-end gap-4 mb-4">
                 <span class="text-sm font-medium whitespace-nowrap">Cari</span>

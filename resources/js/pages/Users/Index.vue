@@ -84,6 +84,53 @@ function onEdit(id: number) {
     router.visit(route('users.edit', id))
 }
 
+function onResetPassword(id: number) {
+
+    Swal.fire({
+        icon: 'warning',
+        title: 'Anda yakin?',
+        text: 'Password akan direset',
+        showCancelButton: true,
+        confirmButtonText: 'Reset',
+        cancelButtonText: 'Batalkan',
+        customClass: {
+            confirmButton: 'swal-confirm-button',
+            cancelButton: 'swal-cancel-button',
+            actions: 'swal-actions-button-group',
+        },
+        reverseButtons: true,
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.post(route('users.reset-password', id), {}, {
+                onSuccess: async () => {
+                    await loadFromServer()
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Password telah direset menjadi: Password1234',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'swal-confirm-button',
+                        },
+                    });
+                },
+                onError: () => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: 'Terjadi kesalahan saat mereset password.',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'swal-confirm-button',
+                        },
+                    });
+                }
+            });
+        }
+    });
+}
+
 function onDelete(id: number) {
 
     Swal.fire({
@@ -196,11 +243,11 @@ function onDelete(id: number) {
                             <Pencil class="w-4 h-4 group-hover:text-white transition-colors duration-200" />
                         </Button>
 
-                        <!-- <Button
+                        <Button
                             class="group w-6 h-6 bg-white text-orange-500 outline outline-1 outline-orange-500 p-1 rounded hover:bg-orange-500 hover:outline-orange-500"
                             title="Reset Password" @click="onResetPassword(id)">
                             <KeyRound class="w-4 h-4 group-hover:text-white transition-colors duration-200" />
-                        </Button> -->
+                        </Button>
 
                         <Button
                             class="group w-6 h-6 bg-white text-red-500 outline outline-1 outline-red-500 p-1 rounded hover:bg-red-500 hover:outline-red-500"

@@ -10,12 +10,15 @@ import Modal from '@/components/ui/modal/Modal.vue';
 import vueFilePond from 'vue-filepond'
 import FilePondPluginPdfPreview from 'filepond-plugin-pdf-preview'
 
+import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type'
+
 import 'filepond/dist/filepond.min.css'
 import 'filepond-plugin-pdf-preview/dist/filepond-plugin-pdf-preview.css'
 import InputError from '@/components/InputError.vue';
 
 const FilePond = vueFilePond(
     FilePondPluginPdfPreview,
+    FilePondPluginFileValidateType,
 )
 
 const props = defineProps<{
@@ -244,7 +247,9 @@ onMounted(() => {
                 class="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
             <InputError :message="form.errors.note" />
 
-            <label class="block text-sm font-medium text-gray-700 mb-1">Berkas Disposisi</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Berkas Disposisi
+                <span class="text-[12px]">{{ "( Max 1 MB )" }}</span>
+            </label>
             <FilePond name="berkas_tambahan"
                 label-idle="Seret & lepas file atau <span class='filepond--label-action'>Telusuri</span>"
                 :allow-multiple="true" :accepted-file-types="['application/pdf']"
@@ -291,13 +296,18 @@ onMounted(() => {
                 class="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
             <InputError :message="form.errors.note" />
 
-            <label class="block text-sm font-medium text-gray-700 mb-1">Berkas Balasan (docx/pdf)</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Berkas Balasan
+                <span class="text-[12px]">{{ "( docx/pdf, Max 1 MB )" }}</span></label>
             <FilePond name="berkas_balasan"
                 label-idle="Seret & lepas file atau <span class='filepond--label-action'>Telusuri</span>"
-                :allow-multiple="true"
-                :accepted-file-types="['application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/pdf']"
+                :allow-multiple="true" :accepted-file-types="[
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/pdf'
+                ]"
                 :files="filepondFiles.berkas_balasan || []" @updatefiles="handleUpdateFilesBalasan" />
             <InputError :message="form.errors.berkas_balasan" />
+
 
         </form>
 
@@ -323,7 +333,8 @@ onMounted(() => {
                     <tbody class="text-sm">
                         <tr class="border-b">
                             <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Nomor Surat</td>
-                            <td class="py-4 px-4 border border-gray-200">{{ props.berkasPersuratan.nomor_surat || 'Belum ada' }}
+                            <td class="py-4 px-4 border border-gray-200">
+                                {{ props.berkasPersuratan.nomor_surat || "Belum ada" }}
                             </td>
                         </tr>
                         <tr class="border-b">

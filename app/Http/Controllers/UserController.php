@@ -27,7 +27,6 @@ class UserController extends Controller
                 });
             });
 
-
         $users = $query->paginate($perPage)->withQueryString();
 
         if ($request->wantsJson()) {
@@ -190,5 +189,14 @@ class UserController extends Controller
             7 => ['label' => 'Statistika'],
             8 => ['label' => 'Profesi Apoteker'],
         ];
+    }
+
+    public function resetPassword($id)
+    {
+        $user = \App\Models\User::findOrFail($id);
+        $user->password = Hash::make('Password1234');
+        $user->save();
+
+        return redirect()->route('users.index')->with('success', 'Password berhasil direset');
     }
 }

@@ -7,12 +7,14 @@ use App\Models\BerkasSidangNol;
 use App\Models\Note;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
+use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class BerkasSidangNolController extends Controller
 {
@@ -92,14 +94,12 @@ class BerkasSidangNolController extends Controller
     public function ajuan($id)
     {
         $berkasSidangNol = BerkasSidangNol::with(['user'])->findOrFail($id);
-        $nomorSuratTerakhir = BerkasSidangNol::whereNotNull('nomor_surat')->max('nomor_surat');
 
-        if ($nomorSuratTerakhir && str_contains($nomorSuratTerakhir, 'SN-')) {
-            $parts = explode('/', $nomorSuratTerakhir);
-            $numberPart = $parts[0] ?? '';
-            $nomorSuratTerakhir = (int) str_replace('SN-', '', $numberPart);
-            $nomorSuratTerakhir++;
-        }
+        $nomorTerakhir = DB::table('berkas_sidang_nol')
+            ->selectRaw('MAX(CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(nomor_surat, "/", 1), "-", -1) AS UNSIGNED)) as nomor')
+            ->value('nomor');
+
+        $nomorSuratTerakhir = $nomorTerakhir ? $nomorTerakhir : 1;
 
         return Inertia::render('BerkasSidangNol/Ajuan', [
             'berkasSidangNol' => $berkasSidangNol,
@@ -119,8 +119,10 @@ class BerkasSidangNolController extends Controller
 
     public function destroy($id)
     {
+        $user = auth()->user();
+
         $berkasSidangNol = \App\Models\BerkasSidangNol::with('user')->findOrFail($id);
-        if ($berkasSidangNol->status === 2) {
+        if ($berkasSidangNol->status === 2 && $user->role_id !== 8) {
             return redirect()->back()->with('error', 'Berkas yang sudah selesai tidak dapat dihapus.');
         }
         $folderPath = "berkas_sidang_nol/{$berkasSidangNol->user->nim}_{$berkasSidangNol->id}";
@@ -295,6 +297,8 @@ class BerkasSidangNolController extends Controller
             'status' => 'required|numeric|in:2,3',
             'nomor_surat' => [
                 'required_if:status,2',
+                'string',
+                Rule::unique('berkas_sidang_nol', 'nomor_surat')->ignore($id),
                 function ($attribute, $value, $fail) use ($request) {
                     if ($request->status == 2 && !is_string($value)) {
                         $fail('Nomor surat harus berupa text.');
@@ -310,14 +314,16 @@ class BerkasSidangNolController extends Controller
                 },
             ],
             'note' => 'nullable|string|max:1000',
+        ], [
+            'status.required' => 'Status wajib diisi.',
+            'status.in' => 'Status harus bernilai 2 (validasi) atau 3 (selesai).',
+            'nomor_surat.required_if' => 'Nomor surat wajib diisi jika status adalah 2.',
+            'nomor_surat.unique' => 'Nomor surat sudah digunakan. Silakan pilih nomor lain.',
+            'nomor_surat.string' => 'Nomor surat harus berupa teks.',
+            'pegawai.required_if' => 'Pegawai wajib dipilih jika status adalah diterima.',
+            'note.string' => 'Catatan harus berupa teks.',
+            'note.max' => 'Catatan maksimal 1000 karakter.',
         ]);
-
-        $berkas = BerkasSidangNol::with('user')->findOrFail($id);
-
-        $data = [
-            'status' => $validated['status'],
-            'tanggal_selesai' => now(),
-        ];
 
         if ($validated['status'] == 2) {
             $data['nomor_surat'] = $validated['nomor_surat'];
@@ -411,44 +417,44 @@ class BerkasSidangNolController extends Controller
     }
 
     public function export(Request $request)
-{
-    $tahun = $request->input('tahun'); // ex: 2024 atau 99
-    $status = $request->input('status'); // 1, 2, 3 atau 99
-    $programStudi = $request->input('program_studi'); // 1-8 atau 99
+    {
+        $tahun = $request->input('tahun'); // ex: 2024 atau 99
+        $status = $request->input('status'); // 1, 2, 3 atau 99
+        $programStudi = $request->input('program_studi'); // 1-8 atau 99
 
-    // Map status label
-    $statusMap = [
-        1 => 'Dikirim',
-        2 => 'Diterima',
-        3 => 'Ditolak',
-        99 => 'SemuaStatus'
-    ];
+        // Map status label
+        $statusMap = [
+            1 => 'Dikirim',
+            2 => 'Diterima',
+            3 => 'Ditolak',
+            99 => 'SemuaStatus'
+        ];
 
-    // Map program studi label
-    $prodiMap = [
-        1 => 'Matematika',
-        2 => 'Kimia',
-        3 => 'Biologi',
-        4 => 'Fisika',
-        5 => 'Farmasi',
-        6 => 'IlmuKomputer',
-        7 => 'Statistika',
-        8 => 'ProfesiApoteker',
-        99 => 'SemuaProdi'
-    ];
+        // Map program studi label
+        $prodiMap = [
+            1 => 'Matematika',
+            2 => 'Kimia',
+            3 => 'Biologi',
+            4 => 'Fisika',
+            5 => 'Farmasi',
+            6 => 'IlmuKomputer',
+            7 => 'Statistika',
+            8 => 'ProfesiApoteker',
+            99 => 'SemuaProdi'
+        ];
 
-    // Map tahun
-    $tahunLabel = $tahun == 99 ? 'SemuaTahun' : $tahun;
-    $statusLabel = $statusMap[$status] ?? 'StatusTidakDikenal';
-    $prodiLabel = $prodiMap[$programStudi] ?? 'ProdiTidakDikenal';
+        // Map tahun
+        $tahunLabel = $tahun == 99 ? 'SemuaTahun' : $tahun;
+        $statusLabel = $statusMap[$status] ?? 'StatusTidakDikenal';
+        $prodiLabel = $prodiMap[$programStudi] ?? 'ProdiTidakDikenal';
 
-    $filename = 'berkas_sidang_nol_' . $tahunLabel . '_' . $statusLabel . '_' . $prodiLabel . '.xlsx';
+        $filename = 'berkas_sidang_nol_' . $tahunLabel . '_' . $statusLabel . '_' . $prodiLabel . '.xlsx';
 
-    return Excel::download(
-        new BerkasSidangNolExport($tahun, $status, $programStudi),
-        $filename
-    );
-}
+        return Excel::download(
+            new BerkasSidangNolExport($tahun, $status, $programStudi),
+            $filename
+        );
+    }
 
     public function getDokumen($path)
     {

@@ -24,6 +24,7 @@ Route::middleware(['auth', 'role:2,3,4,5,6,7,8'])->group(function () {
     Route::match(['post', 'put'], '/users/save/{id?}', [UserController::class, 'save'])->name('users.save');
     Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::post('/user/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password')->middleware('role:6,8');
 });
 
 Route::middleware(['auth'])->prefix('api')->name('api.users.')->group(function () {
@@ -49,7 +50,16 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/template-surat/{id}', [TemplateSuratController::class, 'destroy'])->name('template-surat.destroy')->middleware('role:2,3,4,5,6,7,8');
 });
 
+
 Route::middleware(['auth'])->group(function () {
+    Route::middleware(['auth'])->prefix('api')->name('api.berkas-persuratan.')->group(function () {
+        Route::get('/berkas-persuratan/{path}', [BerkasPersuratanController::class, 'getDokumen'])
+            ->where('path', '.*')
+            ->name('getDokumen')
+            ->middleware('role:6,8');
+    });
+
+    Route::get('/berkas-persuratan/export', [BerkasPersuratanController::class, 'export'])->name('berkas-persuratan.export')->middleware('role:6,8');
     Route::get('berkas-persuratan', [BerkasPersuratanController::class, 'index'])->name('berkas-persuratan.index');
     Route::get('berkas-persuratan/create', [BerkasPersuratanController::class, 'create'])->name('berkas-persuratan.create');
     Route::match(['post', 'put'], 'berkas-persuratan/save', [BerkasPersuratanController::class, 'store'])->name('berkas-persuratan.saveCreate');

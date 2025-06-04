@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\BerkasPersuratanExport;
 use App\Models\BerkasPersuratan;
 use App\Models\JenisSurat;
 use App\Models\Note;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BerkasPersuratanController extends Controller
 {
@@ -352,9 +354,9 @@ class BerkasPersuratanController extends Controller
         $rules = [
             'status' => 'required|integer',
             'note' => 'nullable|string',
-            'berkas_tambahan.*' => 'nullable|file|mimes:pdf|max:512',
+            'berkas_tambahan.*' => 'nullable|file|mimes:pdf|max:1024',
             'berkas_balasan' => 'nullable|array',
-            'berkas_balasan.*' => 'file|mimes:doc,docx,pdf|max:512',
+            'berkas_balasan.*' => 'file|mimes:doc,docx,pdf|max:1024',
         ];
 
         $messages = [
@@ -364,7 +366,7 @@ class BerkasPersuratanController extends Controller
             'nomor_surat.string' => 'Nomor surat harus berupa teks.',
             'berkas_balasan.*.file' => 'Setiap berkas balasan harus berupa file.',
             'berkas_balasan.*.mimes' => 'Setiap berkas balasan harus berformat DOC atau DOCX.',
-            'berkas_balasan.*.max' => 'Ukuran maksimal setiap berkas balasan adalah 512kb.',
+            'berkas_balasan.*.max' => 'Ukuran maksimal setiap berkas balasan adalah 1 MB.',
         ];
 
         if ($statusBaru === 61) {
@@ -473,12 +475,64 @@ class BerkasPersuratanController extends Controller
         return response()->download($zipPath)->deleteFileAfterSend(true);
     }
 
-
-
     public function downloadUpload($filename)
     {
         $path = 'secure_storage/' . $filename;
 
         return response()->download(storage_path('app/' . $path));
+    }
+
+    public function export(Request $request)
+    {
+        $tahun = $request->input('tahun'); // ex: 2024 atau 99
+        $status = $request->input('status'); // 1, 2, 3 atau 99
+        $programStudi = $request->input('program_studi'); // 1-8 atau 99
+
+        // Map status label
+        $statusMap = [
+            1 => 'Dikirim',
+            2 => 'Diterima',
+            3 => 'Ditolak',
+            99 => 'SemuaStatus'
+        ];
+
+        // Map program studi label
+        $prodiMap = [
+            1 => 'Matematika',
+            2 => 'Kimia',
+            3 => 'Biologi',
+            4 => 'Fisika',
+            5 => 'Farmasi',
+            6 => 'IlmuKomputer',
+            7 => 'Statistika',
+            8 => 'ProfesiApoteker',
+            99 => 'SemuaProdi'
+        ];
+
+        // Map tahun
+        $tahunLabel = $tahun == 99 ? 'SemuaTahun' : $tahun;
+        $statusLabel = $statusMap[$status] ?? 'StatusTidakDikenal';
+        $prodiLabel = $prodiMap[$programStudi] ?? 'ProdiTidakDikenal';
+
+        $filename = 'berkas_persuratan' . $tahunLabel . '_' . $statusLabel . '_' . $prodiLabel . '.xlsx';
+
+        return Excel::download(
+            new BerkasPersuratanExport($tahun, $status, $programStudi),
+            $filename
+        );
+    }
+
+    public function getDokumen($path)
+    {
+        $fullPath = storage_path('app/secure_storage/' . $path);
+
+        if (!$path || !file_exists($fullPath)) {
+            abort(404, 'File not found.');
+        }
+
+        return response()->file($fullPath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . basename($fullPath) . '"',
+        ]);
     }
 }

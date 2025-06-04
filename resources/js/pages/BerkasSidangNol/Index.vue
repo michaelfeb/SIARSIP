@@ -78,7 +78,6 @@ function onEdit(id: number) {
 }
 
 function onDelete(id: number) {
-
     Swal.fire({
         icon: 'warning',
         title: 'Anda yakin?',
@@ -96,33 +95,34 @@ function onDelete(id: number) {
     }).then((result) => {
         if (result.isConfirmed) {
             router.delete(route('berkas-sidang-nol.destroy', id), {
-                async onSuccess() {
-                    await loadFromServer();
+                async onSuccess({ props }) {
+                    await loadFromServer()
                     Swal.fire({
-                        title: 'Terhapus!',
-                        text: "Data telah dihapus!",
                         icon: 'success',
+                        title: 'Berhasil!',
+                        text: props.flash?.success || 'Data telah dihapus!',
                         confirmButtonText: 'OK',
                         customClass: {
                             confirmButton: 'swal-confirm-button',
                         },
-                    });
+                    })
                 },
-                async onError() {
+                async onError({ props }) {
                     Swal.fire({
-                        title: 'Terhapus!',
-                        text: "Data telah dihapus!",
-                        icon: 'success',
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: props.flash?.error || 'Gagal menghapus data!',
                         confirmButtonText: 'OK',
                         customClass: {
                             confirmButton: 'swal-confirm-button',
                         },
-                    });
+                    })
                 }
-            });
+            })
         }
-    });
+    })
 }
+
 
 const onKirim = async (id: number) => {
     Swal.fire({
