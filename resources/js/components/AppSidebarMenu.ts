@@ -165,6 +165,7 @@ export const sidebars = {
             children: [
                 { title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' },
                 { title: 'Carousel', icon: Minus, href: '/carousel' },
+                { title: 'Link Landing Page', icon: Minus, href: '/link-landing-page' },
             ],
         },
     ],
@@ -230,6 +231,7 @@ export const sidebars = {
             children: [
                 { title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' },
                 { title: 'Carousel', icon: Minus, href: '/carousel' },
+                { title: 'Link Landing Page', icon: Minus, href: '/link-landing-page' },
             ],
         },
     ],

@@ -6,6 +6,7 @@ use App\Http\Controllers\CarouselController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JenisSuratController;
 use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\LinkLandingPageController;
 use App\Http\Controllers\TemplateSuratController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -120,6 +121,15 @@ Route::middleware(['auth', 'role:6,8'])->group(function () {
 });
 
 Route::get('/carousel-image/{filename}', [CarouselController::class, 'showImage'])->name('carousel.image');
+
+Route::middleware(['auth', 'role:6,8'])->group(function () {
+    Route::get('/link-landing-page', [LinkLandingPageController::class, 'index'])->name('link-landing-page.index');
+    Route::get('/link-landing-page/create', [LinkLandingPageController::class, 'create'])->name('link-landing-page.create');
+    Route::match(['post', 'put'], '/link-landing-page/save/{id?}', [LinkLandingPageController::class, 'save'])->name('link-landing-page.save');
+    Route::get('/link-landing-page/{id}/edit', [LinkLandingPageController::class, 'edit'])->name('link-landing-page.edit');
+    Route::put('/link-landing-page/{id}/toggle', [LinkLandingPageController::class, 'toggle'])->name('link-landing-page.toggle');
+    Route::delete('/link-landing-page/{id}', [LinkLandingPageController::class, 'destroy'])->name('link-landing-page.destroy');
+});
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

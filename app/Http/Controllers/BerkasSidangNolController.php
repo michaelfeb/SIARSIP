@@ -286,6 +286,7 @@ class BerkasSidangNolController extends Controller
 
     public function keputusan(Request $request, $id)
     {
+        $berkas = BerkasSidangNol::with('user')->findOrFail($id);
         $tahun = now()->year;
 
         if ($request->filled('nomor_surat')) {
@@ -324,6 +325,11 @@ class BerkasSidangNolController extends Controller
             'note.string' => 'Catatan harus berupa teks.',
             'note.max' => 'Catatan maksimal 1000 karakter.',
         ]);
+
+        $data = [
+            'status' => $validated['status'],
+            'tanggal_selesai' => now(),
+        ];
 
         if ($validated['status'] == 2) {
             $data['nomor_surat'] = $validated['nomor_surat'];
