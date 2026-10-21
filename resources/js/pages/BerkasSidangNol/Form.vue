@@ -13,7 +13,7 @@ import axios from 'axios'
 import statusMappingSidangNol from '@/utils/statusMappingSidangNol'
 
 
-import VueSelect from "vue3-select-component";
+import { Select as VueSelect } from "vue3-select-component";
 
 // @ts-expect-error: Already Have
 import FilePondPluginPdfPreview from 'filepond-plugin-pdf-preview'

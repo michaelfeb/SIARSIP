@@ -113,7 +113,7 @@ class DashboardController extends Controller
             ]);
 
 
-        return Inertia::render('Dashboard/Index', [
+        return Inertia::render('Dashboard/index', [
             'summary' => [
                 'menunggu' => $menunggu,
                 'diterima' => $diterima,

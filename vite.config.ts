@@ -1,11 +1,16 @@
 import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
-import path from 'path';
+import { existsSync, readFileSync } from 'node:fs';
 import tailwindcss from "@tailwindcss/vite";
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
+const projectRoot = import.meta.dirname;
+
 export default defineConfig({
+    build: {
+        cssMinify: 'esbuild',
+    },
     plugins: [
         laravel({
             input: ['resources/js/app.ts'],
@@ -14,6 +19,18 @@ export default defineConfig({
         }),
         tailwindcss(),
         vue({
+            script: {
+                fs: {
+                    fileExists: existsSync,
+                    readFile: (file) => {
+                        try {
+                            return readFileSync(file, 'utf-8');
+                        } catch {
+                            return undefined;
+                        }
+                    },
+                },
+            },
             template: {
                 transformAssetUrls: {
                     base: null,
@@ -24,8 +41,8 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-            '@': path.resolve(__dirname, './resources/js'),
-            'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
+            '@': resolve(projectRoot, './resources/js'),
+            'ziggy-js': resolve(projectRoot, 'vendor/tightenco/ziggy'),
         },
     },
 });
