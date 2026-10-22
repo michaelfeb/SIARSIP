@@ -52,7 +52,7 @@ No additional table components are part of this PRD. If the local Sidang Nol tab
   - pagination interaction;
   - Sidang Nol headers and cell rendering;
   - status badges;
-  - permission-aware circular table action buttons.
+  - permission-aware `rounded-lg` table action buttons.
 - An Inertia query flow for `search`, `status`, `page`, and `per_page`.
 - A minimal index-query refactor into `IndexSidangNolRequest` and `SidangNolService::datatable()`.
 - Backend test coverage for visibility and status filtering.

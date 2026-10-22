@@ -57,6 +57,31 @@ Draft (0)
 
 The index supports search by student name/NIM, letter number, and programme-of-study. Staff records prioritize waiting submissions, then order by sent date descending. The Excel export is available to roles `6` and `8` and supports year, status, and programme filters.
 
+## Frontend reference implementation
+
+Berkas Sidang Nol is the visual and structural reference for future retained letter modules. The current Vue implementation lives in `resources/js/pages/BerkasSidangNol/` and follows these boundaries:
+
+```text
+BerkasSidangNol/
+├── components/       # repeated feature-only UI
+├── ts/               # types, constants, composables, pure helpers
+├── Ajuan.vue         # staff decision page
+├── DataTable.vue     # local list filters, columns, cells, and actions
+├── Form.vue          # create/edit orchestration
+├── Index.vue         # list page coordinator and export modal
+└── Show.vue          # clean detail and direct document viewers
+```
+
+`Index.vue` owns Inertia visits, page-level actions, the export modal, and confirmations. Its local `DataTable.vue` owns search, status filtering, headers, cell slots, badges, and action controls. The shared `resources/js/components/data-table/DataTable.vue` owns generic table rendering, responsive overflow, loading/empty state, and pagination only.
+
+The table's `Aksi` column is the only fixed-width column (`230`). Its visible actions come from `sidangNolCapabilities()` and are icon-only outline Buttons with `size-8`, `rounded-lg`, a semantic action color, `title`, and `aria-label`. The shared table uses the same muted-orange primary token for the active pagination page.
+
+The Form uses shared inputs/selects and renders six document uploaders in a responsive two-column grid (`md:grid-cols-2`), producing three rows on desktop. The Show page uses clean stacked details followed by direct embedded PDF cards in the same two-column document layout; it does not require a user to open a preview modal.
+
+The Ajuan page is a one-step staff decision layout. At `xl` widths, it gives Data Permohonan roughly two-thirds of the page and a sticky Keputusan panel one-third. The left side displays clean request details and the direct PDF document grid. The right side holds only Nomor Surat, Penandatangan, Catatan, and the Batal / Tolak / Terima & Generate Surat actions. It preserves the existing decision endpoint and payload.
+
+For the full reusable frontend convention—including naming, shared controls, responsive rules, and component ownership—see [Frontend development base](../frontend-development-base.md).
+
 ## Current access caveat
 
 The generic `download-upload` endpoint requires an authenticated session but does not itself check role, record ownership, or constrain the supplied path to a Sidang Nol record. The staff-only API endpoint is the intended protected preview route. Before expanding this module, replace the generic path endpoint with record-based authorization (or enforce equivalent ownership checks) and update this document.
