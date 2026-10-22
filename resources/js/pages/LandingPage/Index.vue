@@ -1,37 +1,86 @@
 <script setup lang="ts">
-import { User, BadgeCheck, FileText, University, GraduationCap, BookOpen, ListChecks } from 'lucide-vue-next';
-import { router, usePage } from '@inertiajs/vue3';
-import { useBaseUrl } from '@/utils/useBaseUrl';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import {
+    ArrowRight,
+    BadgeCheck,
+    BookOpen,
+    FileDown,
+    FileText,
+    GraduationCap,
+    ListChecks,
+    University,
+    UserRound,
+    UsersRound,
+    X,
+} from 'lucide-vue-next';
+import { Carousel, Navigation, Pagination, Slide } from 'vue3-carousel';
 import { computed, ref } from 'vue';
-import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
-import 'vue3-carousel/carousel.css'
+import { useBaseUrl } from '@/utils/useBaseUrl';
+import 'vue3-carousel/carousel.css';
 
-const props = defineProps({
-    templateSurat: Array,
-    carousel: Array,
-    linkLandingPage: Array,
-});
+type TemplateSurat = {
+    id: number;
+    nama: string;
+    deskripsi?: string | null;
+};
 
-const Lucide = {
+type CarouselItem = {
+    id: number;
+    nama: string;
+    gambar: string;
+};
+
+const iconComponents = {
     BookOpen,
     ListChecks,
     BadgeCheck,
     GraduationCap,
     University,
-    FileText
-}
+    FileText,
+};
 
-const page = usePage()
-const user = computed(() => page.props.auth?.user ?? null)
+type LandingLink = {
+    id: number;
+    nama: string;
+    deskripsi?: string | null;
+    icon: keyof typeof iconComponents;
+    color?: string | null;
+    link: string;
+};
+
+const props = withDefaults(defineProps<{
+    templateSurat?: TemplateSurat[];
+    carousel?: CarouselItem[];
+    linkLandingPage?: LandingLink[];
+}>(), {
+    templateSurat: () => [],
+    carousel: () => [],
+    linkLandingPage: () => [],
+});
+
+const page = usePage();
+const user = computed(() => page.props.auth?.user ?? null);
+const modalImage = ref<CarouselItem | null>(null);
+const logoUrl = useBaseUrl('images/logo-ulm.png');
+
+const carouselConfig = {
+    itemsToShow: 1,
+    wrapAround: true,
+    autoplay: 5000,
+    pauseAutoplayOnHover: true,
+};
 
 function redirectBasedOnLogin(mode: 'mahasiswa' | 'pegawai') {
-    if (user.value?.role_id === 1) return router.get(route('berkas-persuratan.index'));
-    if (user.value) return router.get(route('dashboard'));
+    if (user.value?.role_id === 1) {
+        return router.get(route('berkas-persuratan.index'));
+    }
+
+    if (user.value) {
+        return router.get(route('dashboard'));
+    }
+
     return router.get(route('login', { mode }));
 }
-
-const logoUrl = useBaseUrl('images/logo-ulm.png')
-const bgImage = `url('${useBaseUrl('images/background-landing-page-3.png')}')`
 
 function onLoginMahasiswa() {
     redirectBasedOnLogin('mahasiswa');
@@ -41,134 +90,303 @@ function onLoginPegawai() {
     redirectBasedOnLogin('pegawai');
 }
 
-const carouselItems = ref(props.carousel)
-const modalImage = ref(null)
-
-function openImage(item) {
-    modalImage.value = item
+function onOpenAnnouncement(item: CarouselItem) {
+    modalImage.value = item;
 }
 
-const config = {
-    itemsToShow: 2,
-    wrapAround: true,
-    autoplay: 4000,
-    pauseAutoplayOnHover: true,
-    breakpoints: {
-        1024: {
-            itemsToShow: 2,
-            height: 600
-        },
-        768: {
-            itemsToShow: 1,
-            height: 450,
-            gap: 10,
-        },
-        480: {
-            itemsToShow: 1,
-            height: 400,
-            gap: 10,
-        }
-    }
+function onCloseAnnouncement() {
+    modalImage.value = null;
 }
 
-
+function carouselImageUrl(item: CarouselItem) {
+    return useBaseUrl(`carousel-image/${item.gambar.split('/').pop()}`);
+}
 </script>
 
-<style scoped>
-.carousel-custom>>>.carousel__slide {
-    transition: transform 0.3s ease-in-out;
-}
-</style>
-
 <template>
-    <div class="min-h-screen bg-gray-300 bg-repeat bg-center bg-auto flex flex-col items-center justify-center px-4 p-20"
-        :style="{ backgroundImage: bgImage }">
-        <div class="flex flex-col items-center mb-10 text-center">
-            <img :src="logoUrl" alt="Logo" class="w-40 h-40 mb-4" />
-            <h1 class="text-3xl font-bold text-gray-800">PORLAS FMIPA</h1>
-            <label class="text-base text-gray-600">Portal Layanan Surat Akademik FMIPA ULM</label>
-        </div>
-        <div class="flex flex-col md:flex-row gap-6 md:gap-8 items-center">
-            <div @click="onLoginMahasiswa"
-                class="w-60 h-60 bg-white shadow-md rounded-xl flex flex-col items-center justify-center text-center border border-gray-200 hover:bg-yellow-300 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer p-4">
-                <User class="w-12 h-12 text-blue-600 mb-4" />
-                <span class="text-lg font-semibold text-gray-700">Login Mahasiswa</span>
-                <label class="text-base text-sm text-gray-600">Portal pemberkasan online</label>
-            </div>
-            <div @click="onLoginPegawai"
-                class="w-60 h-60 bg-white shadow-md rounded-xl flex flex-col items-center justify-center text-center border border-gray-200 hover:bg-yellow-300 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer p-4">
-                <BadgeCheck class="w-12 h-12 text-green-600 mb-4" />
-                <span class="text-lg font-semibold text-gray-700">Login Pegawai</span>
-                <label class="text-base text-sm text-gray-600">Akses login untuk Pegawai FMIPA</label>
-            </div>
-            <a href="#template-surat"
-                class="w-60 h-60 bg-white shadow-md rounded-xl flex flex-col items-center justify-center text-center border border-gray-200 hover:bg-yellow-300 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer p-4">
-                <FileText class="w-12 h-12 text-purple-600 mb-4" />
-                <span class="text-lg font-semibold text-gray-700">Template Surat</span>
-                <label class="text-base text-sm text-gray-600">Template berkas surat akademik untuk mahasiswa</label>
-            </a>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 mt-5 mb-5 place-items-center">
-            <template v-for="(item, index) in linkLandingPage" :key="index">
-                <a :href="item.link" target="_blank"
-                    class="w-60 h-60 bg-white shadow-md rounded-xl flex flex-col items-center justify-center text-center border border-gray-200 hover:bg-yellow-300 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer p-4">
-                    <component :is="Lucide[item.icon]" :class="['w-12 h-12 mb-4', item.color]" />
-                    <span class="text-lg font-semibold text-gray-700">{{ item.nama }}</span>
-                    <label class="text-sm text-gray-600">{{ item.deskripsi }}</label>
-                </a>
-            </template>
-        </div>
+    <Head title="PORLAS FMIPA" />
 
-    </div>
+    <main class="min-h-screen overflow-hidden bg-white text-slate-900">
+        <section class="relative isolate overflow-hidden bg-gradient-to-br from-[#7c2d12] via-[#c2410c] to-[#ea580c] px-4 sm:px-6">
+            <div class="pointer-events-none absolute -right-28 -top-28 size-96 rounded-full border-[3rem] border-white/10" />
+            <div class="pointer-events-none absolute -bottom-36 -left-24 size-80 rounded-full bg-white/10" />
 
-    <section class="mb-10">
-        <div class="relative w-full max-w-5xl mx-auto mt-8 text-center">
-            <h2 class="text-3xl font-extrabold text-gray-800 mb-0 sm:mb-0 md:mb-5">Pengumuman</h2>
-            <Carousel v-bind="config">
-                <Slide v-for="(item, index) in carouselItems" :key="index">
-                    <div @click="openImage(item)" class="cursor-pointer">
-                        <img :src="useBaseUrl(`carousel-image/${item.gambar.split('/').pop()}`)" :alt="item.nama"
-                            class="w-100 transition-transform duration-200 ease-in-out hover:scale-105" />
+            <div class="relative mx-auto max-w-6xl">
+                <header class="flex items-center justify-between border-b border-white/20 py-5 text-white">
+                    <div class="flex items-center gap-3">
+                        <img :src="logoUrl" alt="Logo Universitas Lambung Mangkurat" class="size-10 object-contain" />
+                        <div>
+                            <p class="text-sm font-bold tracking-wide">PORLAS FMIPA</p>
+                            <p class="text-xs text-white/75">Aplikasi Persuratan</p>
+                        </div>
                     </div>
-                </Slide>
-                <template #addons>
-                    <Navigation />
-                    <Pagination />
-                </template>
-            </Carousel>
+                    <a href="#template-surat" class="text-sm font-medium text-white/90 transition hover:text-white">Template Surat</a>
+                </header>
 
-            <!-- Modal preview -->
-            <div v-if="modalImage"
-                class="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center px-4">
-                <img :src="useBaseUrl(`carousel-image/${modalImage.gambar.split('/').pop()}`)"
-                    class="w-full max-w-[90vw] max-h-[90vh] h-auto rounded-xl shadow-xl object-contain" />
-                <button @click="modalImage = null"
-                    class="absolute top-5 right-5 text-white text-3xl font-bold">×</button>
+                <div class="grid items-center gap-10 py-14 lg:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.75fr)] lg:py-20">
+                    <div class="text-white">
+                        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-orange-100">Layanan Akademik Terpadu</p>
+                        <h1 class="mt-4 max-w-2xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">Urus surat akademik, lebih sederhana.</h1>
+                        <p class="mt-5 max-w-xl text-base leading-7 text-white/85 sm:text-lg">
+                            PORLAS FMIPA membantu mahasiswa, dosen, dan pegawai mengakses layanan persuratan Fakultas MIPA Universitas Lambung Mangkurat dalam satu tempat.
+                        </p>
+                        <a href="#layanan" class="mt-8 inline-flex h-11 items-center gap-2 rounded-lg bg-white px-5 text-sm font-semibold text-[#9a3412] transition hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                            Lihat layanan
+                            <ArrowRight class="size-4" />
+                        </a>
+                    </div>
+
+                    <aside class="rounded-2xl bg-white p-6 text-slate-900 shadow-2xl shadow-[#7c2d12]/25 sm:p-7">
+                        <p class="text-sm font-semibold text-[#c2410c]">Mulai dari sini</p>
+                        <h2 class="mt-2 text-2xl font-bold tracking-tight">Pilih akses Anda</h2>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">Masuk sesuai dengan peran Anda untuk melanjutkan proses persuratan.</p>
+                        <div class="mt-6 grid gap-3">
+                            <button type="button" class="hero-role-button" @click="onLoginMahasiswa">
+                                <UserRound class="size-5 text-[#c2410c]" />
+                                <span>Login Mahasiswa</span>
+                                <ArrowRight class="ml-auto size-4 text-slate-400" />
+                            </button>
+                            <button type="button" class="hero-role-button" @click="onLoginPegawai">
+                                <UsersRound class="size-5 text-[#c2410c]" />
+                                <span>Login Dosen / Pegawai</span>
+                                <ArrowRight class="ml-auto size-4 text-slate-400" />
+                            </button>
+                        </div>
+                    </aside>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="template-surat" class="py-16 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-3xl font-extrabold text-gray-800 mb-12">Template Surat</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div v-for="template in props.templateSurat" :key="template.id"
-                    class="bg-white rounded-lg shadow-md p-6 flex flex-col items-center text-center hover:shadow-lg transition">
-                    <FileText class="w-12 h-12 text-purple-600 mb-4" />
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ template.nama }}</h3>
-                    <p class="text-gray-500 text-sm mb-4">{{ template.deskripsi ?? 'Tidak ada deskripsi' }}</p>
-                    <a :href="route('template-surat.download', template.id)"
-                        class="mt-auto inline-block px-4 py-2 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-sm font-medium transition">
-                        Download
+        <section id="layanan" class="relative scroll-mt-4 bg-[#fffaf7] px-4 py-14 sm:px-6 lg:py-20">
+            <div class="relative mx-auto max-w-6xl">
+                <div class="mb-9 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+                    <div>
+                        <p class="text-sm font-semibold text-[#c2410c]">Akses layanan</p>
+                        <h2 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Semua kebutuhan dalam satu portal</h2>
+                    </div>
+                    <p class="max-w-md text-sm leading-6 text-slate-600">Pilih layanan yang Anda perlukan untuk memulai pengajuan atau mengunduh dokumen.</p>
+                </div>
+                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    <button type="button" class="landing-service-card" @click="onLoginMahasiswa">
+                        <span class="landing-service-icon"><UserRound class="size-8" /></span>
+                        <span class="landing-service-title">Login Mahasiswa</span>
+                        <span class="landing-service-description">Portal pemberkasan online untuk mahasiswa melakukan permohonan surat akademik.</span>
+                    </button>
+
+                    <button type="button" class="landing-service-card" @click="onLoginPegawai">
+                        <span class="landing-service-icon"><UsersRound class="size-8" /></span>
+                        <span class="landing-service-title">Login Dosen / Pegawai</span>
+                        <span class="landing-service-description">Portal bagi pegawai dan dosen untuk memproses permohonan surat akademik.</span>
+                    </button>
+
+                    <a href="#template-surat" class="landing-service-card">
+                        <span class="landing-service-icon"><FileText class="size-8" /></span>
+                        <span class="landing-service-title">Template Surat</span>
+                        <span class="landing-service-description">Kumpulan template dan panduan pembuatan surat akademik.</span>
+                    </a>
+
+                    <a
+                        v-for="item in props.linkLandingPage"
+                        :key="item.id"
+                        :href="item.link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="landing-service-card"
+                    >
+                        <span class="landing-service-icon">
+                            <component :is="iconComponents[item.icon] ?? FileText" class="size-8" />
+                        </span>
+                        <span class="landing-service-title">{{ item.nama }}</span>
+                        <span class="landing-service-description">{{ item.deskripsi || 'Akses layanan administrasi akademik.' }}</span>
                     </a>
                 </div>
             </div>
+        </section>
+
+        <section v-if="props.carousel.length" class="border-y border-orange-100 bg-white px-4 py-14 sm:px-6 lg:py-20">
+            <div class="mx-auto max-w-6xl text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900">Pengumuman</h2>
+                <p class="mt-2 text-sm text-slate-600 sm:text-base">Informasi terbaru dari Fakultas MIPA ULM.</p>
+
+                <Carousel v-bind="carouselConfig" class="landing-carousel mx-auto mt-7 max-w-xl sm:mt-9">
+                    <Slide v-for="item in props.carousel" :key="item.id">
+                        <button type="button" class="block w-full cursor-zoom-in" :aria-label="`Lihat pengumuman ${item.nama}`" @click="onOpenAnnouncement(item)">
+                            <img :src="carouselImageUrl(item)" :alt="item.nama" class="mx-auto max-h-[34rem] w-auto max-w-full rounded-lg bg-white object-contain shadow-md transition duration-200 hover:scale-[1.01]" />
+                        </button>
+                    </Slide>
+                    <template #addons>
+                        <Navigation />
+                        <Pagination />
+                    </template>
+                </Carousel>
+            </div>
+        </section>
+
+        <section id="template-surat" class="scroll-mt-4 px-4 py-14 sm:px-6 lg:py-20">
+            <div class="mx-auto max-w-6xl">
+                <div class="mx-auto max-w-2xl text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-900">Template Surat</h2>
+                    <p class="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
+                        Kumpulan template surat akademik yang dapat Anda unduh dan gunakan untuk keperluan administratif.
+                    </p>
+                </div>
+
+                <div v-if="props.templateSurat.length" class="mt-9 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    <article v-for="template in props.templateSurat" :key="template.id" class="flex min-h-80 flex-col rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md">
+                        <span class="mx-auto flex size-16 items-center justify-center rounded-2xl bg-orange-50 text-[#c2410c]"><FileText class="size-8" /></span>
+                        <h3 class="mt-5 text-lg font-semibold leading-7 text-slate-900">{{ template.nama }}</h3>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">{{ template.deskripsi || 'Template surat akademik untuk kebutuhan administrasi.' }}</p>
+                        <a :href="route('template-surat.download', template.id)" class="mt-auto inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#c2410c] px-4 text-sm font-medium text-white transition-colors hover:bg-[#9a3412] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c2410c]">
+                            <FileDown class="size-4" />
+                            Download
+                        </a>
+                    </article>
+                </div>
+
+                <div v-else class="mt-9 rounded-2xl border border-dashed border-slate-300 px-6 py-12 text-center text-sm text-slate-500">
+                    Template surat belum tersedia.
+                </div>
+            </div>
+        </section>
+
+        <footer class="bg-[#7c2d12] px-4 py-12 text-white sm:px-6">
+            <div class="mx-auto grid max-w-6xl gap-9 md:grid-cols-3">
+                <section>
+                    <h2 class="text-base font-semibold">Tentang PORLAS FMIPA</h2>
+                    <p class="mt-4 text-sm leading-6 text-white/85">PORLAS FMIPA adalah portal layanan surat akademik untuk memudahkan pengajuan dan pengelolaan surat di Fakultas MIPA Universitas Lambung Mangkurat.</p>
+                </section>
+                <section>
+                    <h2 class="text-base font-semibold">Tautan Cepat</h2>
+                    <nav class="mt-4 flex flex-col items-start gap-2.5 text-sm text-white/85">
+                        <button type="button" class="transition hover:text-white" @click="onLoginMahasiswa">Portal Mahasiswa</button>
+                        <button type="button" class="transition hover:text-white" @click="onLoginPegawai">Portal Pegawai</button>
+                        <a href="#template-surat" class="transition hover:text-white">Template Surat</a>
+                    </nav>
+                </section>
+                <section>
+                    <h2 class="text-base font-semibold">Kontak</h2>
+                    <address class="mt-4 text-sm leading-6 not-italic text-white/85"><strong class="font-semibold text-white">Fakultas MIPA ULM</strong><br>Universitas Lambung Mangkurat<br>Banjarmasin, Kalimantan Selatan</address>
+                </section>
+            </div>
+            <div class="mx-auto mt-10 max-w-6xl border-t border-white/20 pt-6 text-center text-sm text-white/80">© {{ new Date().getFullYear() }} PORLAS FMIPA. Hak cipta dilindungi oleh Universitas Lambung Mangkurat.</div>
+        </footer>
+
+        <div v-if="modalImage" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4" role="dialog" aria-modal="true" aria-label="Preview pengumuman" @click.self="onCloseAnnouncement">
+            <button type="button" class="absolute right-4 top-4 inline-flex size-10 items-center justify-center rounded-lg bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" aria-label="Tutup preview" @click="onCloseAnnouncement"><X class="size-5" /></button>
+            <img :src="carouselImageUrl(modalImage)" :alt="modalImage.nama" class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl">
         </div>
-    </section>
+    </main>
 </template>
 
-<style>
-html {
-    scroll-behavior: smooth;
+<style scoped>
+.landing-service-card {
+    display: flex;
+    min-height: 18rem;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid #fed7aa;
+    border-radius: 1rem;
+    background: white;
+    padding: 1.75rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.05);
+    transition: transform 200ms, border-color 200ms, box-shadow 200ms;
 }
+
+.landing-service-card:hover {
+    transform: translateY(-0.25rem);
+    border-color: #fdba74;
+    box-shadow: 0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.1);
+}
+
+.landing-service-card:focus-visible {
+    outline: 2px solid #c2410c;
+    outline-offset: 4px;
+}
+
+.landing-service-icon {
+    display: flex;
+    width: 4rem;
+    height: 4rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1rem;
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.landing-service-title {
+    margin-top: 1.25rem;
+    color: #0f172a;
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.75rem;
+}
+
+.landing-service-description {
+    margin-top: 1rem;
+    color: #475569;
+    font-size: 0.875rem;
+    line-height: 1.5rem;
+}
+
+:deep(.landing-carousel .carousel__viewport) {
+    overflow: visible;
+}
+
+:deep(.landing-carousel .carousel__prev),
+:deep(.landing-carousel .carousel__next) {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
+    background: white;
+    color: #334155;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+    transition: background-color 150ms;
+}
+
+:deep(.landing-carousel .carousel__prev:hover),
+:deep(.landing-carousel .carousel__next:hover) { background: #f8fafc; }
+
+:deep(.landing-carousel .carousel__prev) { left: -3.5rem; }
+:deep(.landing-carousel .carousel__next) { right: -3.5rem; }
+
+:deep(.landing-carousel .carousel__pagination) { margin-top: 1.25rem; gap: 0.5rem; }
+:deep(.landing-carousel .carousel__pagination-button::after) { width: 0.5rem; height: 0.5rem; border-radius: 9999px; background: #cbd5e1; }
+:deep(.landing-carousel .carousel__pagination-button--active::after) { background: #c2410c; }
+
+.hero-role-button {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid #fed7aa;
+    border-radius: 0.5rem;
+    padding: 0.875rem 1rem;
+    color: #1e293b;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: left;
+    transition: border-color 150ms, background-color 150ms;
+}
+
+.hero-role-button:hover {
+    border-color: #fdba74;
+    background: #fff7ed;
+}
+
+.hero-role-button:focus-visible {
+    outline: 2px solid #c2410c;
+    outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+    :deep(.landing-carousel .carousel__prev) { left: 0.5rem; }
+    :deep(.landing-carousel .carousel__next) { right: 0.5rem; }
+}
+</style>
+
+<style>
+html { scroll-behavior: smooth; }
 </style>
