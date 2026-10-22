@@ -1,7 +1,8 @@
 # PRD 001 — Sidang Nol Revamp
 
-**Status:** Approved for implementation  
-**Created:** 22 October 2026  
+**Status:** Done<br>
+**Created:** 22 October 2026<br>
+**Completed:** 22 October 2026
 **Area:** Berkas Sidang Nol index table  
 **Mode:** Full stack — scoped Laravel query support and Vue/Inertia UI revamp
 
@@ -247,14 +248,34 @@ Verification:
 
 ## 13. Completion criteria
 
-- [ ] The shared table base exists only as `DataTable.vue` and `DataTable.types.ts`.
-- [ ] Berkas Sidang Nol has one local `DataTable.vue` containing its search, status filter, and table UI.
-- [ ] Stage does not appear in the UI, types, URL query, request validation, service query, or tests.
-- [ ] Search and status filtering work with the existing role visibility rules.
-- [ ] Existing page actions and export behavior remain intact.
-- [ ] Backend feature test, frontend lint checks, and production build pass.
-- [ ] Browser verification confirms desktop and narrow-screen usability.
+- [x] The shared table base exists only as `DataTable.vue` and `DataTable.types.ts`.
+- [x] Berkas Sidang Nol has one local `DataTable.vue` containing its search, status filter, and table UI.
+- [x] Stage does not appear in the UI, types, URL query, request validation, service query, or tests.
+- [x] Search and status filtering work with the existing role visibility rules.
+- [x] Existing page actions and export behavior remain intact.
+- [x] Backend feature test, frontend lint checks, and production build pass.
+- [x] Browser verification confirms desktop and narrow-screen usability.
 
-## 14. Follow-up opportunities
+## 14. Completion record
+
+The Berkas Sidang Nol module is the completed reference implementation for the application revamp.
+
+Delivered:
+
+- Shared and module-local data-table structure, including responsive horizontal overflow, compact index column sizing, search, status filter, pagination, export, and permission-aware rounded action buttons.
+- Validated index query flow through `IndexSidangNolRequest` and `SidangNolService::datatable()`.
+- Revamped `Form.vue`, with shared-select usage and a responsive two-column document-upload layout.
+- Revamped `Show.vue`, with clean request details and direct, toolbar-free document previews in a two-column document layout.
+- Revamped `Ajuan.vue`, with separate request-detail and decision sections, signatory selection, decision inputs, direct document previews, and the existing cancel/reject/accept flows.
+- Responsive behavior and the agreed muted-orange primary presentation across the module.
+
+Verification completed on 22 October 2026:
+
+- `php artisan test tests/Feature/BerkasSidangNolIndexTest.php` — passed: 5 tests, 17 assertions.
+- Targeted frontend ESLint checks — passed.
+- `pnpm build` — passed.
+- Desktop and narrow-screen UI review — completed during implementation.
+
+## 15. Follow-up opportunities
 
 After this PRD is implemented and reviewed, migrate another list module to the shared base. Only then decide whether a further local slice is justified; do not add more table components pre-emptively.
