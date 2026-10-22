@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import Heading from '@/components/Heading.vue';
 import Button from '@/components/ui/button/Button.vue';
+import { Label } from '@/components/ui/label';
 import Modal from '@/components/ui/modal/Modal.vue';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
@@ -203,76 +205,90 @@ function onExport(): void {
 </script>
 
 <template>
+
     <Head title="Berkas Sidang Nol" />
 
     <Modal :show="showExportModal" @close="onCloseExportModal">
-        <template #header><h2 class="text-lg font-semibold">Export Excel</h2></template>
+        <template #header>
+            <h2 class="text-lg font-semibold">Export Excel</h2>
+        </template>
 
         <div class="space-y-4">
-            <label class="block text-sm font-medium">
-                Tahun
-                <select v-model="formExport.tahun" class="mt-1 w-full rounded border border-gray-300 px-3 py-2">
-                    <option :value="99">Semua</option>
-                    <option v-for="tahun in tahunOptions" :key="tahun" :value="tahun">{{ tahun }}</option>
-                </select>
-            </label>
-            <label class="block text-sm font-medium">
-                Status
-                <select v-model="formExport.status" class="mt-1 w-full rounded border border-gray-300 px-3 py-2">
-                    <option :value="99">Seluruh</option>
-                    <option :value="1">Dikirim</option>
-                    <option :value="2">Diterima</option>
-                    <option :value="3">Ditolak</option>
-                </select>
-            </label>
-            <label class="block text-sm font-medium">
-                Program Studi
-                <select v-model="formExport.program_studi" class="mt-1 w-full rounded border border-gray-300 px-3 py-2">
-                    <option :value="99">Seluruh</option>
-                    <option v-for="programStudi in PROGRAM_STUDI_OPTIONS" :key="programStudi.value" :value="programStudi.value">
-                        {{ programStudi.label }}
-                    </option>
-                </select>
-            </label>
+            <div class="space-y-2">
+                <Label for="export_tahun">Tahun</Label>
+                <Select v-model="formExport.tahun">
+                    <SelectTrigger id="export_tahun" class="w-full">
+                        <SelectValue placeholder="Pilih tahun" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem :value="99">Semua</SelectItem>
+                        <SelectItem v-for="tahun in tahunOptions" :key="tahun" :value="tahun">
+                            {{ tahun }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            <div class="space-y-2">
+                <Label for="export_status">Status</Label>
+                <Select v-model="formExport.status">
+                    <SelectTrigger id="export_status" class="w-full">
+                        <SelectValue placeholder="Pilih status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem :value="99">Seluruh</SelectItem>
+                        <SelectItem :value="1">Dikirim</SelectItem>
+                        <SelectItem :value="2">Diterima</SelectItem>
+                        <SelectItem :value="3">Ditolak</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            <div class="space-y-2">
+                <Label for="export_program_studi">Program Studi</Label>
+                <Select v-model="formExport.program_studi">
+                    <SelectTrigger id="export_program_studi" class="w-full">
+                        <SelectValue placeholder="Pilih program studi" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem :value="99">Seluruh</SelectItem>
+                        <SelectItem v-for="programStudi in PROGRAM_STUDI_OPTIONS" :key="programStudi.value" :value="programStudi.value">
+                            {{ programStudi.label }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
         </div>
 
         <template #footer>
             <Button type="button" variant="outline" @click="onCloseExportModal">Kembali</Button>
-            <Button type="button" class="bg-emerald-700 text-white hover:bg-emerald-800" @click="onExport"><Download class="size-4" /> Download</Button>
+            <Button type="button" @click="onExport">
+                <Download class="size-4" /> Download
+            </Button>
         </template>
     </Modal>
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="mx-auto w-full max-w-[1800px] space-y-7 p-4 lg:p-6">
+        <div class="mx-auto w-full max-w-[1800px] space-y-7 p-4 sm:p-6">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <Heading title="Permohonan Sidang Nol Mahasiswa" description="Kelola permohonan surat sidang nol mahasiswa." class="!mb-0" />
+                <Heading title="Permohonan Sidang Nol Mahasiswa"
+                    description="Kelola permohonan surat sidang nol mahasiswa." class="!mb-0" />
 
-                <div class="flex flex-wrap items-center gap-2">
-                    <Button v-if="canExport" variant="outline" class="rounded-full" @click="onOpenExportModal">
+                <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
+                    <Button v-if="canExport" variant="outline" class="w-full sm:w-auto" @click="onOpenExportModal">
                         <FileDown class="size-4" />
                         Export
                     </Button>
-                    <Button v-if="canCreate" class="rounded-full bg-emerald-800 text-white hover:bg-emerald-900" @click="onCreate">
+                    <Button v-if="canCreate" class="w-full sm:w-auto" @click="onCreate">
                         <Plus class="size-4" />
                         Tambah Berkas
                     </Button>
                 </div>
             </div>
 
-            <DataTable
-                :auth="auth"
-                :berkas="berkas"
-                :filters="filters"
-                :loading="isLoading"
-                @query-change="onDataTableQueryChange"
-                @view="onDetail"
-                @edit="onEdit"
-                @delete="onDelete"
-                @submit="onSubmit"
-                @reset="onReset"
-                @review="onReview"
-                @download-reply="onDownloadReply"
-            />
+            <DataTable :auth="auth" :berkas="berkas" :filters="filters" :loading="isLoading"
+                @query-change="onDataTableQueryChange" @view="onDetail" @edit="onEdit" @delete="onDelete"
+                @submit="onSubmit" @reset="onReset" @review="onReview" @download-reply="onDownloadReply" />
         </div>
     </AppLayout>
 </template>

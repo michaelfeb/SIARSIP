@@ -61,7 +61,7 @@ function onRowsPerPageChange(event: Event): void {
 </script>
 
 <template>
-    <div class="data-table overflow-hidden rounded-2xl border border-border bg-card shadow-sm" :style="{ '--data-table-min-width': `${tableMinWidth}px` }">
+    <div class="data-table overflow-hidden rounded-xl border border-border bg-card shadow-sm sm:rounded-2xl" :style="{ '--data-table-min-width': `${tableMinWidth}px` }">
         <EasyDataTable
             v-model:server-options="serverOptions"
             :headers="headers"
@@ -120,6 +120,7 @@ function onRowsPerPageChange(event: Event): void {
 .data-table :deep(.vue3-easy-data-table__main) {
     border: 0;
     font-size: 0.8125rem;
+    overscroll-behavior-x: contain;
 }
 
 .data-table :deep(.vue3-easy-data-table__main.fixed-header) {
@@ -170,6 +171,10 @@ function onRowsPerPageChange(event: Event): void {
     padding: 0.625rem 0.875rem;
 }
 
+.data-table__scroll-hint {
+    display: none;
+}
+
 .data-table__summary {
     color: hsl(var(--muted-foreground));
     font-size: 0.75rem;
@@ -202,7 +207,7 @@ function onRowsPerPageChange(event: Event): void {
     min-width: 5.25rem;
     cursor: pointer;
     border: 1px solid hsl(var(--border));
-    border-radius: 9999px;
+    border-radius: 0.5rem;
     background: hsl(var(--background));
     padding: 0 1.875rem 0 0.875rem;
     color: hsl(var(--foreground));
@@ -226,7 +231,7 @@ function onRowsPerPageChange(event: Event): void {
     align-items: center;
     justify-content: center;
     border: 1px solid hsl(var(--border));
-    border-radius: 9999px;
+    border-radius: 0.5rem;
     background: hsl(var(--background));
     color: hsl(var(--foreground));
     cursor: pointer;
@@ -249,12 +254,20 @@ function onRowsPerPageChange(event: Event): void {
 }
 
 .data-table__page-button--active {
-    border-color: hsl(158 64% 25%);
-    background: hsl(158 64% 25%);
+    border-color: #c2410c;
+    background: #c2410c;
     color: white;
 }
 
 @media (max-width: 640px) {
+    .data-table__scroll-hint {
+        display: block;
+        border-top: 1px solid hsl(var(--border));
+        padding: 0.625rem 0.875rem;
+        color: hsl(var(--muted-foreground));
+        font-size: 0.75rem;
+    }
+
     .data-table__footer {
         align-items: flex-start;
         flex-direction: column;
@@ -262,7 +275,19 @@ function onRowsPerPageChange(event: Event): void {
 
     .data-table__controls {
         width: 100%;
+        align-items: stretch;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .data-table__rows-label {
         justify-content: space-between;
+    }
+
+    .data-table__pagination {
+        max-width: 100%;
+        overflow-x: auto;
+        padding-bottom: 0.125rem;
     }
 }
 </style>

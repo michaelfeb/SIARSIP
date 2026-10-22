@@ -89,6 +89,16 @@ openBerkasSidangNolDocumentPreview()
 
 Avoid vague exported names such as `loadData`, `process`, or `utils`. Event handlers follow the separate `on…` convention below; module-level and exported functions must retain the full feature context.
 
+## Button styling
+
+Use the shared `Button` from `@/components/ui/button` for application actions. Its default (primary) variant uses the muted orange `#c2410c` with `#9a3412` on hover. Every button size uses `rounded-lg`. Do not add a different corner-radius utility to a `Button` unless a documented component-specific exception is needed.
+
+Use `variant="outline"` for secondary actions and explicit semantic colors only for actions such as destructive, approve, or download. Data-table icon actions also use `rounded-lg`; pagination controls follow the same radius and use `#c2410c` for the active page.
+
+## Input styling
+
+Use shared `Input` and `Select` components for text inputs and selects. Their base controls use `rounded-lg`; provide only sizing, spacing, and state classes at the call site, not another corner-radius class. Native controls that cannot yet use a shared component must also use `rounded-lg`.
+
 ## Template and button handler naming
 
 For an interaction initiated by a template event—such as a button click, form submission, input change, or emitted child event—name the page or component function with the **`on`** prefix and an action in PascalCase.

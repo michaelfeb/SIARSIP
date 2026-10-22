@@ -3,13 +3,13 @@ import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
-import { Select as VueSelect } from 'vue3-select-component';
 import SidangNolDocumentUpload from './components/SidangNolDocumentUpload.vue';
 import { SIDANG_NOL_DOCUMENTS, SIDANG_NOL_STATUS } from './ts/constants';
 import type { SidangNol, SidangNolAuth, SidangNolDocumentKey } from './ts/types';
@@ -47,6 +47,9 @@ const isEdit = computed(() => props.mode === 'edit');
 const isStudent = computed(() => props.auth.user.role_id === 1);
 const userSelected = ref<number | null>(null);
 const userOptions = ref<UserOption[]>([]);
+const selectedUser = ref<UserOption | null>(null);
+const userSearch = ref('');
+const isUserSearchLoading = ref(false);
 const filepondFiles = reactive<Record<SidangNolDocumentKey, unknown[]>>({
     dokumen_hasil_studi: [],
     dokumen_data_diri: [],
@@ -55,7 +58,7 @@ const filepondFiles = reactive<Record<SidangNolDocumentKey, unknown[]>>({
     dokumen_office_toefl: [],
     dokumen_tambahan: [],
 });
-const { documentUrls, loadDocumentUrls } = useSidangNolDocuments();
+const { loadDocumentUrls } = useSidangNolDocuments();
 
 let userSearchTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -77,6 +80,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Berkas Sidang Nol', href: '/berkas-sidang-nol' },
     { title: isEdit.value ? 'Ubah' : 'Tambah', href: '/berkas-sidang-nol' },
 ];
+const selectedUserLabel = computed(() => selectedUser.value?.label);
 
 function selectUser(user: SidangNol['user'] | SidangNolAuth['user']) {
     if (!user) {
@@ -85,35 +89,55 @@ function selectUser(user: SidangNol['user'] | SidangNolAuth['user']) {
 
     const option = { label: `${user.nama} (${user.nim ?? '-'})`, value: user.id };
     userOptions.value = [option];
+    selectedUser.value = option;
     userSelected.value = option.value;
     form.user_id = option.value;
 }
 
-function onUserSelected(option: UserOption | null) {
-    form.user_id = option?.value ?? '';
+function onUserSelected(userId: number): void {
+    const option = userOptions.value.find((item) => item.value === userId);
+
+    if (option) {
+        selectedUser.value = option;
+    }
+
+    userSelected.value = userId;
+    form.user_id = userId;
 }
 
-function onUserOptionSearch(searchText: string) {
+function onUserSearchChange(): void {
     if (userSearchTimer) {
         clearTimeout(userSearchTimer);
     }
 
-    if (searchText.trim().length < 3) {
+    const searchText = userSearch.value.trim();
+
+    if (searchText.length < 5) {
         userOptions.value = [];
+        isUserSearchLoading.value = false;
         return;
     }
 
     userSearchTimer = setTimeout(async () => {
+        isUserSearchLoading.value = true;
+
         try {
             const response = await axios.get<Array<Pick<SidangNolAuth['user'], 'id' | 'nama' | 'nim'>>>(
                 route('api.users.search-user', { search: searchText }),
             );
+
+            if (userSearch.value.trim() !== searchText) {
+                return;
+            }
+
             userOptions.value = response.data.map((user) => ({
                 label: `${user.nama} (${user.nim ?? '-'})`,
                 value: user.id,
             }));
         } catch {
             userOptions.value = [];
+        } finally {
+            isUserSearchLoading.value = false;
         }
     }, 250);
 }
@@ -185,7 +209,7 @@ onBeforeUnmount(() => {
     <Head :title="isEdit ? 'Ubah Berkas Sidang Nol' : 'Tambah Berkas Sidang Nol'" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="space-y-6 p-4">
+        <div class="mx-auto w-full space-y-6 p-4 sm:p-6">
             <div>
                 <h1 class="text-xl font-semibold">{{ isEdit ? 'Edit Berkas Sidang Nol' : 'Tambah Berkas Sidang Nol' }}</h1>
                 <p class="mt-1 text-sm text-gray-500">Unggah setiap dokumen dalam format PDF dengan ukuran maksimal 1 MB.</p>
@@ -204,22 +228,54 @@ onBeforeUnmount(() => {
 
                 <div class="space-y-2">
                     <Label for="user_selected">Mahasiswa <span class="text-red-500">*</span></Label>
-                    <VueSelect id="user_selected" v-model="userSelected" :options="userOptions" editable placeholder="Cari mahasiswa" :is-disabled="isStudent" @search="onUserOptionSearch" @option-selected="onUserSelected" />
+                    <Select :model-value="userSelected ?? undefined" :disabled="isStudent" @update:model-value="onUserSelected">
+                        <SelectTrigger id="user_selected" class="h-10">
+                            <span :class="selectedUserLabel ? 'text-foreground' : 'text-muted-foreground'">
+                                {{ selectedUserLabel ?? 'Cari mahasiswa' }}
+                            </span>
+                        </SelectTrigger>
+                        <SelectContent class="max-h-80">
+                            <div class="sticky top-0 z-10 bg-popover p-1" @pointerdown.stop>
+                                <Input
+                                    v-model="userSearch"
+                                    type="search"
+                                    placeholder="Ketik nama atau NIM..."
+                                    class="h-9"
+                                    @input="onUserSearchChange"
+                                    @keydown.stop
+                                />
+                            </div>
+                            <p v-if="userSearch.trim().length < 5" class="px-2 py-3 text-sm text-muted-foreground">
+                                Ketik minimal 5 karakter untuk mencari mahasiswa.
+                            </p>
+                            <p v-else-if="isUserSearchLoading" class="px-2 py-3 text-sm text-muted-foreground">
+                                Mencari mahasiswa...
+                            </p>
+                            <p v-else-if="userOptions.length === 0" class="px-2 py-3 text-sm text-muted-foreground">
+                                Mahasiswa tidak ditemukan.
+                            </p>
+                            <SelectItem v-for="option in userOptions" v-else :key="option.value" :value="option.value">
+                                {{ option.label }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
                     <InputError :message="form.errors.user_id" />
                 </div>
 
-                <SidangNolDocumentUpload
-                    v-for="document in SIDANG_NOL_DOCUMENTS"
-                    :key="document.key"
-                    :document="document"
-                    :files="filepondFiles[document.key]"
-                    :error="form.errors[document.key]"
-                    @update="updateDocumentFiles($event, document.key)"
-                />
+                <div class="grid gap-x-6 gap-y-8 md:grid-cols-2">
+                    <SidangNolDocumentUpload
+                        v-for="document in SIDANG_NOL_DOCUMENTS"
+                        :key="document.key"
+                        :document="document"
+                        :files="filepondFiles[document.key]"
+                        :error="form.errors[document.key]"
+                        @update="updateDocumentFiles($event, document.key)"
+                    />
+                </div>
 
                 <div class="space-y-2">
                     <Label for="status">Status</Label>
-                    <select id="status" v-model="form.status" disabled class="w-full rounded border border-gray-300 bg-gray-100 px-3 py-2 text-sm">
+                    <select id="status" v-model="form.status" disabled class="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-sm">
                         <option v-for="(status, code) in SIDANG_NOL_STATUS" :key="code" :value="Number(code)">{{ status.label }}</option>
                     </select>
                 </div>
@@ -235,9 +291,9 @@ onBeforeUnmount(() => {
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-2">
-                    <Button type="button" class="border border-orange-400 bg-white text-orange-500 hover:bg-orange-100" @click="backToIndex">Kembali</Button>
-                    <Button type="submit" class="bg-blue-500 text-white hover:bg-blue-600" :disabled="form.processing">{{ form.processing ? 'Menyimpan...' : 'Simpan' }}</Button>
+                <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <Button type="button" class="w-full border border-orange-400 bg-white text-orange-500 hover:bg-orange-100 sm:w-auto" @click="backToIndex">Kembali</Button>
+                    <Button type="submit" class="w-full sm:w-auto" :disabled="form.processing">{{ form.processing ? 'Menyimpan...' : 'Simpan' }}</Button>
                 </div>
             </form>
         </div>

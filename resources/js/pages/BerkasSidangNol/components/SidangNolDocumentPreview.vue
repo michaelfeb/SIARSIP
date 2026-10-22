@@ -23,7 +23,7 @@ defineEmits<{
             v-if="url"
             :src="url"
             :title="title"
-            class="h-[70vh] w-full rounded border border-gray-200"
+            class="h-[60vh] w-full rounded border border-gray-200 sm:h-[70vh]"
         />
         <p v-else class="text-sm text-gray-500">Dokumen tidak tersedia.</p>
 

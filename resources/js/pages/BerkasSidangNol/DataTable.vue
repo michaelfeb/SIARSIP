@@ -188,16 +188,16 @@ function statusPresentation(status: number) {
         <div class="space-y-3">
             <p class="text-xs font-semibold uppercase tracking-wide text-foreground">Cari &amp; Filter</p>
 
-            <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.45fr)]">
+            <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(12rem,0.45fr)]">
                 <div class="relative">
                     <Search
                         class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input v-model="search" type="search" placeholder="Cari nama, NIM, atau nomor surat..."
-                        class="h-10 rounded-xl pl-9" @input="onSearchChange" />
+                        class="h-10 pl-9" @input="onSearchChange" />
                 </div>
 
                 <Select :model-value="status" @update:model-value="onStatusFilterChange">
-                    <SelectTrigger class="h-10 w-full rounded-xl">
+                    <SelectTrigger class="h-10 w-full">
                         <SelectValue placeholder="Semua Status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -243,48 +243,48 @@ function statusPresentation(status: number) {
             </template>
 
             <template #item-id="{ id, status: berkasStatus, user, ...berkas }">
-                <div class="flex items-center gap-2">
+                <div class="flex min-w-max items-center gap-2">
                     <Button variant="outline" size="icon"
-                        class="size-8 rounded-full border-blue-200 bg-white text-blue-600 hover:bg-blue-600 hover:text-white"
+                        class="size-8 rounded-lg border-blue-200 bg-white text-blue-600 hover:bg-blue-600 hover:text-white"
                         title="Detail" aria-label="Detail" @click="onView(id)">
                         <Eye class="size-4" />
                     </Button>
                     <Button v-if="sidangNolCapabilities(auth.user, { status: berkasStatus }).canReview"
                         variant="outline" size="icon"
-                        class="size-8 rounded-full border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-600 hover:text-white"
+                        class="size-8 rounded-lg border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-600 hover:text-white"
                         title="Periksa berkas" aria-label="Periksa berkas" @click="onReview(id)">
                         <Check class="size-4" />
                     </Button>
                     <Button v-if="sidangNolCapabilities(auth.user, { status: berkasStatus }).canSubmit"
                         variant="outline" size="icon"
-                        class="size-8 rounded-full border-blue-200 bg-white text-blue-600 hover:bg-blue-600 hover:text-white"
+                        class="size-8 rounded-lg border-blue-200 bg-white text-blue-600 hover:bg-blue-600 hover:text-white"
                         title="Kirim" aria-label="Kirim"
                         @click="onSubmit({ id, status: berkasStatus, user, ...berkas } as SidangNol)">
                         <Send class="size-4" />
                     </Button>
                     <Button v-if="sidangNolCapabilities(auth.user, { status: berkasStatus }).canReset" variant="outline"
                         size="icon"
-                        class="size-8 rounded-full border-sky-200 bg-white text-sky-600 hover:bg-sky-600 hover:text-white"
+                        class="size-8 rounded-lg border-sky-200 bg-white text-sky-600 hover:bg-sky-600 hover:text-white"
                         title="Reset" aria-label="Reset"
                         @click="onReset({ id, status: berkasStatus, user, ...berkas } as SidangNol)">
                         <RotateCcw class="size-4" />
                     </Button>
                     <Button v-if="sidangNolCapabilities(auth.user, { status: berkasStatus }).canEdit" variant="outline"
                         size="icon"
-                        class="size-8 rounded-full border-amber-200 bg-white text-amber-600 hover:bg-amber-500 hover:text-white"
+                        class="size-8 rounded-lg border-amber-200 bg-white text-amber-600 hover:bg-amber-500 hover:text-white"
                         title="Ubah" aria-label="Ubah" @click="onEdit(id)">
                         <Pencil class="size-4" />
                     </Button>
                     <Button v-if="sidangNolCapabilities(auth.user, { status: berkasStatus }).canDelete"
                         variant="outline" size="icon"
-                        class="size-8 rounded-full border-rose-200 bg-white text-rose-600 hover:bg-rose-600 hover:text-white"
+                        class="size-8 rounded-lg border-rose-200 bg-white text-rose-600 hover:bg-rose-600 hover:text-white"
                         title="Hapus" aria-label="Hapus"
                         @click="onDelete({ id, status: berkasStatus, user, ...berkas } as SidangNol)">
                         <Trash2 class="size-4" />
                     </Button>
                     <Button v-if="sidangNolCapabilities(auth.user, { status: berkasStatus }).canDownloadReply"
                         variant="outline" size="icon"
-                        class="size-8 rounded-full border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-600 hover:text-white"
+                        class="size-8 rounded-lg border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-600 hover:text-white"
                         title="Download surat balasan" aria-label="Download surat balasan"
                         @click="onDownloadReply({ id, status: berkasStatus, user, ...berkas } as SidangNol)">
                         <Download class="size-4" />
