@@ -23,6 +23,7 @@ Other modules and routes, such as Berkas Persuratan, users, jenis surat, and das
 - [Authentication and authorization](auth-authorization.md) — login, registration, roles, and route guards.
 - [Data model](data-model.md) — retained tables, relationships, status values, and enumerations.
 - [Backend development base](backend-development-base.md) — the agreed controller, Form Request, and service convention for the revamp.
+- [Frontend development base](frontend-development-base.md) — the Berkas Sidang Nol reference layout, naming, and test convention for Vue modules.
 - [Berkas Sidang Nol](modules/berkas-sidang-nol.md) — complete submission and decision workflow.
 - [Template Surat](modules/template-surat.md) — template publishing and download behavior.
 - [Carousel](modules/carousel.md) — landing-page announcement image management.

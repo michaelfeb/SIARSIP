@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Exports\BerkasSidangNolExport;
+use App\Http\Requests\SidangNol\IndexSidangNolRequest;
 use App\Models\BerkasSidangNol;
 use App\Models\Note;
 use App\Models\User;
+use App\Services\SidangNolService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -19,41 +21,10 @@ use Illuminate\Validation\Rule;
 class BerkasSidangNolController extends Controller
 {
     //
-    public function index(Request $request)
+    public function index(IndexSidangNolRequest $request, SidangNolService $sidangNolService)
     {
-        $search = $request->input('search');
-        $perPage = $request->input('per_page', 10);
-        $user = auth()->user();
-
-        $query = BerkasSidangNol::with('user')
-            ->where(function ($q) use ($user) {
-                if ($user->role_id === 1) {
-                    // Mahasiswa hanya bisa lihat datanya sendiri
-                    $q->where('user_id', $user->id);
-                } else {
-                    // Sub akademik hanya bisa lihat data status >= 1 (bukan draft)
-                    $q->where('status', '>=', 1);
-                }
-            })
-            ->when($search, function ($query) use ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->whereHas('user', function ($userQuery) use ($search) {
-                        $userQuery->where('nama', 'like', "%{$search}%")
-                            ->orWhere('nim', 'like', "%{$search}%");
-                    })
-                        ->orWhere('nomor_surat', 'like', "%{$search}%")
-                        ->orWhere('program_studi', 'like', "%{$search}%");
-                });
-            })
-            ->orderByRaw("
-            CASE 
-                WHEN status = 1 THEN 0
-                ELSE 1
-            END ASC,
-            tanggal_dikirim DESC
-        ");
-
-        $berkasSidangNol = $query->paginate($perPage)->withQueryString();
+        $filters = $request->filters();
+        $berkasSidangNol = $sidangNolService->datatable($request->user(), $filters);
 
         if ($request->wantsJson()) {
             return response()->json($berkasSidangNol);
@@ -61,6 +32,7 @@ class BerkasSidangNolController extends Controller
 
         return Inertia::render('BerkasSidangNol/Index', [
             'berkas' => $berkasSidangNol,
+            'filters' => $filters,
         ]);
     }
 

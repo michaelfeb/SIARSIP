@@ -58,6 +58,18 @@ export interface Paginated<T> {
     last_page: number;
 }
 
+export interface BerkasSidangNolDataTableFilters {
+    search: string | null;
+    status: SidangNolStatus | null;
+}
+
+export interface BerkasSidangNolDataTableQuery {
+    page: number;
+    perPage: number;
+    search: string | null;
+    status: SidangNolStatus | null;
+}
+
 export type SidangNolDocumentUrls = Partial<Record<SidangNolDocumentKey, string>>;
 
 export interface SidangNolDocumentDefinition {
