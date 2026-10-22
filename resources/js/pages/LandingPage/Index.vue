@@ -112,7 +112,7 @@ function carouselImageUrl(item: CarouselItem) {
             <div class="pointer-events-none absolute -bottom-36 -left-24 size-80 rounded-full bg-white/10" />
 
             <div class="relative mx-auto max-w-6xl">
-                <header class="flex items-center justify-between border-b border-white/20 py-5 text-white">
+                <header class="flex items-center border-b border-white/20 py-5 text-white">
                     <div class="flex items-center gap-3">
                         <img :src="logoUrl" alt="Logo Universitas Lambung Mangkurat" class="size-10 object-contain" />
                         <div>
@@ -120,7 +120,6 @@ function carouselImageUrl(item: CarouselItem) {
                             <p class="text-xs text-white/75">Aplikasi Persuratan</p>
                         </div>
                     </div>
-                    <a href="#template-surat" class="text-sm font-medium text-white/90 transition hover:text-white">Template Surat</a>
                 </header>
 
                 <div class="grid items-center gap-10 py-14 lg:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.75fr)] lg:py-20">
@@ -288,15 +287,27 @@ function carouselImageUrl(item: CarouselItem) {
     border-radius: 1rem;
     background: white;
     padding: 1.75rem 1.5rem;
+    cursor: pointer;
     text-align: center;
     box-shadow: 0 1px 2px rgb(15 23 42 / 0.05);
     transition: transform 200ms, border-color 200ms, box-shadow 200ms;
 }
 
 .landing-service-card:hover {
-    transform: translateY(-0.25rem);
-    border-color: #fdba74;
-    box-shadow: 0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.1);
+    transform: translateY(-0.5rem) scale(1.015);
+    border-color: #c2410c;
+    background: #c2410c;
+    box-shadow: 0 20px 25px -5px rgb(124 45 18 / 0.25), 0 8px 10px -6px rgb(124 45 18 / 0.2);
+}
+
+.landing-service-card:hover .landing-service-icon {
+    background: rgb(255 255 255 / 0.16);
+    color: white;
+}
+
+.landing-service-card:hover .landing-service-title,
+.landing-service-card:hover .landing-service-description {
+    color: white;
 }
 
 .landing-service-card:focus-visible {
@@ -359,6 +370,7 @@ function carouselImageUrl(item: CarouselItem) {
 .hero-role-button {
     display: flex;
     width: 100%;
+    cursor: pointer;
     align-items: center;
     gap: 0.75rem;
     border: 1px solid #fed7aa;
