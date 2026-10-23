@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue'
-import { useForm, Head, router } from '@inertiajs/vue3'
+import { useForm, router } from '@inertiajs/vue3'
 import InputError from '@/components/InputError.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +16,7 @@ import 'filepond-plugin-pdf-preview/dist/filepond-plugin-pdf-preview.css'
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type'
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview'
 import FilePondPluginPdfPreview from 'filepond-plugin-pdf-preview'
+import { LoaderCircle } from 'lucide-vue-next'
 
 
 const FilePond = vueFilePond(
@@ -32,8 +33,7 @@ function handleUpdateFiles(fileItems: any) {
 const today = new Date().toISOString().split('T')[0]
 
 const props = defineProps<{
-    templateSurat: any,
-    jenisSurat: any,
+    templateSurat?: any,
     mode: 'create' | 'edit'
 }>()
 const show = ref(false);
@@ -41,9 +41,8 @@ const show = ref(false);
 const form = useForm({
     nama: props.templateSurat?.nama ?? '',
     deskripsi: props.templateSurat?.deskripsi ?? '',
-    jenis_surat_id: props.templateSurat?.jenis_surat_id ?? '',
     status: props.templateSurat?.status ?? 1,
-    dokumen_path: props.templateSurat?.dokumen_path ?? '',
+    dokumen_path: null as File | null,
     tanggal_publish: props.templateSurat?.tanggal_publish ?? today,
 })
 
@@ -136,18 +135,6 @@ onMounted(() => {
                             rows="4"
                             class="w-full text-sm rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                         <InputError :message="form.errors.deskripsi" />
-                    </div>
-
-                    <div class="space-y-2">
-                        <Label for="jenis_surat_id" class="gap-1">Jenis Surat<span class="text-red-500">*</span></Label>
-                        <select id="jenis_surat_id" v-model="form.jenis_surat_id"
-                            class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">Pilih Jenis Surat</option>
-                            <option v-for="jenis in props.jenisSurat" :key="jenis.id" :value="jenis.id">
-                                {{ jenis.nama }}
-                            </option>
-                        </select>
-                        <InputError :message="form.errors.jenis_surat_id" />
                     </div>
 
                     <div class="space-y-2">

@@ -106,7 +106,7 @@ class CarouselController extends Controller
         $carousel->delete();
 
         return response()->json([
-            'message' => 'Jenis surat berhasil dihapus.',
+            'message' => 'Carousel berhasil dihapus.',
             'status' => 'success',
         ]);
     }

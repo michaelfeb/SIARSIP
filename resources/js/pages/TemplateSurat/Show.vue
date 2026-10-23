@@ -2,7 +2,6 @@
 import Button from '@/components/ui/button/Button.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem } from '@/types';
-import { usePage } from '@inertiajs/vue3'
 import { router } from '@inertiajs/vue3'
 import { onMounted, ref } from 'vue';
 
@@ -45,10 +44,6 @@ onMounted(() => {
                         <tr class="border-b">
                             <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Nama Template</td>
                             <td class="py-4 px-4 border border-gray-200">{{ props.templateSurat.nama || '-' }}</td>
-                        </tr>
-                        <tr class="border-b">
-                            <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Jenis Surat</td>
-                            <td class="py-4 px-4 border border-gray-200">{{ props.templateSurat.jenis_surat?.nama || '-' }}</td>
                         </tr>
                         <tr class="border-b">
                             <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Deskripsi</td>

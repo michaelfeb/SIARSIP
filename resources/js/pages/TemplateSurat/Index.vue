@@ -5,7 +5,7 @@ import EasyDataTable, { Item } from 'vue3-easy-data-table'
 import { type BreadcrumbItem } from '@/types'
 import 'vue3-easy-data-table/dist/style.css'
 import Heading from '@/components/Heading.vue'
-import { ref, computed, watch } from 'vue'
+import { ref, watch } from 'vue'
 import Button from '@/components/ui/button/Button.vue'
 import { Eye, Pencil, Trash2, Plus } from 'lucide-vue-next'
 import axios from 'axios'
@@ -13,7 +13,6 @@ import Swal from 'sweetalert2'
 
 const headers = [
     { text: "Nama", value: "nama" },
-    { text: "Jenis Surat", value: "jenis_surat" },
     { text: "Deskripsi", value: "deskripsi" },
     { text: "Status", value: "status" },
     { text: "Tanggal terbit", value: "tanggal_publish" },
@@ -48,7 +47,7 @@ const loadFromServer = async () => {
 
 loadFromServer();
 
-watch([serverOptions, search], (value) => { loadFromServer(); }, { deep: true });
+watch([serverOptions, search], () => { loadFromServer(); }, { deep: true });
 
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -134,7 +133,7 @@ function onDelete(id: number) {
 
             <div class="container mx-auto flex items-center justify-end gap-4 mb-4">
                 <span class="text-sm font-medium whitespace-nowrap">Cari</span>
-                <input v-model="search" @input="onSearch" type="text" placeholder="Cari nama & jenis surat"
+                <input v-model="search" @input="onSearch" type="text" placeholder="Cari nama template"
                     class="w-50 h-8 text-sm rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
 
@@ -149,10 +148,6 @@ function onDelete(id: number) {
                 </template>
                 <template #item-nama="{ nama }">
                     {{ nama || '-' }}
-                </template>
-
-                <template #item-jenis_surat="{ jenis_surat }">
-                    {{ jenis_surat.nama || '-' }}
                 </template>
 
                 <template #item-status="{ status }">

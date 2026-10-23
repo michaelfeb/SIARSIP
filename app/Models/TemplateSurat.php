@@ -12,7 +12,6 @@ class TemplateSurat extends Model
     protected $table = 'template_surat';
 
     protected $fillable = [
-        'jenis_surat_id',
         'nama',
         'deskripsi',
         'status',
@@ -20,8 +19,4 @@ class TemplateSurat extends Model
         'tanggal_publish',
     ];
 
-    public function jenisSurat()
-    {
-        return $this->belongsTo(JenisSurat::class);
-    }
 }

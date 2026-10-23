@@ -1,251 +1,69 @@
 import { Folders, LayoutGrid, Mail, Minus, Settings, User } from 'lucide-vue-next';
 
+const dashboard = {
+    title: 'Dashboard',
+    href: '/dashboard',
+    icon: LayoutGrid,
+};
+const templateSurat = {
+    title: 'Template Surat',
+    href: '/template-surat',
+    icon: Folders,
+};
+
+const pengguna = {
+    title: 'Pengguna',
+    href: '/users',
+    icon: User,
+};
+
+const sidangNol = {
+    title: 'Berkas',
+    icon: Mail,
+    children: [{ title: 'Berkas Sidang Nol', icon: Minus, href: '/berkas-sidang-nol' }],
+};
+
 export const sidebars = {
     1: [
-        // Role ID 1: Mahasiswa
-        {
-            title: 'Berkas',
-            icon: Mail,
-            children: [
-                { title: 'Berkas Sidang Nol', icon: Minus, href: '/berkas-sidang-nol' },
-                { title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' },
-            ],
-        },
+        sidangNol,
         {
             title: 'Template Surat',
             href: '/template-surat-mahasiswa',
             icon: Folders,
         },
     ],
-
-    2: [
-        {
-            title: 'Dashboard',
-            href: '/dashboard',
-            icon: LayoutGrid,
-        },
-        {
-            title: 'Berkas',
-            icon: Mail,
-            children: [{ title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' }],
-        },
-        {
-            title: 'Template Surat',
-            href: '/template-surat',
-            icon: Folders,
-        },
-        {
-            title: 'Pengguna',
-            href: '/users',
-            icon: User,
-        },
-
-        {
-            title: 'Pengaturan',
-            icon: Settings,
-            children: [{ title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' }],
-        },
-    ],
-
-    3: [
-        {
-            title: 'Dashboard',
-            href: '/dashboard',
-            icon: LayoutGrid,
-        },
-        {
-            title: 'Berkas',
-            icon: Mail,
-            children: [{ title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' }],
-        },
-        {
-            title: 'Template Surat',
-            href: '/template-surat',
-            icon: Folders,
-        },
-        {
-            title: 'Pengguna',
-            href: '/users',
-            icon: User,
-        },
-
-        {
-            title: 'Pengaturan',
-            icon: Settings,
-            children: [{ title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' }],
-        },
-    ],
-
-    4: [
-        {
-            title: 'Dashboard',
-            href: '/dashboard',
-            icon: LayoutGrid,
-        },
-        {
-            title: 'Berkas',
-            icon: Mail,
-            children: [{ title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' }],
-        },
-        {
-            title: 'Template Surat',
-            href: '/template-surat',
-            icon: Folders,
-        },
-        {
-            title: 'Pengguna',
-            href: '/users',
-            icon: User,
-        },
-
-        {
-            title: 'Pengaturan',
-            icon: Settings,
-            children: [{ title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' }],
-        },
-    ],
-
-    5: [
-        {
-            title: 'Dashboard',
-            href: '/dashboard',
-            icon: LayoutGrid,
-        },
-        {
-            title: 'Berkas',
-            icon: Mail,
-            children: [{ title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' }],
-        },
-        {
-            title: 'Template Surat',
-            href: '/template-surat',
-            icon: Folders,
-        },
-        {
-            title: 'Pengguna',
-            href: '/users',
-            icon: User,
-        },
-
-        {
-            title: 'Pengaturan',
-            icon: Settings,
-            children: [{ title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' }],
-        },
-    ],
-
+    2: [dashboard, templateSurat, pengguna],
+    3: [dashboard, templateSurat, pengguna],
+    4: [dashboard, templateSurat, pengguna],
+    5: [dashboard, templateSurat, pengguna],
     6: [
-        {
-            title: 'Dashboard',
-            href: '/dashboard',
-            icon: LayoutGrid,
-        },
-        {
-            title: 'Berkas',
-            icon: Mail,
-            children: [
-                { title: 'Berkas Sidang Nol', icon: Minus, href: '/berkas-sidang-nol' },
-                { title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' },
-            ],
-        },
-        {
-            title: 'Template Surat',
-            href: '/template-surat',
-            icon: Folders,
-        },
-        {
-            title: 'Pengguna',
-            href: '/users',
-            icon: User,
-        },
-
+        dashboard,
+        sidangNol,
+        templateSurat,
+        pengguna,
         {
             title: 'Pengaturan',
             icon: Settings,
             children: [
-                { title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' },
                 { title: 'Carousel', icon: Minus, href: '/carousel' },
                 { title: 'Link Landing Page', icon: Minus, href: '/link-landing-page' },
             ],
         },
     ],
-
-    7: [
-        {
-            title: 'Dashboard',
-            href: '/dashboard',
-            icon: LayoutGrid,
-        },
-        {
-            title: 'Berkas',
-            icon: Mail,
-            children: [{ title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' }],
-        },
-        {
-            title: 'Template Surat',
-            href: '/template-surat',
-            icon: Folders,
-        },
-        {
-            title: 'Pengguna',
-            href: '/users',
-            icon: User,
-        },
-
-        {
-            title: 'Pengaturan',
-            icon: Settings,
-            children: [{ title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' }],
-        },
-    ],
-
+    7: [dashboard, templateSurat, pengguna],
     8: [
-        {
-            title: 'Dashboard',
-            href: '/dashboard',
-            icon: LayoutGrid,
-        },
-        {
-            title: 'Berkas',
-            icon: Mail,
-            children: [
-                { title: 'Berkas Sidang Nol', icon: Minus, href: '/berkas-sidang-nol' },
-                { title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' },
-            ],
-        },
-        {
-            title: 'Template Surat',
-            href: '/template-surat',
-            icon: Folders,
-        },
-
-        {
-            title: 'Pengguna',
-            href: '/users',
-            icon: User,
-        },
-
+        dashboard,
+        sidangNol,
+        templateSurat,
+        pengguna,
         {
             title: 'Pengaturan',
             icon: Settings,
             children: [
-                { title: 'Jenis Surat', icon: Minus, href: '/jenis-surat' },
                 { title: 'Carousel', icon: Minus, href: '/carousel' },
                 { title: 'Link Landing Page', icon: Minus, href: '/link-landing-page' },
             ],
         },
     ],
-
-    9: [
-        {
-            title: 'Dashboard',
-            href: '/dashboard',
-            icon: LayoutGrid,
-        },
-        {
-            title: 'Berkas',
-            icon: Mail,
-            children: [{ title: 'Berkas Persuratan', icon: Minus, href: '/berkas-persuratan' }],
-        },
-    ],
+    9: [dashboard],
 };

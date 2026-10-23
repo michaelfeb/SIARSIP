@@ -39,10 +39,9 @@ app/
   Http/Middleware/      role and Inertia middleware
   Models/               Eloquent models
   Policies/             model authorization policies
-  Exports/              Excel export definitions
 database/
   migrations/           schema history
-  seeders/              starter roles, users, letter types, and templates
+  seeders/              starter roles, users, and templates
 resources/
   js/pages/             Inertia page components, grouped by module
   js/components/        reusable application and UI components
@@ -68,9 +67,11 @@ Authenticated pages normally use `resources/js/layouts/AppLayout.vue`, which del
 | Disk | Physical root | Intended content | Exposure |
 | --- | --- | --- | --- |
 | `public` | `storage/app/public` | template `.doc/.docx` files and carousel images | `public/storage` symlink and application routes |
-| `secure` | `storage/app/secure_storage` | Sidang Nol submission PDFs and generated reply letters | application download/preview routes |
+| `secure` | `storage/app/secure_storage` | Sidang Nol submission PDFs and generated reply letters; retained unreferenced legacy files | application download/preview routes for active modules only |
 
 The `secure` disk is configured as private in `config/filesystems.php`. File access is still implemented by application routes, so future changes must retain explicit authorization checks before returning a file.
+
+Legacy Berkas Persuratan attachments intentionally remain on this disk after the module and its database records are retired. They have no active application route or database reference and must not be removed by routine cleanup.
 
 ## Architecture boundaries for new work
 

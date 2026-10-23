@@ -2,7 +2,7 @@
 
 SIARSIP is the **Portal Layanan Surat Akademik FMIPA ULM**. It is a server-rendered Laravel application with a Vue single-page experience delivered through Inertia.
 
-This documentation describes the application as implemented in the repository on 21 October 2026. It distinguishes the retained scope from legacy functionality that remains in the codebase.
+This documentation describes the application as implemented in the repository on 23 October 2026.
 
 ## Retained product scope
 
@@ -14,7 +14,7 @@ The next iteration keeps these modules:
 4. Carousel
 5. Link Landing Page
 
-Other modules and routes, such as Berkas Persuratan, users, jenis surat, and dashboard, still exist in the current codebase. They are recorded where they affect shared architecture or permissions, but are not documented as retained product modules.
+Berkas Persuratan and the old Jenis Surat module are retired. Their legacy URLs deliberately return HTTP `410 Gone`; their database data is removed while the old private attachment files remain untouched on storage.
 
 ## Reading order
 
@@ -28,6 +28,8 @@ Other modules and routes, such as Berkas Persuratan, users, jenis surat, and das
 - [Template Surat](modules/template-surat.md) — template publishing and download behavior.
 - [Carousel](modules/carousel.md) — landing-page announcement image management.
 - [Link Landing Page](modules/link-landing-page.md) — landing-page shortcut management.
+- [PRD 002](PRD/002_LEGACY_RETIREMENT_AND_TEMPLATE_SURAT_DECOUPLING.md) — approved legacy-retirement scope.
+- [PRD 003](PRD/003_LETTER_TYPES_AND_LETTERS_FOUNDATION.md) — approved reusable foundation for future letter services.
 
 ## Documentation conventions
 

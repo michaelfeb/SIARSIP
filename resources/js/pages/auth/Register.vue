@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
-import { onlyAllowNumbers } from '@/utils/inputValidatior'
+import { Eye, EyeOff, LoaderCircle } from 'lucide-vue-next';
+import { onlyAllowNumbers } from '@/utils/inputValidatior';
 import programStudiMapping from '@/utils/programStudiMapping';
 import Swal from 'sweetalert2';
-import { watch } from 'vue';
+import { ref } from 'vue';
 
 const form = useForm({
     nama: '',
@@ -22,7 +22,10 @@ const form = useForm({
     password_confirmation: '',
 });
 
-const submit = () => {
+const showPassword = ref(false);
+const showPasswordConfirmation = ref(false);
+
+function onSubmit() {
     form.post(route('register'), {
         onSuccess: () => {
             Swal.fire({
@@ -50,96 +53,100 @@ const submit = () => {
             });
         }
     });
-};
-
-function onLogin() {
-    router.visit(route('login'))
 }
 
-watch(() => form.nomor_telpon, (value) => {
-    if (value && !value.startsWith('08')) {
-        form.nomor_telpon = '08'
-    }
-})
+function onLogin() {
+    router.visit(route('login'));
+}
 </script>
 
 <template>
-    <AuthBase title="Daftar akun mahasiswa" description="Masukan data diri anda">
+    <AuthBase title="Daftar akun mahasiswa" description="Lengkapi data diri untuk membuat akun mahasiswa.">
 
-        <Head title="Register" />
+        <Head title="Daftar" />
 
-        <form @submit.prevent="submit" class="flex flex-col gap-6">
-            <div class="grid gap-6">
+        <form @submit.prevent="onSubmit" class="flex flex-col gap-6">
+            <div class="grid gap-5">
                 <div class="grid gap-2">
                     <Label for="nama">Nama</Label>
                     <Input id="nama" type="text" required autofocus :tabindex="1" autocomplete="nama"
-                        v-model="form.nama" placeholder="Full nama" />
+                        v-model="form.nama" :aria-invalid="Boolean(form.errors.nama)" placeholder="Nama lengkap" />
                     <InputError :message="form.errors.nama" />
                 </div>
 
                 <div class="grid gap-2">
                     <Label for="nim">NIM</Label>
-                    <Input id="nim" type="text" required autofocus :tabindex="1" autocomplete="nim"
-                        @keypress="onlyAllowNumbers" v-model="form.nim" placeholder="NIM" />
+                    <Input id="nim" type="text" required :tabindex="2" autocomplete="username" inputmode="numeric"
+                        @keypress="onlyAllowNumbers" v-model="form.nim" :aria-invalid="Boolean(form.errors.nim)" placeholder="Masukkan NIM" />
                     <InputError :message="form.errors.nim" />
                 </div>
 
                 <div class="grid gap-2">
                     <Label for="program_studi">Program Studi</Label>
-                    <select v-model="form.program_studi" id="program_studi"
-                        class="text-sm font-medium w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
-                        <option value="">Pilih Program Studi</option>
-                        <option v-for="(value, key) in programStudiMapping" :key="key" :value="value.value">
-                            {{ value.label }}
-                        </option>
-                    </select>
+                    <Select v-model="form.program_studi">
+                        <SelectTrigger id="program_studi" :tabindex="3" :aria-invalid="Boolean(form.errors.program_studi)">
+                            <SelectValue placeholder="Pilih program studi" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="(value, key) in programStudiMapping" :key="key" :value="String(value.value)">
+                                {{ value.label }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <InputError :message="form.errors.program_studi" />
                 </div>
 
                 <div class="grid gap-2">
                     <Label for="nomor_telpon">Nomor Telpon</Label>
-                    <div
-                        class="mt-1 flex rounded-md shadow-sm border border-gray-300 overflow-hidden focus-within:ring-1 focus-within:ring-orange-500 focus-within:border-orange-500">
-                        <span
-                            class="inline-flex items-center px-3 bg-gray-100 text-gray-600 text-sm border-r border-gray-300">
-                            08
-                        </span>
-                        <input v-model="form.nomor_telpon" type="text" id="nomor_telpon" @keypress="onlyAllowNumbers"
-                            class="flex-1 block w-full text-sm px-3 py-2 focus:outline-none" placeholder="Nomor" />
-                    </div>
-                    <InputError class="mt-2" :message="form.errors.nomor_telpon" />
+                    <Input id="nomor_telpon" v-model="form.nomor_telpon" type="tel" required :tabindex="4" inputmode="numeric"
+                        autocomplete="tel" @keypress="onlyAllowNumbers" :aria-invalid="Boolean(form.errors.nomor_telpon)"
+                        placeholder="Contoh: 081234567890" />
+                    <InputError :message="form.errors.nomor_telpon" />
                 </div>
 
                 <div class="grid gap-2">
                     <Label for="email">Email</Label>
-                    <Input id="email" type="email" required :tabindex="2" autocomplete="email" v-model="form.email"
-                        placeholder="email@mhs.ulm.com" />
+                    <Input id="email" type="email" required :tabindex="5" autocomplete="email" v-model="form.email"
+                        :aria-invalid="Boolean(form.errors.email)" placeholder="email@ulm.ac.id" />
                     <InputError :message="form.errors.email" />
                 </div>
 
                 <div class="grid gap-2">
                     <Label for="password">Password</Label>
-                    <Input id="password" type="password" required :tabindex="3" autocomplete="new-password"
-                        v-model="form.password" placeholder="Password" />
+                    <div class="relative">
+                        <Input id="password" :type="showPassword ? 'text' : 'password'" required :tabindex="6" autocomplete="new-password"
+                            v-model="form.password" class="pr-11" :aria-invalid="Boolean(form.errors.password)" placeholder="Minimal 8 karakter" />
+                        <button type="button" class="password-toggle" :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'" :tabindex="-1" @click="showPassword = !showPassword">
+                            <EyeOff v-if="showPassword" class="size-4" />
+                            <Eye v-else class="size-4" />
+                        </button>
+                    </div>
                     <InputError :message="form.errors.password" />
                 </div>
 
                 <div class="grid gap-2">
-                        <Label for="password_confirmation">Konfirmasi Password</Label>
-                        <Input id="password_confirmation" required v-model="form.password_confirmation" type="password"
-                            class="mt-1 block w-full" autocomplete="password_confirmation" tabindex="4" placeholder="Confirm password" />
-                        <InputError :message="form.errors.password_confirmation" />
+                    <Label for="password_confirmation">Konfirmasi Password</Label>
+                    <div class="relative">
+                        <Input id="password_confirmation" required v-model="form.password_confirmation" :type="showPasswordConfirmation ? 'text' : 'password'"
+                            class="pr-11" autocomplete="new-password" :tabindex="7" :aria-invalid="Boolean(form.errors.password_confirmation)" placeholder="Ulangi password" />
+                        <button type="button" class="password-toggle" :aria-label="showPasswordConfirmation ? 'Sembunyikan konfirmasi password' : 'Tampilkan konfirmasi password'" :tabindex="-1" @click="showPasswordConfirmation = !showPasswordConfirmation">
+                            <EyeOff v-if="showPasswordConfirmation" class="size-4" />
+                            <Eye v-else class="size-4" />
+                        </button>
                     </div>
+                    <InputError :message="form.errors.password_confirmation" />
+                </div>
 
-                <div class="">
-                    <Button type="submit" class="w-full hover:bg-orange-500 bg-orange-400" tabindex="5"
+                <div class="mt-2">
+                    <Button type="submit" class="w-full" tabindex="8"
                         :disabled="form.processing">
                         <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                         Daftar
                     </Button>
 
-                    <Button @click="onLogin()"
-                        class="w-full mt-3 border border-orange-500 text-orange-500 bg-white hover:bg-orange-500 hover:text-white transition-colors duration-300"
-                        :tabindex="6">
+                    <Button type="button" variant="outline" @click="onLogin()"
+                        class="mt-3 w-full border-[#c2410c] text-[#c2410c] hover:bg-[#c2410c] hover:text-white"
+                        :tabindex="9">
                         Login
                     </Button>
                 </div>
@@ -147,3 +154,26 @@ watch(() => form.nomor_telpon, (value) => {
         </form>
     </AuthBase>
 </template>
+
+<style scoped>
+.password-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 0.75rem;
+    color: #64748b;
+    transition: color 150ms;
+}
+
+.password-toggle:hover {
+    color: #c2410c;
+}
+
+.password-toggle:focus-visible {
+    outline: none;
+    color: #c2410c;
+}
+</style>

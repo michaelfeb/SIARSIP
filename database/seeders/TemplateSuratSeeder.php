@@ -15,7 +15,6 @@ class TemplateSuratSeeder extends Seeder
     public function run(): void
     {
         TemplateSurat::create([
-            'jenis_surat_id' => 1,
             'nama' => 'Template Surat Cuti',
             'deskripsi' => 'Template resmi untuk surat cuti mahasiswa.',
             'status' => true,

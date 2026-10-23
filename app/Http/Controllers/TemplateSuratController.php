@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JenisSurat;
 use App\Models\TemplateSurat;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,14 +15,9 @@ class TemplateSuratController extends Controller
         $search = $request->input('search');
         $perPage = $request->input('per_page', 10);
 
-        $query = TemplateSurat::with('jenisSurat')
+        $query = TemplateSurat::query()
             ->when($search, function ($query) use ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('nama', 'like', "%{$search}%")
-                        ->orWhereHas('jenisSurat', function ($jenis) use ($search) {
-                            $jenis->where('nama', 'like', "%{$search}%");
-                        });
-                });
+                $query->where('nama', 'like', "%{$search}%");
             });
 
         $templates = $query->paginate($perPage)->withQueryString();
@@ -42,7 +36,7 @@ class TemplateSuratController extends Controller
         $search = $request->input('search');
         $perPage = $request->input('per_page', 10);
 
-        $query = TemplateSurat::with('jenisSurat')
+        $query = TemplateSurat::query()
             ->where('status', 1) // hanya ambil yang aktif
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
@@ -63,7 +57,7 @@ class TemplateSuratController extends Controller
 
     public function show($id)
     {
-        $templateSurat = TemplateSurat::with('jenisSurat')->findOrFail($id);
+        $templateSurat = TemplateSurat::findOrFail($id);
 
         return Inertia::render('TemplateSurat/Show', [
             'templateSurat' => $templateSurat,
@@ -72,21 +66,17 @@ class TemplateSuratController extends Controller
 
     public function create()
     {
-        $jenisSurat = JenisSurat::where('status', true)->get();
         return Inertia::render('TemplateSurat/Form', props: [
-            'jenisSurat' => $jenisSurat,
             'mode' => 'create',
         ]);
     }
 
     public function edit($id)
     {
-        $templateSurat = TemplateSurat::with('jenisSurat')->findOrFail($id);
-        $jenisSurat = JenisSurat::where('status', true)->get();
+        $templateSurat = TemplateSurat::findOrFail($id);
 
         return Inertia::render('TemplateSurat/Form', [
             'templateSurat' => $templateSurat,
-            'jenisSurat' => $jenisSurat,
             'mode' => 'edit',
         ]);
     }
@@ -96,10 +86,9 @@ class TemplateSuratController extends Controller
         $rules = [
             'nama' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
-            'jenis_surat_id' => 'required|exists:jenis_surat,id',
             'status' => 'required|boolean',
             'tanggal_publish' => 'required|date',
-            'dokumen_path' => 'required|file|mimes:doc,docx|max:2048',
+            'dokumen_path' => ($id ? 'nullable' : 'required') . '|file|mimes:doc,docx|max:2048',
         ];
 
         $messages = [
@@ -108,9 +97,6 @@ class TemplateSuratController extends Controller
             'nama.max' => 'Nama maksimal terdiri dari 255 karakter.',
 
             'deskripsi.string' => 'Deskripsi harus berupa teks.',
-
-            'jenis_surat_id.required' => 'Jenis surat wajib dipilih.',
-            'jenis_surat_id.exists' => 'Jenis surat tidak valid.',
 
             'status.required' => 'Status wajib diisi.',
             'status.boolean' => 'Status harus berupa nilai boolean.',
@@ -131,6 +117,8 @@ class TemplateSuratController extends Controller
             $file = $request->file('dokumen_path');
             $path = $file->store('template_surat', 'public');
             $validated['dokumen_path'] = $path;
+        } else {
+            unset($validated['dokumen_path']);
         }
 
         if ($id) {

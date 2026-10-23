@@ -16,11 +16,6 @@ class Note extends Model
         'pesan',
     ];
 
-    public function berkasPersuratan()
-    {
-        return $this->belongsTo(BerkasPersuratan::class, 'berkas_id')->where('jenis_berkas', 1);
-    }
-
     public function berkasSidangNol()
     {
         return $this->belongsTo(BerkasSidangNol::class, 'berkas_id')->where('jenis_berkas', 2);

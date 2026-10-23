@@ -24,15 +24,17 @@ Email-verification routes and controllers are present, but the current `User` mo
 | ---: | --- | --- |
 | 1 | Mahasiswa | Submit and track own Sidang Nol request. |
 | 2 | Resepsionis | Manage letter templates. |
-| 3 | Dekan | Legacy administrative access. |
-| 4 | WD | Legacy administrative access. |
-| 5 | TU | Legacy administrative access. |
+| 3 | Dekan | Dashboard and future workflow role. |
+| 4 | WD | Dashboard and future workflow role. |
+| 5 | TU | Dashboard and future workflow role. |
 | 6 | Bagian Akademik | Process Sidang Nol, manage carousel and landing links. |
 | 7 | Bagian Layanan | Manage letter templates. |
 | 8 | Super Admin | Full retained-module administration. |
-| 9 | Admin TTPS | Dashboard access and legacy administrative access. |
+| 9 | Admin TTPS | Dashboard access. |
 
 The roles are seeded before users. Changing the insertion order or replacing rows without preserving IDs can silently change access because the application currently checks `role_id` values rather than named permissions.
+
+PRD 003 will normalize persisted role names to uppercase and add `WD2`, `WD3`, and `PRODI` through a dedicated production migration. This retirement does not change role rows.
 
 ## Authorization mechanism
 

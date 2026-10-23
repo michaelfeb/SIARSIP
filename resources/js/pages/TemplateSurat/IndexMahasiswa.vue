@@ -5,15 +5,13 @@ import EasyDataTable, { Item } from 'vue3-easy-data-table'
 import { type BreadcrumbItem } from '@/types'
 import 'vue3-easy-data-table/dist/style.css'
 import Heading from '@/components/Heading.vue'
-import { ref, computed, watch } from 'vue'
+import { ref, watch } from 'vue'
 import Button from '@/components/ui/button/Button.vue'
-import { Eye, Pencil, Trash2, Plus, Download } from 'lucide-vue-next'
+import { Eye, Download } from 'lucide-vue-next'
 import axios from 'axios'
-import Swal from 'sweetalert2'
 
 const headers = [
     { text: "Nama", value: "nama" },
-    { text: "Jenis Surat", value: "jenis_surat" },
     { text: "Deskripsi", value: "deskripsi" },
     { text: "Tanggal terbit", value: "tanggal_publish" },
     { text: "Aksi", value: "id", sortable: false },
@@ -47,7 +45,7 @@ const loadFromServer = async () => {
 
 loadFromServer();
 
-watch([serverOptions, search], (value) => { loadFromServer(); }, { deep: true });
+watch([serverOptions, search], () => { loadFromServer(); }, { deep: true });
 
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -99,10 +97,6 @@ function onDownload(id: number) {
                 </template>
                 <template #item-nama="{ nama }">
                     {{ nama || '-' }}
-                </template>
-
-                <template #item-jenis_surat="{ jenis_surat }">
-                    {{ jenis_surat.nama || '-' }}
                 </template>
 
                 <template #item-status="{ status }">
