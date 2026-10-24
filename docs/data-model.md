@@ -49,6 +49,28 @@ All original document-path columns are nullable in the final schema, even though
 
 Template `status` is treated as a boolean. A value of `1` means published/visible to students and the landing page.
 
+## Reusable Letter foundation
+
+```text
+letter_types (1) ──< letters (many)
+users (1) ──< letters (many, applicant_id nullable)
+letters (1) ──< letter_attachments / letter_routes / letter_logs (many)
+users (1) ──< attachment / route / log actors (nullable)
+```
+
+| Table | Important columns | Notes |
+| --- | --- | --- |
+| `letter_types` | `code`, `category`, `name`, `notes_markdown`, `approval_chain`, `applicant_roles`, `pdf_template` | New master configuration. `code` is unique. No active type is seeded until a service configuration is approved. |
+| `letters` | UUID `id`, `type_id`, applicant snapshots, `status`, `current_stage`, `letter_number`, `meta`, `final_pdf_path` | Shared transactions for future services. `type_id` uses restrict-on-delete; non-null `letter_number` is unique. |
+| `letter_attachments` | `letter_id`, `file_path`, `original_name`, `mime`, `size_bytes`, `uploaded_by` | File metadata only. The foundation does not upload or serve physical files. |
+| `letter_routes` | `letter_id`, `from_stage`, `to_stage`, `decided_by`, `note` | Future approval-stage history. |
+| `letter_logs` | `letter_id`, `actor_id`, `action`, `meta` | Future business audit history. |
+
+Deleting a Letter cascades to its child metadata records. Deleting a user
+keeps historical Letter snapshots and changes nullable actor/applicant foreign
+keys to `NULL`. The future services own workflow transitions, file storage,
+PDF generation, and authorization.
+
 ## Landing-page content
 
 | Table | Important columns | Notes |

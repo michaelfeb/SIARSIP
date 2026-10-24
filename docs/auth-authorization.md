@@ -22,19 +22,24 @@ Email-verification routes and controllers are present, but the current `User` mo
 
 | ID | Role | Current responsibility |
 | ---: | --- | --- |
-| 1 | Mahasiswa | Submit and track own Sidang Nol request. |
-| 2 | Resepsionis | Manage letter templates. |
-| 3 | Dekan | Dashboard and future workflow role. |
-| 4 | WD | Dashboard and future workflow role. |
-| 5 | TU | Dashboard and future workflow role. |
-| 6 | Bagian Akademik | Process Sidang Nol, manage carousel and landing links. |
-| 7 | Bagian Layanan | Manage letter templates. |
-| 8 | Super Admin | Full retained-module administration. |
-| 9 | Admin TTPS | Dashboard access. |
+| 1 | MAHASISWA | Submit and track own Sidang Nol request. |
+| 2 | RESEPSIONIS | Manage letter templates; future archive/finalisation actor when configured. |
+| 3 | DEKAN | Dashboard and future workflow role. |
+| 4 | WD1 | Dashboard and future workflow role. |
+| 5 | KTU | Dashboard and future workflow role. |
+| 6 | AKADEMIK | Process Sidang Nol, manage carousel and landing links. |
+| 7 | BAGIAN LAYANAN | Manage letter templates. |
+| 8 | SUPER ADMIN | Full retained-module administration. |
+| 9 | ADMIN TTPS | Dashboard access. |
+| 10 | WD2 | Future workflow role; no current module permission. |
+| 11 | WD3 | Future workflow role; no current module permission. |
+| 12 | PRODI | Future workflow role; no current module permission. |
 
 The roles are seeded before users. Changing the insertion order or replacing rows without preserving IDs can silently change access because the application currently checks `role_id` values rather than named permissions.
 
-PRD 003 will normalize persisted role names to uppercase and add `WD2`, `WD3`, and `PRODI` through a dedicated production migration. This retirement does not change role rows.
+The production role migration updates names in place and adds IDs 10–12. It
+does not reassign existing users or change the numeric role checks used by the
+retained routes.
 
 ## Authorization mechanism
 

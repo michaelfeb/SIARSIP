@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Role;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder
@@ -13,20 +12,32 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
+        $now = now();
+
         $roles = [
-            'Mahasiswa',
-            'Resepsionis',
-            'Dekan',
-            'WD',
-            'TU',
-            'Bagian Akademik',
-            'Bagian Layanan',
-            'Super Admin',
-            'Admin TTPS'
+            1 => 'MAHASISWA',
+            2 => 'RESEPSIONIS',
+            3 => 'DEKAN',
+            4 => 'WD1',
+            5 => 'KTU',
+            6 => 'AKADEMIK',
+            7 => 'BAGIAN LAYANAN',
+            8 => 'SUPER ADMIN',
+            9 => 'ADMIN TTPS',
+            10 => 'WD2',
+            11 => 'WD3',
+            12 => 'PRODI',
         ];
 
-        foreach ($roles as $role) {
-            Role::create(['nama' => $role]);
-        }
+        Role::query()->upsert(
+            collect($roles)->map(fn (string $nama, int $id) => [
+                'id' => $id,
+                'nama' => $nama,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])->all(),
+            ['id'],
+            ['nama', 'updated_at'],
+        );
     }
 }

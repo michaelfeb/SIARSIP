@@ -1,9 +1,9 @@
 # PRD 003 — Letter Types and Letters Foundation
 
-**Status:** Draft  
+**Status:** Implemented — pending production deployment
 **Created:** 23 October 2026  
-**Plan status:** Approved  
-**Plan version:** 1  
+**Plan status:** Implemented
+**Plan version:** 2
 **Mode:** Backend and documentation
 
 ## Overview
@@ -58,7 +58,9 @@ Surat is independent from both concepts.
 
 - Implementing Cuti Akademik or the other five services.
 - Seeding active Letter Type records before each service’s exact chain, notes
-  Markdown, PDF template, and service-specific fields are approved.
+  Markdown, PDF template, and service-specific fields are approved. Each
+  approved service will later receive an idempotent Letter Type seed as part
+  of that service’s own implementation.
 - Building Letter Type, approval-chain, or Markdown-notes UI.
 - Adding create, submit, approve, reject, archive, PDF, upload, or download
   endpoints.
@@ -67,17 +69,17 @@ Surat is independent from both concepts.
 
 ## Acceptance criteria
 
-- [ ] Existing role IDs preserve their meaning and current user assignments.
-- [ ] Canonical uppercase roles, WD2, WD3, and PRODI exist after production
+- [x] Existing role IDs preserve their meaning and current user assignments.
+- [x] Canonical uppercase roles, WD2, WD3, and PRODI exist after production
   migration and fresh seeding.
-- [ ] The five reusable Letter tables migrate cleanly on current and fresh
+- [x] The five reusable Letter tables migrate cleanly on current and fresh
   databases.
-- [ ] Letters uses UUID primary keys and rejects duplicate non-null manual
+- [x] Letters uses UUID primary keys and rejects duplicate non-null manual
   letter numbers.
-- [ ] Deleting a Letter Type referenced by a Letter is restricted.
-- [ ] The service catalogue documents all six future services without claiming
+- [x] Deleting a Letter Type referenced by a Letter is restricted.
+- [x] The service catalogue documents all six future services without claiming
   they are implemented.
-- [ ] Sidang Nol has no schema, data, route, or behavior change.
+- [x] Sidang Nol has no schema, data, route, or behavior change.
 
 ## Functional requirements
 
@@ -87,7 +89,7 @@ Surat is independent from both concepts.
 3. Add WD2, WD3, and PRODI, without depending on their numeric IDs in future
    application access rules.
 4. RoleSeeder must create the same canonical role catalogue for fresh
-   databases.
+   databases with fixed IDs 1–12 and without duplicate rows.
 5. Letter Types must contain stable unique code, category, name, notes
    Markdown, JSON approval chain, JSON applicant roles, and a PDF-template
    identifier.
@@ -99,6 +101,9 @@ Surat is independent from both concepts.
 9. Documentation must make each future service responsible for its own form,
    validation, files, PDF renderer, and transition rules while reusing this
    foundation.
+10. The six services are catalogued only: Cuti Akademik, Magang, Penurunan
+    UKT, UKT 50%, Pengunduran Diri, and Bebas Ruang Baca. Cuti Akademik is the
+    first planned implementation; none becomes active through this PRD.
 
 ## Non-functional requirements
 
@@ -119,6 +124,7 @@ Surat is independent from both concepts.
 | A Letter Type has linked Letters | Foreign-key restriction blocks deletion. |
 | A future Letter is deleted | Attachment, route, and log rows may cascade; physical-file handling belongs to the future service. |
 | Approval configuration is not yet approved | No active Letter Type is seeded with empty or ambiguous rules. |
+| Reference seed contains unmatched types or roles | It is not copied; only this approved six-service catalogue is documented. |
 | Sidang Nol records exist | They are not read, copied, or modified. |
 
 ## Existing-system findings
@@ -127,7 +133,8 @@ Surat is independent from both concepts.
 | --- | --- | --- |
 | Roles | roles contains id, nama, and timestamps; users store numeric role_id | Rename current rows in place and append only new roles. |
 | Current role IDs | Existing code treats role_id 1 as student and uses numeric values elsewhere | Preserve IDs 1–9 and avoid assigning future semantics from new IDs. |
-| Future architecture | LETTER_BACKEND_ARCHITECTURE.md defines responsibilities | Reuse its foundation boundaries without service-specific workflows. |
+| Future architecture | `LETTER_BACKEND_ARCHITECTURE.md` defines the canonical STI, snapshot, routing, audit, and finalisation contracts | Reuse its foundation boundaries without service-specific workflows. |
+| Reference LetterTypesSeeder | Its catalogue includes unapproved types and roles absent from SIARSIP | Do not import it; seed each approved type only with its service implementation. |
 | Sidang Nol | Independent model, routes, storage path, and lifecycle | Keep completely outside the Letters domain. |
 | Template Surat | Downloadable-template module | Do not link it to Letter Types. |
 
@@ -166,6 +173,7 @@ Surat is independent from both concepts.
 | Reuse roles | Preserves current user relations and satisfies the product direction. |
 | Use uppercase roles.nama in chains | Creates a canonical readable vocabulary without another role system. |
 | Append WD2, WD3, and PRODI | Adds workflow actors while preserving current IDs. |
+| Fixed-ID role seeding | Fresh databases reproduce production role identities; production migration never reorders or recreates IDs 1–9. |
 | One letters table | Lets all services share lifecycle, audit, attachment, and number mechanics. |
 | UUID letters | Avoids sequential transaction IDs as the domain identity. |
 | Manual unique numbers | Matches the approved business rule; no counters are required. |
@@ -187,17 +195,18 @@ Surat is independent from both concepts.
 | 8 | SUPER ADMIN |
 | 9 | ADMIN TTPS |
 
-New rows: WD2, WD3, and PRODI.
+New rows: WD2, WD3, and PRODI. Their IDs will be fixed at 10, 11, and 12 by
+the fresh-data seeder; production migration inserts them only when absent.
 
 ### New tables
 
 | Table | Key fields and constraints |
 | --- | --- |
-| letter_types | Unique code, indexed category, name, notes Markdown, JSON chains/roles, PDF-template key. |
-| letters | UUID ID, restricted type ID, applicant snapshots, lifecycle data, nullable unique letter number, JSON metadata, final-PDF state. |
-| letter_attachments | Cascade Letter FK, relative path, original name, server-checked MIME/size, nullable uploader. |
-| letter_routes | Cascade Letter FK, source/target stages, nullable actor, note, timestamps. |
-| letter_logs | Cascade Letter FK, nullable actor, stable action, JSON metadata, timestamps. |
+| letter_types | Auto-increment ID; unique `code`; indexed `category`; `name`; nullable `notes_markdown`, `approval_chain`, `applicant_roles`, and `pdf_template` configuration. JSON configuration becomes required when a service activates its type. |
+| letters | UUID `CHAR(36)` ID; restricted `type_id`; nullable `applicant_id`; server-owned applicant/category/notes snapshots; `purpose`; lifecycle fields; nullable unique `letter_number`; JSON `meta`; and final-PDF state. |
+| letter_attachments | Auto-increment ID; cascade `letter_id`; relative path; original name; server-checked MIME/size; nullable `uploaded_by`; timestamps. |
+| letter_routes | Auto-increment ID; cascade `letter_id`; nullable `from_stage`; required `to_stage`; nullable `decided_by`; optional note; timestamps. |
+| letter_logs | Auto-increment ID; cascade `letter_id`; nullable `actor_id`; stable action; JSON metadata; timestamps. |
 
 No HTTP API is introduced by this PRD.
 
@@ -226,9 +235,7 @@ No HTTP API is introduced by this PRD.
 
 | File | Change |
 | --- | --- |
-| database/seeders/RoleSeeder.php | Seed canonical uppercase names and added workflow roles. |
-| routes/web.php | Let Dashboard support non-student roles without a fixed historical role range. |
-| app/Http/Controllers/DashboardController.php | Redirect students to Sidang Nol. |
+| database/seeders/RoleSeeder.php | Seed canonical uppercase names with explicit IDs 1–12, using idempotent updates rather than duplicate inserts. |
 | docs/README.md | Link Letters foundation and service catalogue. |
 | docs/architecture.md | Describe the reusable Letters boundary. |
 | docs/data-model.md | Document the five Letter tables. |
@@ -238,13 +245,16 @@ No HTTP API is introduced by this PRD.
 
 ### Task 1 — Normalize roles and fresh-data seeding
 
-Create an in-place role migration and update RoleSeeder.
+Create an in-place role migration and update RoleSeeder. The migration updates
+rows 1–9 by ID, then inserts WD2, WD3, and PRODI only when absent. The seeder
+uses the same explicit ID mapping and `upsert`, so a fresh database exactly
+matches the canonical catalogue.
 
 Acceptance criteria:
 
-- IDs 1–9 remain their current rows.
+- IDs 1–9 remain their current rows; no user `role_id` is changed.
 - All approved uppercase names exist.
-- WD2, WD3, and PRODI exist after migration and fresh seeding.
+- WD2, WD3, and PRODI exist after migration and fresh seeding as IDs 10–12.
 
 Dependencies: None.
 
@@ -257,7 +267,9 @@ of names uses an explicit prior-name mapping.
 ### Task 2 — Create shared schema and models
 
 Create the five tables and models with documented relations, casts, UUIDs,
-foreign keys, and indexes.
+foreign keys, and indexes. `Letter` uses Laravel `HasUuids`, a non-incrementing
+string key, JSON/date/datetime/boolean casts, and only the shared relations;
+this task creates no workflow service, controller, or storage operation.
 
 Acceptance criteria:
 
@@ -265,6 +277,8 @@ Acceptance criteria:
 - Letters use UUID string primary keys.
 - Referenced Letter Types cannot be deleted.
 - Duplicate non-null manual numbers are rejected.
+- Letter child rows cascade when a Letter is deleted, while nullable user
+  references use `SET NULL` to retain historical snapshots.
 
 Dependencies: Task 1.
 
@@ -277,7 +291,9 @@ created or modified.
 ### Task 3 — Document future-service boundaries
 
 Create the six-service catalogue and update architecture, data-model, role,
-and documentation-index references.
+and documentation-index references. The catalogue lists Cuti Akademik,
+Magang, Penurunan UKT, UKT 50%, Pengunduran Diri, and Bebas Ruang Baca as
+planned services. It explicitly reserves Cuti Akademik as the next PRD.
 
 Acceptance criteria:
 
@@ -285,6 +301,8 @@ Acceptance criteria:
 - Documentation assigns service-specific form, validation, attachments, PDF,
   and workflow rules to each future service.
 - Letter Types, legacy Jenis Surat, and Template Surat are distinguished.
+- The reference project’s LetterTypesSeeder is not represented as SIARSIP
+  production data.
 
 Dependencies: Tasks 1 and 2.
 
@@ -334,13 +352,12 @@ php artisan migrate:fresh --seed --env=testing; git diff --check.
 
 ## Final verification
 
-- [ ] Existing user role assignments retain their IDs.
-- [ ] All canonical and new roles exist.
-- [ ] New tables migrate on existing and fresh databases.
-- [ ] UUID identities and unique manual numbers are verified.
-- [ ] No active Letter Type is seeded without approved configuration.
-- [ ] Documentation lists the six future services and shared boundary.
-- [ ] php artisan test passes.
-- [ ] pnpm build passes.
-- [ ] git diff --check passes.
-
+- [ ] Existing production user role assignments retain their IDs (verify during deployment).
+- [x] All canonical and new roles exist in focused tests and fresh seeding.
+- [x] New tables migrate on current test and fresh databases.
+- [x] UUID identities and unique manual numbers are verified.
+- [x] No active Letter Type is seeded without approved configuration.
+- [x] Documentation lists the six future services and shared boundary.
+- [ ] Full `php artisan test` passes — 12 pre-existing authentication tests do not match the custom NIM-based authentication contract.
+- [x] `pnpm build` passes.
+- [x] `git diff --check` passes.

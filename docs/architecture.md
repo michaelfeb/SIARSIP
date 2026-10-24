@@ -49,7 +49,7 @@ resources/
   views/                Blade roots and PDF templates
 routes/                 HTTP route definitions
 storage/app/public/     publicly linked assets
-storage/app/secure_storage/
+    storage/app/secure_storage/
                         private application documents and generated replies
 docs/                   this documentation
 ```
@@ -72,6 +72,19 @@ Authenticated pages normally use `resources/js/layouts/AppLayout.vue`, which del
 The `secure` disk is configured as private in `config/filesystems.php`. File access is still implemented by application routes, so future changes must retain explicit authorization checks before returning a file.
 
 Legacy Berkas Persuratan attachments intentionally remain on this disk after the module and its database records are retired. They have no active application route or database reference and must not be removed by routine cleanup.
+
+## Letter foundation
+
+Future academic-letter services share `letter_types`, `letters`,
+`letter_attachments`, `letter_routes`, and `letter_logs`. `letters` uses UUID
+identifiers and contains common lifecycle, applicant snapshot, manual-number,
+and final-PDF fields. Service-specific form data belongs in its JSON `meta`
+column.
+
+The foundation deliberately has no HTTP route, workflow action, file storage
+operation, PDF renderer, or active Letter Type. Those responsibilities belong
+to the future service, beginning with Cuti Akademik. It remains separate from
+both Berkas Sidang Nol and Template Surat.
 
 ## Architecture boundaries for new work
 
