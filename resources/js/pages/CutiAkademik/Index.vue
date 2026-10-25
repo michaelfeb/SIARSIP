@@ -13,7 +13,7 @@ import type { CutiAkademikActor, CutiAkademikFilters, CutiAkademikLetter, CutiAk
 const props = defineProps<{ auth: { user: CutiAkademikActor }; letters: CutiAkademikPaginated<CutiAkademikLetter>; filters: CutiAkademikFilters }>();
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Cuti Akademik', href: '/cuti-akademik' }];
 const loading = ref(false);
-const canCreate = computed(() => props.auth.user.role_id === 1);
+const canCreate = computed(() => [1, 8].includes(props.auth.user.role_id));
 
 function onDataTableQueryChange(query: CutiAkademikTableQuery): void {
     loading.value = true;
@@ -29,6 +29,21 @@ async function onSubmit(letter: CutiAkademikLetter): Promise<void> { const resul
 </script>
 
 <template>
+
     <Head title="Cuti Akademik" />
-    <AppLayout :breadcrumbs="breadcrumbs"><div class="mx-auto w-full max-w-[1800px] space-y-6 p-4 sm:p-6"><div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><Heading title="Permohonan Cuti Akademik" description="Kelola pengajuan cuti akademik mahasiswa." /><Button v-if="canCreate" class="rounded-lg" @click="onCreate"><Plus class="mr-1 size-4" />Tambah Permohonan</Button></div><DataTable :auth="auth" :letters="letters" :filters="filters" :loading="loading" @query-change="onDataTableQueryChange" @view="onView" @edit="onEdit" @delete="onDelete" @submit="onSubmit" @review="onReview" @download="onDownload" /></div></AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <div class="mx-auto w-full space-y-7 p-4 sm:p-6">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <Heading title="Permohonan Cuti Akademik" description="Kelola pengajuan cuti akademik mahasiswa." class="!mb-0" />
+                <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
+                    <Button v-if="canCreate" class="w-full sm:w-auto" @click="onCreate">
+                        <Plus class="mr-1 size-4" />Tambah Berkas
+                    </Button>
+                </div>
+            </div>
+            <DataTable :auth="auth" :letters="letters" :filters="filters" :loading="loading"
+                @query-change="onDataTableQueryChange" @view="onView" @edit="onEdit" @delete="onDelete"
+                @submit="onSubmit" @review="onReview" @download="onDownload" />
+        </div>
+    </AppLayout>
 </template>

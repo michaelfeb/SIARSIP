@@ -25,9 +25,13 @@ class CutiAkademikController extends Controller
         ]);
     }
 
-    public function create(Request $request): Response
+    public function create(Request $request, CutiAkademikService $service): Response
     {
-        return Inertia::render('CutiAkademik/Form', ['mode' => 'create', 'applicant' => $request->user()]);
+        return Inertia::render('CutiAkademik/Form', [
+            'mode' => 'create',
+            'applicant' => $request->user(),
+            'formContext' => $service->formContext(),
+        ]);
     }
 
     public function store(CutiAkademikRequest $request, CutiAkademikService $service): RedirectResponse
@@ -47,7 +51,12 @@ class CutiAkademikController extends Controller
         $letter = $service->findForDisplay($letter, $request->user());
         $this->authorize('update', $letter);
 
-        return Inertia::render('CutiAkademik/Form', ['mode' => 'edit', 'letter' => $letter, 'applicant' => $request->user()]);
+        return Inertia::render('CutiAkademik/Form', [
+            'mode' => 'edit',
+            'letter' => $letter,
+            'applicant' => $request->user(),
+            'formContext' => $service->formContext(),
+        ]);
     }
 
     public function update(CutiAkademikRequest $request, Letter $letter, CutiAkademikService $service): RedirectResponse

@@ -291,6 +291,54 @@ file display and limit feedback through `v-model`. It must not own a route,
 storage path, Letter Type, request state, or module label. The owning form
 still owns submission and server validation, which remains authoritative.
 
+## Shared Letter approval flow
+
+`resources/js/components/letters/LetterApprovalFlow.vue` displays a Letter
+Type's configured `approval_chain` without owning workflow state. Pass the
+server-provided stages through `approval-chain`; it maps known roles to their
+reader-friendly labels and remains usable for future configured roles.
+
+The guidance title and the approval information are intentional props, so a
+letter can adjust its copy without creating another shared component:
+
+```vue
+<LetterApprovalFlow
+    :approval-chain="formContext.approvalChain"
+    title="Alur Persetujuan Surat"
+    information-title="Informasi Proses Persetujuan"
+    information-description="Permohonan akan ditinjau secara bertingkat."
+    estimate-label="Estimasi waktu"
+    estimate="3–5 hari kerja"
+/>
+```
+
+The create/edit controller must obtain the guide source (`notes_markdown`) and
+approval chain through its module Service. The Service renders the trusted
+server-managed markdown before passing it as page data; the form only presents
+that content and must not duplicate it in frontend constants.
+
+## Shared Letter badges
+
+Letter status and approval-stage presentation live in
+`resources/js/components/letters/Badge.vue`. The component has two modes:
+`type="status"` renders a Letter lifecycle (`DRAFT`, `IN_PROGRESS`,
+`REJECTED`, or `ARCHIVED`), while `type="stage"` renders an active approval
+stage. Stage mode maps PRODI, AKADEMIK, KTU, DEKAN, WD/WD1/WD2/WD3,
+RESEPSIONIS, and RUANG BACA to compact labeled badges. Both modes have a
+neutral fallback for future configured values and render `—` when no value is
+active.
+
+```vue
+<Badge type="status" :value="letter.status" />
+<Badge type="stage" :value="letter.current_stage" />
+```
+
+Keep **Status** and **Stage** as separate columns in Letter data tables:
+status communicates lifecycle, while the stage badge communicates the current
+approver. Do not
+combine the stage into a status badge or replace it with a text line below the
+status in a dense table.
+
 ## Existing Sidang Nol names
 
 The current Berkas Sidang Nol refactor already follows the page-root, `components/`, and `ts/` boundary. Some supporting files still use the older concise `SidangNol*` names, such as `SidangNolDetails.vue` and `useSidangNolDocuments.ts`.

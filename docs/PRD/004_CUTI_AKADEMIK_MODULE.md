@@ -25,7 +25,7 @@ approved services and establishes the reusable letter-module pattern.
 
 Accepted product facts:
 
-- Only MAHASISWA may create a request.
+- MAHASISWA and SUPER ADMIN may create a request.
 - Applicant identity is taken from authenticated biodata; the client never
   owns the authoritative applicant name, NIM, or programme.
 - The service metadata is semester, tahun akademik, nomor hp, nominal ukt, and
@@ -168,13 +168,14 @@ reject with a note; rejection records actor, stage, and note, changes status to
 REJECTED, clears current_stage, and preserves all history and files.
 
 PRODI sees only requests from students in the same Program Studi. Other chain
-roles see requests waiting at their own stage. SUPER ADMIN may inspect the
-module but cannot bypass a workflow stage unless it holds the matching workflow
-role.
+roles see requests waiting at their own stage. SUPER ADMIN sees every request
+and may manage drafts or record a decision at any in-progress stage, while the
+Letter still advances only to its immediate configured successor.
 
 ### Finalisation and PDF
 
-Only a Letter currently at RESEPSIONIS may finalize. Finalization requires:
+Only a Letter currently at RESEPSIONIS may finalize. RESEPSIONIS or SUPER ADMIN
+may perform that finalization. Finalization requires:
 
 - a non-empty manually entered official letter number;
 - a selected active DEKAN signatory; and
@@ -216,7 +217,8 @@ authorization rule.
 - MAHASISWA may access only their own Cuti Letters.
 - Reviewers may access only matching current-stage Letters; PRODI also requires
   matching Program Studi.
-- RESEPSIONIS finalizes only its current stage.
+- RESEPSIONIS finalizes only its current stage; SUPER ADMIN may finalise that
+  same finalization stage as an administrative override.
 - Direct URLs cannot expose another Letter Type, another student’s request,
   a draft review, or a private file/PDF without Letter-level authorization.
 
@@ -236,8 +238,7 @@ Create this structure:
     resources/js/pages/CutiAkademik/
     ├── components/
     │   ├── CutiAkademikAttachmentList.vue
-    │   ├── CutiAkademikDetails.vue
-    │   └── CutiAkademikStatusBadge.vue
+    │   └── CutiAkademikDetails.vue
     ├── ts/
     │   ├── cutiAkademik.capabilities.ts
     │   ├── cutiAkademik.constants.ts
@@ -391,6 +392,7 @@ Use the route-name prefix cuti-akademik and Letter UUIDs.
 | database/migrations/{timestamp}_seed_cuti_akademik_letter_type.php | Production-safe Letter Type activation. |
 | resources/views/letters/cuti-akademik.blade.php | Final official PDF view. |
 | resources/js/components/letters/LetterAttachmentUpload.vue | Shared selected-file section. |
+| resources/js/components/letters/LetterApprovalFlow.vue | Shared, configurable Letter Type approval-flow display. |
 | resources/js/pages/CutiAkademik/Index.vue | List-page coordinator. |
 | resources/js/pages/CutiAkademik/DataTable.vue | Local filters, cells, badges, and actions. |
 | resources/js/pages/CutiAkademik/Form.vue | Create/edit form. |
@@ -398,7 +400,7 @@ Use the route-name prefix cuti-akademik and Letter UUIDs.
 | resources/js/pages/CutiAkademik/Ajuan.vue | Staff review/finalisation page. |
 | resources/js/pages/CutiAkademik/components/CutiAkademikDetails.vue | Clean details layout. |
 | resources/js/pages/CutiAkademik/components/CutiAkademikAttachmentList.vue | Authorized file display. |
-| resources/js/pages/CutiAkademik/components/CutiAkademikStatusBadge.vue | Status/stage representation. |
+| resources/js/components/letters/Badge.vue | Shared Letter lifecycle-status and approval-stage badge. |
 | resources/js/pages/CutiAkademik/ts/cutiAkademik.constants.ts | Labels and display constants. |
 | resources/js/pages/CutiAkademik/ts/cutiAkademik.types.ts | Typed record/page contracts. |
 | resources/js/pages/CutiAkademik/ts/cutiAkademik.capabilities.ts | Presentation-only action capabilities. |
@@ -582,8 +584,8 @@ Verification:
 - [x] Server snapshots biodata; only approved Cuti metadata is editable.
 - [x] Evidence is mandatory, limited, private, and Letter-authorized.
 - [x] Each stage forwards only to its immediate chain successor or rejects.
-- [x] Only RESEPSIONIS finalizes after DEKAN using a unique number and DEKAN
-  signatory.
+- [x] RESEPSIONIS or SUPER ADMIN finalizes after DEKAN using a unique number
+  and DEKAN signatory.
 - [x] Final PDFs are private and generation failure never archives the Letter.
 - [x] Pages, table, review layout, and sidebar meet the documented responsive
   UI convention.

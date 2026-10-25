@@ -269,7 +269,7 @@ function onExport(): void {
     </Modal>
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="mx-auto w-full max-w-[1800px] space-y-7 p-4 sm:p-6">
+        <div class="mx-auto w-full space-y-7 p-4 sm:p-6">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <Heading title="Permohonan Sidang Nol Mahasiswa"
                     description="Kelola permohonan surat sidang nol mahasiswa." class="!mb-0" />

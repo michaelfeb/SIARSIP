@@ -63,3 +63,9 @@ export interface CutiAkademikTableQuery {
     search: string | null;
     status: CutiAkademikStatus | null;
 }
+
+export interface CutiAkademikFormContext {
+    notesMarkdown: string | null;
+    notesHtml: string;
+    approvalChain: string[];
+}

@@ -33,6 +33,10 @@ class LetterPolicy
 
     public function update(User $user, Letter $letter): bool
     {
+        if ($this->roleName($user) === 'SUPER ADMIN') {
+            return $letter->status === 'DRAFT';
+        }
+
         return $this->roleName($user) === 'MAHASISWA'
             && $letter->applicant_id === $user->id
             && $letter->status === 'DRAFT';

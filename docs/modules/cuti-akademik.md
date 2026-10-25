@@ -47,13 +47,26 @@ entries. `PdfGeneratorService` renders the configured Blade view; Cuti provides
 `letters.cuti-akademik` and only saved Letter, meta, and signatory snapshot data.
 `LetterAttachmentService` is the small shared private-file persistence service.
 
+## SUPER ADMIN authority
+
+SUPER ADMIN can see all Cuti Akademik records, create a draft, manage any
+draft, submit it, and record a forward/reject decision at any in-progress
+stage. The approval chain remains intact: SUPER ADMIN can finalize only after
+the request reaches RESEPSIONIS, the configured finalization stage.
+
+Finalization still requires a selected user with the configured signatory role.
+For Cuti Akademik that role is DEKAN, so a SUPER ADMIN account cannot select
+itself unless it separately has that role. When SUPER ADMIN edits another
+applicant's draft, the original Program Studi snapshot is retained for PRODI
+scope checks.
+
 ## Frontend ownership
 
 The module follows the application letter-page convention:
 
 ```text
 CutiAkademik/
-├── components/     module-only details, status, and attachment display
+├── components/     module-only details and attachment display
 ├── ts/             types, constants, and presentation capabilities
 ├── Index.vue       page coordinator
 ├── DataTable.vue   local filters, cells, and actions
@@ -65,3 +78,14 @@ CutiAkademik/
 The shared `LetterAttachmentUpload.vue` remains generic. The module uses the
 same responsive table, rounded controls, action-button semantics, and
 two-section Ajuan layout as the Berkas Sidang Nol reference.
+
+Create and edit forms receive a server-owned `formContext` from
+`CutiAkademikService`: the Letter Type `notes_markdown` (with its safe rendered
+HTML) and `approval_chain`. `Form.vue` presents the guide and composes shared
+`LetterApprovalFlow.vue`; it does not copy workflow stages or guide copy into
+frontend constants.
+
+Its data table keeps Status and Stage separate: shared `Badge` with
+`type="status"` renders the Letter lifecycle, while `type="stage"` renders the
+current PRODI, AKADEMIK, KTU, DEKAN, RESEPSIONIS, or other configured approval
+stage.

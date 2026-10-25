@@ -6,7 +6,7 @@ import Input from '@/components/ui/input/Input.vue';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Download, Eye, Pencil, Search, Send, Trash2, UserRoundCheck } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import CutiAkademikStatusBadge from './components/CutiAkademikStatusBadge.vue';
+import Badge from '@/components/letters/Badge.vue';
 import { getCutiAkademikCapabilities } from './ts/cutiAkademik.capabilities';
 import { CUTI_AKADEMIK_STATUS } from './ts/cutiAkademik.constants';
 import type { CutiAkademikActor, CutiAkademikFilters, CutiAkademikLetter, CutiAkademikPaginated, CutiAkademikStatus, CutiAkademikTableQuery } from './ts/cutiAkademik.types';
@@ -27,6 +27,7 @@ const headers: DataTableHeader[] = [
     { text: 'Program Studi', value: 'program_studi' },
     { text: 'Semester', value: 'semester' },
     { text: 'Status', value: 'status' },
+    { text: 'Stage', value: 'current_stage' },
     { text: 'Dikirim', value: 'submitted_at' },
     { text: 'Aksi', value: 'id', width: 220 },
 ];
@@ -80,18 +81,72 @@ function formatDate(value: string | null): string {
         <div class="space-y-3">
             <p class="text-xs font-semibold uppercase tracking-wide">Cari &amp; Filter</p>
             <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(12rem,0.45fr)]">
-                <div class="relative"><Search class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" /><Input v-model="search" type="search" placeholder="Cari nama, NIM, atau nomor surat..." class="h-10 pl-9" @input="onSearchChange" /></div>
-                <Select :model-value="status" @update:model-value="onStatusChange"><SelectTrigger class="h-10 w-full"><SelectValue placeholder="Semua Status" /></SelectTrigger><SelectContent><SelectItem value="all">Semua Status</SelectItem><SelectItem v-for="(presentation, value) in CUTI_AKADEMIK_STATUS" :key="value" :value="value">{{ presentation.label }}</SelectItem></SelectContent></Select>
+                <div class="relative">
+                    <Search
+                        class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input v-model="search" type="search" placeholder="Cari nama, NIM, atau nomor surat..."
+                        class="h-10 pl-9" @input="onSearchChange" />
+                </div>
+                <Select :model-value="status" @update:model-value="onStatusChange">
+                    <SelectTrigger class="h-10 w-full">
+                        <SelectValue placeholder="Semua Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Semua Status</SelectItem>
+                        <SelectItem v-for="(presentation, value) in CUTI_AKADEMIK_STATUS" :key="value" :value="value">{{
+                            presentation.label }}</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
         </div>
 
-        <DataTable v-model:server-options="serverOptions" :headers="headers" :items="items" :loading="loading" :server-items-length="letters.total" items-label="permohonan">
-            <template #item-applicant_name="{ applicant_name, applicant_id_number }"><div class="space-y-0.5"><p class="font-semibold">{{ applicant_name }}</p><p class="text-xs text-muted-foreground">{{ applicant_id_number }}</p></div></template>
+        <DataTable v-model:server-options="serverOptions" :headers="headers" :items="items" :loading="loading"
+            :server-items-length="letters.total" items-label="permohonan">
+            <template #item-applicant_name="{ applicant_name, applicant_id_number }">
+                <div class="space-y-0.5">
+                    <p class="font-semibold">{{ applicant_name }}</p>
+                    <p class="text-xs text-muted-foreground">{{ applicant_id_number }}</p>
+                </div>
+            </template>
             <template #item-program_studi="{ program_studi }">{{ program_studi ?? '—' }}</template>
             <template #item-semester="{ meta }">{{ meta?.semester ?? '—' }}</template>
-            <template #item-status="{ status: rowStatus, current_stage }"><CutiAkademikStatusBadge :status="rowStatus" :stage="current_stage" /></template>
+            <template #item-status="{ status: rowStatus }">
+                <Badge type="status" :value="rowStatus" />
+            </template>
+            <template #item-current_stage="{ current_stage }"><Badge type="stage" :value="current_stage" /></template>
             <template #item-submitted_at="{ submitted_at }">{{ formatDate(submitted_at) }}</template>
-            <template #item-id="{ id, ...rawLetter }"><div class="flex min-w-max items-center gap-2"><Button variant="outline" size="icon" class="size-8 rounded-lg border-blue-200 bg-white text-blue-600 hover:bg-blue-600 hover:text-white" title="Detail" aria-label="Detail" @click="onView({ id, ...rawLetter })"><Eye class="size-4" /></Button><Button v-if="getCutiAkademikCapabilities(auth.user, { id, ...rawLetter }).canReview" variant="outline" size="icon" class="size-8 rounded-lg border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-600 hover:text-white" title="Proses" aria-label="Proses" @click="onReview({ id, ...rawLetter })"><UserRoundCheck class="size-4" /></Button><Button v-if="getCutiAkademikCapabilities(auth.user, { id, ...rawLetter }).canEdit" variant="outline" size="icon" class="size-8 rounded-lg border-amber-200 bg-white text-amber-600 hover:bg-amber-500 hover:text-white" title="Ubah" aria-label="Ubah" @click="onEdit({ id, ...rawLetter })"><Pencil class="size-4" /></Button><Button v-if="getCutiAkademikCapabilities(auth.user, { id, ...rawLetter }).canSubmit" variant="outline" size="icon" class="size-8 rounded-lg border-blue-200 bg-white text-blue-600 hover:bg-blue-600 hover:text-white" title="Kirim" aria-label="Kirim" @click="onSubmit({ id, ...rawLetter })"><Send class="size-4" /></Button><Button v-if="getCutiAkademikCapabilities(auth.user, { id, ...rawLetter }).canDelete" variant="outline" size="icon" class="size-8 rounded-lg border-rose-200 bg-white text-rose-600 hover:bg-rose-600 hover:text-white" title="Hapus" aria-label="Hapus" @click="onDelete({ id, ...rawLetter })"><Trash2 class="size-4" /></Button><Button v-if="getCutiAkademikCapabilities(auth.user, { id, ...rawLetter }).canDownload" variant="outline" size="icon" class="size-8 rounded-lg border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-600 hover:text-white" title="Unduh surat" aria-label="Unduh surat" @click="onDownload({ id, ...rawLetter })"><Download class="size-4" /></Button></div></template>
+            <template #item-id="{ id, ...rawLetter }">
+                <div class="flex min-w-max items-center gap-2"><Button variant="outline" size="icon"
+                        class="size-8 rounded-lg border-blue-200 bg-white text-blue-600 hover:bg-blue-600 hover:text-white"
+                        title="Detail" aria-label="Detail" @click="onView({ id, ...rawLetter })">
+                        <Eye class="size-4" />
+                    </Button><Button v-if="getCutiAkademikCapabilities(auth.user, { id, ...rawLetter }).canReview"
+                        variant="outline" size="icon"
+                        class="size-8 rounded-lg border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-600 hover:text-white"
+                        title="Proses" aria-label="Proses" @click="onReview({ id, ...rawLetter })">
+                        <UserRoundCheck class="size-4" />
+                    </Button><Button v-if="getCutiAkademikCapabilities(auth.user, { id, ...rawLetter }).canEdit"
+                        variant="outline" size="icon"
+                        class="size-8 rounded-lg border-amber-200 bg-white text-amber-600 hover:bg-amber-500 hover:text-white"
+                        title="Ubah" aria-label="Ubah" @click="onEdit({ id, ...rawLetter })">
+                        <Pencil class="size-4" />
+                    </Button><Button v-if="getCutiAkademikCapabilities(auth.user, { id, ...rawLetter }).canSubmit"
+                        variant="outline" size="icon"
+                        class="size-8 rounded-lg border-blue-200 bg-white text-blue-600 hover:bg-blue-600 hover:text-white"
+                        title="Kirim" aria-label="Kirim" @click="onSubmit({ id, ...rawLetter })">
+                        <Send class="size-4" />
+                    </Button><Button v-if="getCutiAkademikCapabilities(auth.user, { id, ...rawLetter }).canDelete"
+                        variant="outline" size="icon"
+                        class="size-8 rounded-lg border-rose-200 bg-white text-rose-600 hover:bg-rose-600 hover:text-white"
+                        title="Hapus" aria-label="Hapus" @click="onDelete({ id, ...rawLetter })">
+                        <Trash2 class="size-4" />
+                    </Button><Button v-if="getCutiAkademikCapabilities(auth.user, { id, ...rawLetter }).canDownload"
+                        variant="outline" size="icon"
+                        class="size-8 rounded-lg border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-600 hover:text-white"
+                        title="Unduh surat" aria-label="Unduh surat" @click="onDownload({ id, ...rawLetter })">
+                        <Download class="size-4" />
+                    </Button></div>
+            </template>
         </DataTable>
     </section>
 </template>

@@ -123,6 +123,49 @@ test('resepsionis finalises after DEKAN with a private generated PDF', function 
     expect(Storage::disk('secure')->get($finished->final_pdf_path))->toStartWith('%PDF');
 });
 
+test('super admin can administer every Cuti Akademik workflow stage but cannot become the signer', function () {
+    $student = cutiUser(1);
+    $superAdmin = cutiUser(8);
+    $dekan = cutiUser(3);
+    $service = app(CutiAkademikService::class);
+
+    $adminDraft = $service->create($superAdmin, cutiPayload());
+    expect($adminDraft->status)->toBe('DRAFT');
+
+    $letter = $service->create($student, cutiPayload());
+    $service->update($letter, $superAdmin, cutiPayload([
+        'semester' => '6',
+        'attachments' => [],
+    ]));
+    expect($letter->fresh()->meta)->toMatchArray([
+        'semester' => '6',
+        'program_studi_id' => $student->program_studi,
+    ]);
+
+    $service->ajuan($letter->fresh(), $superAdmin);
+    foreach (['PRODI', 'AKADEMIK', 'KTU', 'DEKAN'] as $stage) {
+        expect($letter->fresh()->current_stage)->toBe($stage);
+        $service->decide($letter->fresh(), $superAdmin, 'FORWARD', null);
+    }
+
+    expect($letter->fresh()->current_stage)->toBe('RESEPSIONIS');
+    $signatoryIds = collect($service->availableFinalSignatories($superAdmin, $letter->fresh()))->pluck('id')->all();
+    expect($signatoryIds)->toContain($dekan->id)->not->toContain($superAdmin->id);
+
+    $service->finalize($letter->fresh(), $superAdmin, [
+        'letter_number' => '124/UN8.1/CA/2026',
+        'signatory_id' => $dekan->id,
+    ]);
+
+    $finished = $letter->fresh();
+    expect($finished->status)->toBe('ARCHIVED')
+        ->and($finished->meta['signatory']['id'])->toBe($dekan->id);
+
+    $this->actingAs($superAdmin)
+        ->get(route('cuti-akademik.create'))
+        ->assertOk();
+});
+
 test('a submission without supporting documents is allowed', function () {
     $student = cutiUser(1);
     $service = app(CutiAkademikService::class);

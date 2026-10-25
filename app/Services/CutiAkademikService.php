@@ -8,6 +8,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class CutiAkademikService extends LetterService
 {
@@ -43,6 +44,25 @@ class CutiAkademikService extends LetterService
     protected function pdfView(): string
     {
         return 'letters.cuti-akademik';
+    }
+
+    /**
+     * Return server-owned guide and approval data for the create/edit form.
+     *
+     * @return array{notesMarkdown: string|null, notesHtml: string, approvalChain: array<int, string>}
+     */
+    public function formContext(): array
+    {
+        $type = $this->letterType();
+        $notesMarkdown = $type->notes_markdown;
+
+        return [
+            'notesMarkdown' => $notesMarkdown,
+            'notesHtml' => $notesMarkdown === null
+                ? ''
+                : Str::markdown($notesMarkdown, ['html_input' => 'strip', 'allow_unsafe_links' => false]),
+            'approvalChain' => $type->approval_chain ?? [],
+        ];
     }
 
     /**
@@ -93,7 +113,7 @@ class CutiAkademikService extends LetterService
      */
     public function create(User $actor, array $data): Letter
     {
-        $this->ensureStudent($actor);
+        $this->ensureCanCreate($actor);
         $type = $this->letterType();
 
         return DB::transaction(function () use ($actor, $data, $type): Letter {
@@ -130,7 +150,7 @@ class CutiAkademikService extends LetterService
         return DB::transaction(function () use ($letter, $actor, $data): Letter {
             $letter->update([
                 'purpose' => $data['alasan_cuti'],
-                'meta' => $this->buildMeta($actor, $data),
+                'meta' => $this->buildMeta($actor, $data, $letter),
             ]);
             $this->attachments->store($letter, $data['attachments'] ?? [], $actor);
             $this->logWorkflowAction($letter, $actor, 'UPDATE_DRAFT');
@@ -139,9 +159,9 @@ class CutiAkademikService extends LetterService
         });
     }
 
-    private function ensureStudent(User $actor): void
+    private function ensureCanCreate(User $actor): void
     {
-        if (! $this->isApplicant($actor)) {
+        if (! $this->isApplicant($actor) && ! $this->isSuperAdmin($actor)) {
             throw new AuthorizationException;
         }
     }
@@ -161,7 +181,7 @@ class CutiAkademikService extends LetterService
     }
 
     /** @param array<string, mixed> $data */
-    private function buildMeta(User $actor, array $data): array
+    private function buildMeta(User $actor, array $data, ?Letter $letter = null): array
     {
         return [
             'semester' => $data['semester'],
@@ -169,7 +189,9 @@ class CutiAkademikService extends LetterService
             'nomor_hp' => $data['nomor_hp'],
             'nominal_ukt' => $data['nominal_ukt'],
             'alasan_cuti' => $data['alasan_cuti'],
-            'program_studi_id' => $actor->program_studi,
+            'program_studi_id' => $this->isSuperAdmin($actor) && $letter !== null
+                ? $letter->meta['program_studi_id'] ?? null
+                : $actor->program_studi,
         ];
     }
 

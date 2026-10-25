@@ -334,6 +334,21 @@ PDF. The generated final file is immutable after archival; changing a Blade
 template affects only future finalizations unless an explicit, audited PDF
 regeneration feature is approved.
 
+### SUPER ADMIN workflow override
+
+When a Letter module permits SUPER ADMIN, the service—not only the route
+middleware—must explicitly allow it to view all records, manage any draft, and
+record a decision at any in-progress stage. This is an administrative override,
+not a shortcut around Letter state: the request must still be a draft for draft
+actions, in progress for a decision, and at the configured finalization stage
+for `finalize()`.
+
+SUPER ADMIN does not bypass `signatoryRole()`. `availableFinalSignatories()`
+and `finalize()` must still return and validate only users with the configured
+official signer role. If SUPER ADMIN edits another applicant's draft, preserve
+the applicant snapshot and reviewer-scope metadata rather than replacing it
+with the administrator's profile.
+
 ## Queries, scopes, and transactions
 
 - A module service owns the complete query assembled for an endpoint.

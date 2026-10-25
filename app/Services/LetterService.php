@@ -283,14 +283,30 @@ abstract class LetterService
 
     protected function ensureDraftOwner(Letter $letter, User $actor): void
     {
-        if (! $this->isApplicant($actor) || $letter->applicant_id !== $actor->id || $letter->status !== 'DRAFT') {
+        if ($letter->status !== 'DRAFT') {
+            throw new AuthorizationException;
+        }
+
+        if ($this->isSuperAdmin($actor)) {
+            return;
+        }
+
+        if (! $this->isApplicant($actor) || $letter->applicant_id !== $actor->id) {
             throw new AuthorizationException;
         }
     }
 
     protected function ensureCurrentStageReviewer(Letter $letter, User $actor): void
     {
-        if ($letter->status !== 'IN_PROGRESS' || $letter->current_stage !== $this->roleName($actor)) {
+        if ($letter->status !== 'IN_PROGRESS') {
+            throw new AuthorizationException;
+        }
+
+        if ($this->isSuperAdmin($actor)) {
+            return;
+        }
+
+        if ($letter->current_stage !== $this->roleName($actor)) {
             throw new AuthorizationException;
         }
 
@@ -325,7 +341,7 @@ abstract class LetterService
             return;
         }
 
-        if ($this->roleName($actor) === 'SUPER ADMIN') {
+        if ($this->isSuperAdmin($actor)) {
             return;
         }
 
@@ -346,7 +362,7 @@ abstract class LetterService
             return;
         }
 
-        if ($role === 'SUPER ADMIN') {
+        if ($this->isSuperAdmin($actor)) {
             return;
         }
 
@@ -408,6 +424,11 @@ abstract class LetterService
     protected function isApplicant(User $actor): bool
     {
         return $this->roleName($actor) === 'MAHASISWA';
+    }
+
+    protected function isSuperAdmin(User $actor): bool
+    {
+        return $this->roleName($actor) === 'SUPER ADMIN';
     }
 
     protected function ensureReviewerScope(Letter $letter, User $actor): void {}
