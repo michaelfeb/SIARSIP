@@ -55,7 +55,7 @@ No additional table components are part of this PRD. If the local Sidang Nol tab
   - status badges;
   - permission-aware `rounded-lg` table action buttons.
 - An Inertia query flow for `search`, `status`, `page`, and `per_page`.
-- A minimal index-query refactor into `IndexSidangNolRequest` and `SidangNolService::datatable()`.
+- A minimal index-query refactor into `SidangNolRequest` and `SidangNolService::datatable()`.
 - Backend test coverage for visibility and status filtering.
 
 ### Excluded
@@ -139,7 +139,7 @@ The index accepts these query parameters:
 | `page` | positive integer | Laravel pagination page. |
 | `per_page` | approved positive page size | Laravel pagination size. |
 
-`IndexSidangNolRequest` validates and normalizes this query. `SidangNolService::datatable(User $user, array $filters)` owns the complete Eloquent query: relationship loading, actor visibility, search, status condition, existing default order, and pagination with query-string preservation.
+`SidangNolRequest` validates and normalizes this query. `SidangNolService::datatable(User $user, array $filters)` owns the complete Eloquent query: relationship loading, actor visibility, search, status condition, existing default order, and pagination with query-string preservation.
 
 ## 9. Files
 
@@ -147,7 +147,7 @@ The index accepts these query parameters:
 
 | File | Purpose |
 | --- | --- |
-| `app/Http/Requests/SidangNol/IndexSidangNolRequest.php` | Validate and expose index query filters. |
+| `app/Http/Requests/SidangNolRequest.php` | Validate and expose Sidang Nol request input, including index query filters. |
 | `app/Services/SidangNolService.php` | Own the paginated Sidang Nol index query in `datatable()`. |
 | `resources/js/components/data-table/DataTable.vue` | Shared visual table wrapper. |
 | `resources/js/components/data-table/DataTable.types.ts` | Shared generic table type contracts. |
@@ -181,7 +181,7 @@ Verification:
 
 ### Task 2 — Add the validated Sidang Nol index query
 
-Create `IndexSidangNolRequest` and `SidangNolService`. Change only the controller’s `index()` method to delegate query validation and data retrieval.
+Create `SidangNolRequest` and `SidangNolService`. Change only the controller’s `index()` method to delegate query validation and data retrieval.
 
 Acceptance criteria:
 
@@ -263,7 +263,7 @@ The Berkas Sidang Nol module is the completed reference implementation for the a
 Delivered:
 
 - Shared and module-local data-table structure, including responsive horizontal overflow, compact index column sizing, search, status filter, pagination, export, and permission-aware rounded action buttons.
-- Validated index query flow through `IndexSidangNolRequest` and `SidangNolService::datatable()`.
+- Validated index query flow through `SidangNolRequest` and `SidangNolService::datatable()`.
 - Revamped `Form.vue`, with shared-select usage and a responsive two-column document-upload layout.
 - Revamped `Show.vue`, with clean request details and direct, toolbar-free document previews in a two-column document layout.
 - Revamped `Ajuan.vue`, with separate request-detail and decision sections, signatory selection, decision inputs, direct document previews, and the existing cancel/reject/accept flows.

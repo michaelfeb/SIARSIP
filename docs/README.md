@@ -13,7 +13,8 @@ The next iteration keeps these modules:
 3. Template Surat
 4. Carousel
 5. Link Landing Page
-6. Reusable Letter foundation (no active letter service yet)
+6. Cuti Akademik
+7. Reusable Letter foundation for future academic-letter services
 
 Berkas Persuratan and the old Jenis Surat module are retired. Their legacy URLs deliberately return HTTP `410 Gone`; their database data is removed while the old private attachment files remain untouched on storage.
 
@@ -29,9 +30,11 @@ Berkas Persuratan and the old Jenis Surat module are retired. Their legacy URLs 
 - [Template Surat](modules/template-surat.md) — template publishing and download behavior.
 - [Carousel](modules/carousel.md) — landing-page announcement image management.
 - [Link Landing Page](modules/link-landing-page.md) — landing-page shortcut management.
-- [Future letter services](modules/letter-services.md) — shared foundation and the six planned services.
+- [Cuti Akademik](modules/cuti-akademik.md) — student application, staged review, private evidence, and final letter generation.
+- [Future letter services](modules/letter-services.md) — shared foundation and the remaining planned services.
 - [PRD 002](PRD/002_LEGACY_RETIREMENT_AND_TEMPLATE_SURAT_DECOUPLING.md) — approved legacy-retirement scope.
 - [PRD 003](PRD/003_LETTER_TYPES_AND_LETTERS_FOUNDATION.md) — reusable foundation for future letter services.
+- [PRD 004](PRD/004_CUTI_AKADEMIK_MODULE.md) — approved Cuti Akademik module scope.
 
 ## Documentation conventions
 

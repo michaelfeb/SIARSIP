@@ -38,7 +38,7 @@ class SidangNolService
                         ->orWhere('nomor_surat', 'like', "%{$search}%");
                 });
             })
-            ->when($status !== null, fn ($query) => $query->where('status', $status))
+            ->when($status !== null, fn($query) => $query->where('status', $status))
             ->orderByRaw('CASE WHEN status = 1 THEN 0 ELSE 1 END ASC')
             ->orderByDesc('tanggal_dikirim')
             ->paginate($perPage)

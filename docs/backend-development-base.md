@@ -38,13 +38,8 @@ app/
       CarouselController.php
       LinkLandingPageController.php
     Requests/
-      SidangNol/
-        IndexSidangNolRequest.php
-        StoreSidangNolRequest.php
-        DecisionSidangNolRequest.php
-      TemplateSurat/
-        IndexTemplateSuratRequest.php
-        StoreTemplateSuratRequest.php
+      SidangNolRequest.php
+      TemplateSuratRequest.php
   Services/
     SidangNolService.php
     TemplateSuratService.php
@@ -54,7 +49,11 @@ app/
   Policies/
 ```
 
-Create request subdirectories only when a module has more than one request. Keep one service file per module unless there is clear evidence that it has become unmanageably large.
+Use one root-level Form Request per module. Its `rules()` method may select the
+appropriate validation contract from the named route, keeping the module's
+request rules discoverable in one file. Split it only when a real, sustained
+complexity boundary makes that necessary. Keep one service file per module
+unless there is clear evidence that it has become unmanageably large.
 
 ## Layer responsibilities
 
@@ -74,11 +73,11 @@ A Form Request is Laravel's request object with validation and authorization att
 Use one when an endpoint accepts filters, form data, files, or decision input. A plain `Request` remains fine for a genuinely input-free endpoint.
 
 ```php
-namespace App\Http\Requests\SidangNol;
+namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class IndexSidangNolRequest extends FormRequest
+class SidangNolRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -113,14 +112,14 @@ Use `$request->validated()` for form data. Never pass `$request->all()` directly
 Controllers should make the endpoint readable without containing its implementation.
 
 ```php
-use App\Http\Requests\SidangNol\IndexSidangNolRequest;
+use App\Http\Requests\SidangNolRequest;
 use App\Services\SidangNolService;
 use Inertia\Inertia;
 
 class BerkasSidangNolController extends Controller
 {
     public function index(
-        IndexSidangNolRequest $request,
+        SidangNolRequest $request,
         SidangNolService $sidangNolService,
     ) {
         return Inertia::render('BerkasSidangNol/Index', [
@@ -134,6 +133,29 @@ class BerkasSidangNolController extends Controller
 ```
 
 Laravel resolves the service automatically through dependency injection. The controller may call `$this->authorize(...)` or rely on explicit route middleware, depending on the authorization requirement.
+
+### Controller action names
+
+Use Laravel resource names for ordinary record operations: `index`, `create`,
+`store`, `show`, `edit`, `update`, and `destroy`. Use these workflow and file
+action names consistently in every letter module:
+
+| Intent | Controller action |
+| --- | --- |
+| Submit a draft | `submit` |
+| Render the staff review page | `review` |
+| Record an approval or rejection | `decide` |
+| Generate and archive the final letter | `finalize` |
+| Return an attachment for inline preview | `showAttachment` |
+| Return a legacy document for inline preview | `showDocument` |
+| Download the generated final letter | `downloadFinalLetter` |
+| Reset a legacy record to draft | `resetToDraft` |
+| Export records | `export` |
+
+Keep route URIs stable for live modules unless a URL migration is explicitly
+approved. Named routes should use the same verb in kebab case, for example
+`cuti-akademik.review`, `cuti-akademik.decide`, and
+`cuti-akademik.download-final-letter`.
 
 ## Module service pattern
 
@@ -188,6 +210,26 @@ Suggested method names for `SidangNolService`:
 
 `datatable()` is acceptable because it clearly represents the paginated table used by this application. Prefer similarly explicit names; avoid vague methods such as `process()`, `handle()`, or `data()`.
 
+## Letter PDF configuration
+
+`LetterService` owns the finalisation transaction, generated-file storage,
+archive state, and failure cleanup. Every concrete Letter Type service supplies
+its own immutable document configuration:
+
+```php
+protected function pdfView(): string;
+
+/** @return array<string, mixed> */
+protected function pdfData(Letter $letter, array $signatory): array;
+```
+
+`PdfGeneratorService` only converts that Blade view and data into PDF bytes. It
+does not contain Letter Type conditions. PDF data must come from the saved
+`Letter`, its `meta` snapshot, and the selected signatory snapshot—not live
+profile data or raw request values. A module can override `pdfPaper()`,
+`pdfOrientation()`, or `finalPdfPath()` only when its official format requires
+it.
+
 ## Queries, scopes, and transactions
 
 - A module service owns the complete query assembled for an endpoint.
@@ -207,10 +249,39 @@ Suggested method names for `SidangNolService`:
 
 - No Repository layer merely to wrap Eloquent calls.
 - No separate service file for every individual action.
-- No generic `BaseService` with shared CRUD methods.
+- No generic `BaseService` with shared CRUD methods. `LetterService` is the
+  explicit exception for the shared Letters foundation only; it owns the
+  generic Letter finalization workflow and asks each Letter Type service for
+  its PDF template and saved-data payload.
 - No service method that accepts `Request $request`; pass validated arrays, models, and the acting user instead.
 
-If one module service becomes difficult to navigate after real growth, split only the proven independent part. For example, PDF generation may later become a dedicated `SidangNolLetterGenerator`; it should not be created in advance.
+If one module service becomes difficult to navigate after real growth, split
+only a proven independent domain concern. Keep PDF rendering itself in the
+shared `PdfGeneratorService`; do not create a generator class for every Letter
+Type.
+
+## Shared Letter attachments
+
+The Letters foundation is the narrow exception to the one-service-per-module
+rule. `LetterAttachmentService` is shared because every future Letter service
+uses `letter_attachments` and the same opaque secure-disk contract. It may
+store, check, and remove a Letter's private files; it must not decide module
+workflow, authorization policy, labels, or page behavior. The owning service,
+such as `CutiAkademikService`, remains responsible for count requirements,
+state transitions, and record authorization.
+
+`LetterService` is an abstract parent for module services such as
+`CutiAkademikService`. It owns only proven shared behavior: Letter Type
+identity, draft ownership, view/file authorization, approval-chain submit and
+decision transitions, transaction locks, audit logs, and final-signatory
+lookups. Each child service implements `letterTypeCode()`,
+`finalizationRole()`, and `signatoryRole()`. The finalization role must be the
+last entry of the Letter Type's approval chain; the signatory role may be a
+different earlier role, such as DEKAN when RESEPSIONIS finalizes Cuti
+Akademik. Each child retains its own `create`, `update`, and `finalize`
+behavior because form metadata, review scope, and PDF output vary by letter
+type. Use constructor injection for shared collaborators such as
+`LetterAttachmentService`; do not call `app()` from a module service.
 
 ## Refactor checklist
 

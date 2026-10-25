@@ -60,11 +60,17 @@ users (1) ──< attachment / route / log actors (nullable)
 
 | Table | Important columns | Notes |
 | --- | --- | --- |
-| `letter_types` | `code`, `category`, `name`, `notes_markdown`, `approval_chain`, `applicant_roles`, `pdf_template` | New master configuration. `code` is unique. No active type is seeded until a service configuration is approved. |
-| `letters` | UUID `id`, `type_id`, applicant snapshots, `status`, `current_stage`, `letter_number`, `meta`, `final_pdf_path` | Shared transactions for future services. `type_id` uses restrict-on-delete; non-null `letter_number` is unique. |
-| `letter_attachments` | `letter_id`, `file_path`, `original_name`, `mime`, `size_bytes`, `uploaded_by` | File metadata only. The foundation does not upload or serve physical files. |
+| `letter_types` | `code`, `category`, `name`, `notes_markdown`, `approval_chain`, `applicant_roles`, `pdf_template` | `CUTI_AKADEMIK` is the first active configuration; `code` is unique. |
+| `letters` | UUID `id`, `type_id`, applicant snapshots, `status`, `current_stage`, `letter_number`, `meta`, `final_pdf_path` | Shared transactions. Cuti uses DRAFT, IN_PROGRESS, REJECTED, and ARCHIVED. `type_id` restricts deletion; non-null `letter_number` is unique. |
+| `letter_attachments` | `letter_id`, `file_path`, `original_name`, `mime`, `size_bytes`, `uploaded_by` | Private Cuti evidence metadata. Physical files use opaque secure-disk paths and authorized record routes. |
 | `letter_routes` | `letter_id`, `from_stage`, `to_stage`, `decided_by`, `note` | Future approval-stage history. |
 | `letter_logs` | `letter_id`, `actor_id`, `action`, `meta` | Future business audit history. |
+
+For Cuti Akademik, `meta` contains `semester`, `tahun_akademik`, `nomor_hp`,
+`nominal_ukt`, `alasan_cuti`, and the applicant programme code snapshot. Its
+type configuration defines the fixed `PRODI → AKADEMIK → KTU → DEKAN →
+RESEPSIONIS` chain. At least one and at most five private PDF/JPG/JPEG/PNG
+attachments are permitted, each at most 100 KB.
 
 Deleting a Letter cascades to its child metadata records. Deleting a user
 keeps historical Letter snapshots and changes nullable actor/applicant foreign

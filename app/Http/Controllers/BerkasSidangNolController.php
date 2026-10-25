@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\BerkasSidangNolExport;
-use App\Http\Requests\SidangNol\IndexSidangNolRequest;
+use App\Http\Requests\SidangNolRequest;
 use App\Models\BerkasSidangNol;
 use App\Models\Note;
 use App\Models\User;
@@ -21,7 +21,7 @@ use Illuminate\Validation\Rule;
 class BerkasSidangNolController extends Controller
 {
     //
-    public function index(IndexSidangNolRequest $request, SidangNolService $sidangNolService)
+    public function index(SidangNolRequest $request, SidangNolService $sidangNolService)
     {
         $filters = $request->filters();
         $berkasSidangNol = $sidangNolService->datatable($request->user(), $filters);
@@ -63,7 +63,7 @@ class BerkasSidangNolController extends Controller
         ]);
     }
 
-    public function ajuan($id)
+    public function review($id)
     {
         $berkasSidangNol = BerkasSidangNol::with(['user'])->findOrFail($id);
 
@@ -79,7 +79,7 @@ class BerkasSidangNolController extends Controller
         ]);
     }
 
-    public function reset($id)
+    public function resetToDraft($id)
     {
         $berkas = BerkasSidangNol::findOrFail($id);
         if ($berkas->status === 3) {
@@ -105,7 +105,17 @@ class BerkasSidangNolController extends Controller
     }
 
 
-    public function save(Request $request, $id = null)
+    public function store(Request $request)
+    {
+        return $this->persist($request);
+    }
+
+    public function update(Request $request, $id)
+    {
+        return $this->persist($request, $id);
+    }
+
+    private function persist(Request $request, $id = null)
     {
         $rules = [
             'user_id' => 'required|exists:users,id',
@@ -222,11 +232,11 @@ class BerkasSidangNolController extends Controller
         return redirect()->route('berkas-sidang-nol.index')->with('success', 'Berhasil menyimpan berkas sidang nol.');
     }
 
-    public function getUploads($id)
+    public function attachments($id)
     {
         $berkas = BerkasSidangNol::findOrFail($id);
 
-        $baseRoute = route('berkas-sidang-nol.download-upload');
+        $baseRoute = route('berkas-sidang-nol.show-attachment');
 
         $files = [
             'dokumen_hasil_studi' => $berkas->dokumen_hasil_studi ? "{$baseRoute}?path=secure_storage/{$berkas->dokumen_hasil_studi}" : null,
@@ -240,7 +250,7 @@ class BerkasSidangNolController extends Controller
         return response()->json($files);
     }
 
-    public function downloadUpload(Request $request)
+    public function showAttachment(Request $request)
     {
         $path = $request->query('path');
 
@@ -256,7 +266,7 @@ class BerkasSidangNolController extends Controller
         ]);
     }
 
-    public function keputusan(Request $request, $id)
+    public function decide(Request $request, $id)
     {
         $berkas = BerkasSidangNol::with('user')->findOrFail($id);
         $tahun = now()->year;
@@ -306,7 +316,7 @@ class BerkasSidangNolController extends Controller
         if ($validated['status'] == 2) {
             $data['nomor_surat'] = $validated['nomor_surat'];
 
-            $map = $this->penandatanganMap();
+            $map = $this->signatoryMap();
             $pegawaiId = (int) $validated['pegawai'];
 
             if (!isset($map[$pegawaiId])) {
@@ -351,7 +361,7 @@ class BerkasSidangNolController extends Controller
         return back()->with('success', 'Keputusan berhasil disimpan dan surat dibuat.');
     }
 
-    public function kirim($id)
+    public function submit($id)
     {
         $berkas = BerkasSidangNol::findOrFail($id);
 
@@ -371,7 +381,7 @@ class BerkasSidangNolController extends Controller
         ], 400);
     }
 
-    public function downloadSurat($id)
+    public function downloadFinalLetter($id)
     {
         $berkas = BerkasSidangNol::findOrFail($id);
 
@@ -382,7 +392,7 @@ class BerkasSidangNolController extends Controller
         return Storage::disk('secure')->download($berkas->surat_balasan);
     }
 
-    private function penandatanganMap()
+    private function signatoryMap()
     {
         return [
             1 => ['nama' => 'Nurul Lathifah', 'nip' => '197809072001122002', 'ttd' => 'ttd_ibu_ipah.png'],
@@ -434,7 +444,7 @@ class BerkasSidangNolController extends Controller
         );
     }
 
-    public function getDokumen($path)
+    public function showDocument($path)
     {
         $fullPath = storage_path('app/secure_storage/berkas_sidang_nol/' . $path);
 

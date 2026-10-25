@@ -67,7 +67,7 @@ Authenticated pages normally use `resources/js/layouts/AppLayout.vue`, which del
 | Disk | Physical root | Intended content | Exposure |
 | --- | --- | --- | --- |
 | `public` | `storage/app/public` | template `.doc/.docx` files and carousel images | `public/storage` symlink and application routes |
-| `secure` | `storage/app/secure_storage` | Sidang Nol submission PDFs and generated reply letters; retained unreferenced legacy files | application download/preview routes for active modules only |
+| `secure` | `storage/app/secure_storage` | Sidang Nol files, Cuti Akademik evidence/final PDFs, and retained unreferenced legacy files | authorized application routes only |
 
 The `secure` disk is configured as private in `config/filesystems.php`. File access is still implemented by application routes, so future changes must retain explicit authorization checks before returning a file.
 
@@ -81,10 +81,11 @@ identifiers and contains common lifecycle, applicant snapshot, manual-number,
 and final-PDF fields. Service-specific form data belongs in its JSON `meta`
 column.
 
-The foundation deliberately has no HTTP route, workflow action, file storage
-operation, PDF renderer, or active Letter Type. Those responsibilities belong
-to the future service, beginning with Cuti Akademik. It remains separate from
-both Berkas Sidang Nol and Template Surat.
+Cuti Akademik is the first active service on this foundation. Its module owns
+its routes, validation, approval transitions, and PDF renderer. The shared
+`LetterAttachmentService` owns only private attachment persistence/cleanup;
+the shared frontend upload section owns only file-selection presentation.
+Both remain separate from Berkas Sidang Nol and Template Surat.
 
 ## Architecture boundaries for new work
 

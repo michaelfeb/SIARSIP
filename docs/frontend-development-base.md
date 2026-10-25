@@ -283,6 +283,14 @@ resources/js/pages/TemplateSurat/
 
 The structure is consistent, but the folder must not be filled speculatively. Add a component, composable, or test folder only when that responsibility exists.
 
+## Shared Letter attachment section
+
+`resources/js/components/letters/LetterAttachmentUpload.vue` is the shared
+file-selection section for Letter modules. It owns generic client-side selected
+file display and limit feedback through `v-model`. It must not own a route,
+storage path, Letter Type, request state, or module label. The owning form
+still owns submission and server validation, which remains authoritative.
+
 ## Existing Sidang Nol names
 
 The current Berkas Sidang Nol refactor already follows the page-root, `components/`, and `ts/` boundary. Some supporting files still use the older concise `SidangNol*` names, such as `SidangNolDetails.vue` and `useSidangNolDocuments.ts`.

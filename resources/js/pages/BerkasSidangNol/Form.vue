@@ -164,8 +164,8 @@ async function loadExistingDocuments() {
 
 function submit() {
     const url = isEdit.value
-        ? route('berkas-sidang-nol.saveEdit', props.berkasSidangNol?.id)
-        : route('berkas-sidang-nol.saveCreate');
+        ? route('berkas-sidang-nol.update', props.berkasSidangNol?.id)
+        : route('berkas-sidang-nol.store');
 
     form.post(url, {
         forceFormData: true,

@@ -22,18 +22,18 @@ Email-verification routes and controllers are present, but the current `User` mo
 
 | ID | Role | Current responsibility |
 | ---: | --- | --- |
-| 1 | MAHASISWA | Submit and track own Sidang Nol request. |
-| 2 | RESEPSIONIS | Manage letter templates; future archive/finalisation actor when configured. |
-| 3 | DEKAN | Dashboard and future workflow role. |
+| 1 | MAHASISWA | Submit and track own Sidang Nol and Cuti Akademik requests. |
+| 2 | RESEPSIONIS | Manage letter templates; finalize Cuti Akademik after DEKAN. |
+| 3 | DEKAN | Dashboard and Cuti Akademik approval/signatory role. |
 | 4 | WD1 | Dashboard and future workflow role. |
-| 5 | KTU | Dashboard and future workflow role. |
-| 6 | AKADEMIK | Process Sidang Nol, manage carousel and landing links. |
+| 5 | KTU | Dashboard and Cuti Akademik approval role. |
+| 6 | AKADEMIK | Process Sidang Nol and Cuti Akademik; manage carousel and landing links. |
 | 7 | BAGIAN LAYANAN | Manage letter templates. |
 | 8 | SUPER ADMIN | Full retained-module administration. |
 | 9 | ADMIN TTPS | Dashboard access. |
 | 10 | WD2 | Future workflow role; no current module permission. |
 | 11 | WD3 | Future workflow role; no current module permission. |
-| 12 | PRODI | Future workflow role; no current module permission. |
+| 12 | PRODI | Review Cuti Akademik for its own programme of study. |
 
 The roles are seeded before users. Changing the insertion order or replacing rows without preserving IDs can silently change access because the application currently checks `role_id` values rather than named permissions.
 
@@ -66,6 +66,16 @@ The user is available in all Inertia responses as `auth.user`. The client sideba
 | Landing-link management | — | — | Manage | Manage |
 
 The public landing page, published template download endpoint, and carousel image endpoint have their own public routes. Public delivery does not grant access to private Sidang Nol files.
+
+## Cuti Akademik authorization
+
+The Cuti module adds route middleware for its participating roles and then
+enforces a second record-level guard in `LetterPolicy` and
+`CutiAkademikService`. A student can access only their own Letter. A reviewer
+can act only when their role matches `current_stage`; PRODI must also match the
+student programme. SUPER ADMIN can inspect records but cannot skip the chain.
+RESEPSIONIS can finalize only the active RESEPSIONIS stage. Attachment and
+final-PDF routes authorize the parent Letter before streaming a private file.
 
 ## Adding or changing authorization
 

@@ -34,7 +34,7 @@ function makeFoundationLetter(LetterType $letterType, User $applicant, array $ov
 function makeFoundationType(): LetterType
 {
     return LetterType::query()->create([
-        'code' => 'CUTI_AKADEMIK',
+        'code' => 'FOUNDATION_TEST',
         'category' => 'AKADEMIK',
         'name' => 'Cuti Akademik',
         'notes_markdown' => 'Panduan akan ditentukan pada implementasi layanan.',
@@ -48,7 +48,7 @@ beforeEach(function () {
     $this->seed(RoleSeeder::class);
 });
 
-test('canonical roles have stable IDs and no active letter types are seeded', function () {
+test('canonical roles have stable IDs and the approved Cuti Akademik type is seeded', function () {
     expect(Role::query()->orderBy('id')->pluck('nama', 'id')->all())->toBe([
         1 => 'MAHASISWA',
         2 => 'RESEPSIONIS',
@@ -62,7 +62,7 @@ test('canonical roles have stable IDs and no active letter types are seeded', fu
         10 => 'WD2',
         11 => 'WD3',
         12 => 'PRODI',
-    ])->and(LetterType::query()->count())->toBe(0);
+    ])->and(LetterType::query()->where('code', 'CUTI_AKADEMIK')->exists())->toBeTrue();
 });
 
 test('the reusable letter tables are available', function () {

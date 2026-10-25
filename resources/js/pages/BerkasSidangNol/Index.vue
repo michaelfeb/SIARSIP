@@ -141,7 +141,7 @@ async function onSubmit(berkas: SidangNol): Promise<void> {
         return;
     }
 
-    router.put(route('berkas-sidang-nol.kirim', berkas.id), {}, {
+    router.put(route('berkas-sidang-nol.submit', berkas.id), {}, {
         preserveScroll: true,
         onSuccess: async () => {
             await Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data telah terkirim.' });
@@ -166,7 +166,7 @@ async function onReset(berkas: SidangNol): Promise<void> {
         return;
     }
 
-    router.put(route('berkas-sidang-nol.reset', berkas.id), {}, {
+    router.put(route('berkas-sidang-nol.reset-to-draft', berkas.id), {}, {
         preserveScroll: true,
         onSuccess: async () => {
             await Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data telah direset.' });
@@ -177,12 +177,12 @@ async function onReset(berkas: SidangNol): Promise<void> {
 }
 
 function onReview(id: number): void {
-    router.get(route('berkas-sidang-nol.ajuan', id));
+    router.get(route('berkas-sidang-nol.review', id));
 }
 
 async function onDownloadReply(berkas: SidangNol): Promise<void> {
     try {
-        const response = await axios.get(route('berkas-sidang-nol.download-surat-sidang-nol', berkas.id), {
+        const response = await axios.get(route('berkas-sidang-nol.download-final-letter', berkas.id), {
             responseType: 'blob',
         });
         const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));

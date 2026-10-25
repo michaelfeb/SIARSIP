@@ -7,15 +7,15 @@ for future academic-letter services. A Letter Type is configuration; a Letter
 is one request. Type-specific form data belongs in `letters.meta`; repeated
 files, routing history, and audit records use the shared child tables.
 
-This foundation has no routes, screens, active Letter Type records, upload
-operations, PDF generation, or approval actions yet. It does not replace or
-modify Berkas Sidang Nol.
+Cuti Akademik is now the active reference implementation. It adds its own
+routes, screens, upload/PDF operations, and fixed chain while using this shared
+foundation. It does not replace or modify Berkas Sidang Nol.
 
 ## Planned catalogue
 
 | Service | Status | Ownership when implemented |
 | --- | --- | --- |
-| Cuti Akademik | Next service | Defines its form, validation, required files, approval chain, Markdown notes, PDF template, and transitions. |
+| Cuti Akademik | Implemented | Uses the fixed PRODI → AKADEMIK → KTU → DEKAN → RESEPSIONIS chain, private evidence, and final DomPDF output. |
 | Magang | Planned | Defines its own domain fields and workflow while using the shared Letter foundation. |
 | Penurunan UKT | Planned | Defines its own domain fields and workflow while using the shared Letter foundation. |
 | UKT 50% | Planned | Defines its own domain fields and workflow while using the shared Letter foundation. |

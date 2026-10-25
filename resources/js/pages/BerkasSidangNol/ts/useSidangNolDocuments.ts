@@ -11,7 +11,7 @@ export function useSidangNolDocuments() {
 
         try {
             const response = await axios.get<SidangNolDocumentUrls>(
-                route('berkas-sidang-nol.get-uploads', berkasId),
+                route('berkas-sidang-nol.attachments', berkasId),
             );
 
             documentUrls.value = response.data;

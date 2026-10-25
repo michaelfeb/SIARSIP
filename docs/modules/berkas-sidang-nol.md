@@ -45,7 +45,7 @@ Draft (0)
 ```
 
 - A draft is created or updated with the student documents.
-- `kirim` changes a draft from `0` to `1`.
+- `submit` changes a draft from `0` to `1`.
 - Staff review status `1` submissions in the ajuan queue.
 - A decision records the completion date and may add a note.
 - Acceptance formats the letter number as `SN-{number}/UN8.1.28/DV.01/{year}`, renders a DomPDF response letter, and stores it as `surat_balasan.pdf` on the secure disk.

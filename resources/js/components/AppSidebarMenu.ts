@@ -1,4 +1,4 @@
-import { Folders, LayoutGrid, Mail, Minus, Settings, User } from 'lucide-vue-next';
+import { Folders, GraduationCap, LayoutGrid, Mail, Minus, Settings, User } from 'lucide-vue-next';
 
 const dashboard = {
     title: 'Dashboard',
@@ -23,22 +23,30 @@ const sidangNol = {
     children: [{ title: 'Berkas Sidang Nol', icon: Minus, href: '/berkas-sidang-nol' }],
 };
 
+const akademik = {
+    title: 'Akademik',
+    icon: GraduationCap,
+    children: [{ title: 'Cuti Akademik', icon: Minus, href: '/cuti-akademik' }],
+};
+
 export const sidebars = {
     1: [
         sidangNol,
+        akademik,
         {
             title: 'Template Surat',
             href: '/template-surat-mahasiswa',
             icon: Folders,
         },
     ],
-    2: [dashboard, templateSurat, pengguna],
-    3: [dashboard, templateSurat, pengguna],
+    2: [dashboard, akademik, templateSurat, pengguna],
+    3: [dashboard, akademik, templateSurat, pengguna],
     4: [dashboard, templateSurat, pengguna],
-    5: [dashboard, templateSurat, pengguna],
+    5: [dashboard, akademik, templateSurat, pengguna],
     6: [
         dashboard,
         sidangNol,
+        akademik,
         templateSurat,
         pengguna,
         {
@@ -54,6 +62,7 @@ export const sidebars = {
     8: [
         dashboard,
         sidangNol,
+        akademik,
         templateSurat,
         pengguna,
         {
@@ -66,4 +75,5 @@ export const sidebars = {
         },
     ],
     9: [dashboard],
+    12: [dashboard, akademik, templateSurat, pengguna],
 };

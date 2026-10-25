@@ -38,7 +38,7 @@ const form = useForm({
 
 function onSubmitDecision(status: 2 | 3): void {
     form.status = status;
-    form.post(route('berkas-sidang-nol.keputusan', props.berkasSidangNol.id), {
+    form.post(route('berkas-sidang-nol.decide', props.berkasSidangNol.id), {
         onSuccess: async () => {
             await Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Keputusan telah disimpan.' });
             router.get(route('berkas-sidang-nol.index'));
