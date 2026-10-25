@@ -81,10 +81,13 @@ identifiers and contains common lifecycle, applicant snapshot, manual-number,
 and final-PDF fields. Service-specific form data belongs in its JSON `meta`
 column.
 
-Cuti Akademik is the first active service on this foundation. Its module owns
-its routes, validation, approval transitions, and PDF renderer. The shared
-`LetterAttachmentService` owns only private attachment persistence/cleanup;
-the shared frontend upload section owns only file-selection presentation.
+`LetterService` owns the shared approval/finalisation workflow and
+`PdfGeneratorService` renders configured Blade templates. Cuti Akademik is the
+first active service on this foundation; its module owns routes, validation,
+type-specific data, review scope, and its PDF template/data configuration. The
+shared `LetterAttachmentService` owns only private attachment
+persistence/cleanup; the shared frontend upload section owns only file-selection
+presentation.
 Both remain separate from Berkas Sidang Nol and Template Surat.
 
 ## Architecture boundaries for new work

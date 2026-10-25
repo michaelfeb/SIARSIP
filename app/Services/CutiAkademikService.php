@@ -42,7 +42,7 @@ class CutiAkademikService extends LetterService
 
     protected function pdfView(): string
     {
-        return 'pdf.cuti-akademik';
+        return 'letters.cuti-akademik';
     }
 
     /**

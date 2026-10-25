@@ -194,7 +194,7 @@ workflow:
     → commit
 
 `PdfGeneratorService` is the shared DomPDF renderer. `CutiAkademikService`
-configures it with `resources/views/pdf/cuti-akademik.blade.php` and passes
+configures it with `resources/views/letters/cuti-akademik.blade.php` and passes
 stored Letter values, never raw HTTP input. `LetterService` owns the shared
 finalisation/archive workflow. A final file uses an opaque path:
 
@@ -389,7 +389,7 @@ Use the route-name prefix cuti-akademik and Letter UUIDs.
 | app/Policies/LetterPolicy.php | Letter-level ownership, stage, and file/PDF checks. |
 | database/seeders/CutiAkademikLetterTypeSeeder.php | Idempotent Letter Type configuration. |
 | database/migrations/{timestamp}_seed_cuti_akademik_letter_type.php | Production-safe Letter Type activation. |
-| resources/views/pdf/cuti-akademik.blade.php | Final official PDF view. |
+| resources/views/letters/cuti-akademik.blade.php | Final official PDF view. |
 | resources/js/components/letters/LetterAttachmentUpload.vue | Shared selected-file section. |
 | resources/js/pages/CutiAkademik/Index.vue | List-page coordinator. |
 | resources/js/pages/CutiAkademik/DataTable.vue | Local filters, cells, badges, and actions. |

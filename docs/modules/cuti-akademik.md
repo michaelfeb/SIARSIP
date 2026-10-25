@@ -44,7 +44,7 @@ Program Studi review scope, and its PDF template/data configuration. It extends
 the abstract `LetterService`, which owns shared Letter Type checks, attachment
 access, approval-chain transitions, locks, finalisation, PDF storage, and audit
 entries. `PdfGeneratorService` renders the configured Blade view; Cuti provides
-`pdf.cuti-akademik` and only saved Letter, meta, and signatory snapshot data.
+`letters.cuti-akademik` and only saved Letter, meta, and signatory snapshot data.
 `LetterAttachmentService` is the small shared private-file persistence service.
 
 ## Frontend ownership

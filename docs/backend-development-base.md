@@ -230,6 +230,110 @@ profile data or raw request values. A module can override `pdfPaper()`,
 `pdfOrientation()`, or `finalPdfPath()` only when its official format requires
 it.
 
+## Letter module standard
+
+All future academic-letter modules use the same backend shape as Cuti Akademik.
+The concrete service is the only letter-specific backend class; do not add a
+separate `XxxPdfGenerator`, repository, action, or workflow service.
+
+```text
+app/
+  Http/
+    Controllers/
+      CutiAkademikController.php
+    Requests/
+      CutiAkademikRequest.php
+  Services/
+    LetterService.php             # shared abstract workflow
+    PdfGeneratorService.php       # shared DomPDF renderer
+    LetterAttachmentService.php   # shared secure-file persistence
+    CutiAkademikService.php       # one concrete Letter Type service
+resources/
+  views/letters/
+    cuti-akademik.blade.php       # one official template per Letter Type
+database/
+  seeders/
+    CutiAkademikLetterTypeSeeder.php
+```
+
+### Controller and Request names
+
+Use one controller and one root-level Form Request named after the Letter Type:
+`MagangController` and `MagangRequest`, for example. The controller remains
+thin and uses the existing action names:
+
+| Intent | Controller method | Service method |
+| --- | --- | --- |
+| Table data | `index` | `datatable()` |
+| New draft screen | `create` | — |
+| Create draft | `store` | `create()` |
+| Display one letter | `show` | `findForDisplay()` |
+| Edit draft screen | `edit` | `findForDisplay()` + policy |
+| Save draft changes | `update` | `update()` |
+| Delete draft | `destroy` | `delete()` |
+| Submit applicant request | `submit` | `ajuan()` |
+| Staff review page | `review` | `findForDisplay()` |
+| Forward or reject | `decide` | `decide()` |
+| Render/archive final PDF | `finalize` | `finalize()` |
+| Preview attachment | `showAttachment` | `findViewableAttachment()` |
+| Download final PDF | `downloadFinalLetter` | `findForDisplay()` |
+
+Keep the public controller and route action named `submit` for a stable HTTP
+contract. `ajuan()` is the intentional business name inside `LetterService`.
+The Form Request selects route-specific rules and exposes named helpers such as
+`filters()` and `payload()`; it never owns database or storage work.
+
+### Concrete Letter Type service contract
+
+Every service extending `LetterService` must implement these protected methods:
+
+```php
+protected function letterTypeCode(): string;
+protected function finalizationRole(): string;
+protected function signatoryRole(): string;
+protected function pdfView(): string;
+
+/** @return array<string, mixed> */
+protected function pdfData(Letter $letter, array $signatory): array;
+```
+
+- `letterTypeCode()` returns the unique seeded code, for example
+  `CUTI_AKADEMIK`.
+- `finalizationRole()` is the **last** approval-chain role. This actor enters
+  the manual official number, generates the PDF, and archives the request.
+- `signatoryRole()` is the official document signer. It may be an earlier
+  approval role, such as DEKAN when RESEPSIONIS finalizes Cuti Akademik. For a
+  service such as Bebas Ruang Baca, both roles may be `RUANG BACA`.
+- `pdfView()` returns the Blade view name, such as `letters.cuti-akademik`.
+- `pdfData()` returns only the variables required by that Blade template. Use
+  saved `Letter` fields, `Letter::meta`, and the signatory snapshot.
+
+The concrete service normally owns `datatable()`, `create()`, `update()`,
+type-specific metadata construction, applicant checks, and review-scope rules.
+It inherits `ajuan()`, `decide()`, `finalize()`, `delete()`,
+`findForDisplay()`, `findViewableAttachment()`,
+`availableFinalSignatories()`, and `isFinalizationStage()`.
+
+Do not override inherited workflow methods merely to rename them. Override a
+protected hook only when the Letter Type has a proven different requirement:
+`ensureReviewerScope()`, `applyReviewerVisibility()`, `pdfPaper()`,
+`pdfOrientation()`, or `finalPdfPath()`.
+
+### Letter Type seed and data rules
+
+Create an idempotent `XxxLetterTypeSeeder` and its production-safe seed
+migration only when a Letter Type is approved. The seed defines the unique
+code, display name, category, applicant roles, notes Markdown, and approval
+chain. Its `pdf_template` value documents the official template and should
+match the view returned by `pdfView()`.
+
+Store applicant identity as a server-created snapshot in `letters`; store only
+Letter Type-specific fields in `letters.meta`; store supporting files in
+`letter_attachments`. Do not read current user biodata while rendering a final
+PDF. The generated final file is immutable after archival; changing a Blade
+template affects only future finalizations unless an explicit, audited PDF
+regeneration feature is approved.
+
 ## Queries, scopes, and transactions
 
 - A module service owns the complete query assembled for an endpoint.
@@ -272,16 +376,11 @@ state transitions, and record authorization.
 
 `LetterService` is an abstract parent for module services such as
 `CutiAkademikService`. It owns only proven shared behavior: Letter Type
-identity, draft ownership, view/file authorization, approval-chain submit and
-decision transitions, transaction locks, audit logs, and final-signatory
-lookups. Each child service implements `letterTypeCode()`,
-`finalizationRole()`, and `signatoryRole()`. The finalization role must be the
-last entry of the Letter Type's approval chain; the signatory role may be a
-different earlier role, such as DEKAN when RESEPSIONIS finalizes Cuti
-Akademik. Each child retains its own `create`, `update`, and `finalize`
-behavior because form metadata, review scope, and PDF output vary by letter
-type. Use constructor injection for shared collaborators such as
-`LetterAttachmentService`; do not call `app()` from a module service.
+identity, draft ownership, view/file authorization, approval-chain transitions,
+transaction locks, audit logs, final-signatory lookups, and final PDF/archive
+work. Each child supplies its roles and PDF configuration, while retaining its
+own `create`, `update`, metadata, and review-scope behavior. Use constructor
+injection for shared collaborators; do not call `app()` from a module service.
 
 ## Refactor checklist
 

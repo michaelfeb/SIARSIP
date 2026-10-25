@@ -40,3 +40,24 @@ SIARSIP seed data because its letter catalogue and role vocabulary differ.
   are unique across all Letters.
 - Keep Template Surat independent. It is a public downloadable-template
   module, not a Letter Type.
+
+## Required implementation pattern
+
+Cuti Akademik is the reference implementation for every future service.
+
+1. Add one Letter Type Blade template at `resources/views/letters/{letter}.blade.php`.
+2. Add `XxxController`, `XxxRequest`, and `XxxService`; do not create an
+   `XxxPdfGenerator` class.
+3. Make the service extend `LetterService` and configure its unique type code,
+   finalization role, signatory role, `pdfView()`, and `pdfData()`.
+4. Add an idempotent `XxxLetterTypeSeeder`, then a dedicated migration that
+   invokes that seed on production environments.
+5. Implement only the Letter Type-specific draft fields, metadata snapshot,
+   data table query, and any reviewer scope. Reuse the parent workflow for
+   `ajuan()`, `decide()`, and `finalize()`.
+6. Add service/feature coverage for draft creation, ownership visibility,
+   approval order, finalizer/signatory separation, generated PDF storage, and
+   failure cleanup.
+
+The complete method naming and inheritance contract is maintained in
+[Backend development base](../backend-development-base.md#letter-module-standard).
