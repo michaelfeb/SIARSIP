@@ -52,6 +52,24 @@ abstract class LetterService
     }
 
     /**
+     * Return the configured workflow shape used by a Letter detail page.
+     *
+     * The active stage and route history remain on the Letter itself. This
+     * context deliberately contains only Letter Type configuration so every
+     * module presents the same server-owned approval sequence.
+     *
+     * @return array{approvalChain: array<int, string>}
+     */
+    public function workflowDisplayContext(Letter $letter): array
+    {
+        $this->ensureLetterType($letter);
+
+        return [
+            'approvalChain' => $this->approvalChain($letter),
+        ];
+    }
+
+    /**
      * Resolve an attachment only when it belongs to a letter the actor may view.
      */
     public function findViewableAttachment(Letter $letter, LetterAttachment $attachment, User $actor): LetterAttachment

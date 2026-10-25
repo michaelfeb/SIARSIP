@@ -32,7 +32,8 @@ const form = useForm({
 
 function onSubmit(): void {
     if (isEdit.value) {
-        form.put(route('cuti-akademik.update', props.letter?.id), { forceFormData: true });
+        form.transform((data) => ({ ...data, _method: 'put' }))
+            .post(route('cuti-akademik.update', props.letter?.id), { forceFormData: true });
         return;
     }
     form.post(route('cuti-akademik.store'), { forceFormData: true });

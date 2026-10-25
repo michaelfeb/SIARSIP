@@ -44,6 +44,10 @@ export interface CutiAkademikLetter {
     routes?: CutiAkademikRoute[];
 }
 
+export interface CutiAkademikWorkflowContext {
+    approvalChain: string[];
+}
+
 export interface CutiAkademikPaginated<T> {
     data: T[];
     current_page: number;

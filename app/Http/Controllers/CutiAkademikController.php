@@ -43,7 +43,12 @@ class CutiAkademikController extends Controller
 
     public function show(Request $request, Letter $letter, CutiAkademikService $service): Response
     {
-        return Inertia::render('CutiAkademik/Show', ['letter' => $service->findForDisplay($letter, $request->user())]);
+        $letter = $service->findForDisplay($letter, $request->user());
+
+        return Inertia::render('CutiAkademik/Show', [
+            'letter' => $letter,
+            'workflowContext' => $service->workflowDisplayContext($letter),
+        ]);
     }
 
     public function edit(Request $request, Letter $letter, CutiAkademikService $service): Response

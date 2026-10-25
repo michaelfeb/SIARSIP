@@ -339,6 +339,33 @@ approver. Do not
 combine the stage into a status badge or replace it with a text line below the
 status in a dense table.
 
+## Shared Letter workflow status and history
+
+`resources/js/components/letters/LetterWorkflowStatus.vue` is the shared
+read-only workflow section for Letter detail pages. It receives the
+server-owned configured `approvalChain`, current lifecycle `status`, optional
+`currentStage`, and the persisted Letter Route records. It renders the current
+status message, responsive approval progress, and a newest-first approval
+history with the deciding user, role, time, and optional note. An archived
+Letter can also receive its number and authorized final-PDF URL to render the
+archive summary and download control.
+
+Do not derive approval history from frontend actions or hard-code a Letter
+Type's stages in a page. The controller obtains the shared
+`workflowDisplayContext()` from its Letter Service and the component presents
+that context alongside the persisted routes:
+
+```vue
+<LetterWorkflowStatus
+    :approval-chain="workflowContext.approvalChain"
+    :status="letter.status"
+    :current-stage="letter.current_stage"
+    :routes="letter.routes"
+    :letter-number="letter.letter_number"
+    :download-url="canDownload ? finalLetterUrl : null"
+/>
+```
+
 ## Existing Sidang Nol names
 
 The current Berkas Sidang Nol refactor already follows the page-root, `components/`, and `ts/` boundary. Some supporting files still use the older concise `SidangNol*` names, such as `SidangNolDetails.vue` and `useSidangNolDocuments.ts`.

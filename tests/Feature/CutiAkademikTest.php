@@ -87,6 +87,16 @@ test('the workflow only moves through the approved immediate stages', function (
         ->and($letter->routes()->count())->toBe(5);
 });
 
+test('the detail workflow context uses the configured Letter Type approval chain', function () {
+    $student = cutiUser(1);
+    $service = app(CutiAkademikService::class);
+    $letter = $service->create($student, cutiPayload());
+
+    expect($service->workflowDisplayContext($letter))->toBe([
+        'approvalChain' => ['PRODI', 'AKADEMIK', 'KTU', 'DEKAN', 'RESEPSIONIS'],
+    ]);
+});
+
 test('resepsionis finalises after DEKAN with a private generated PDF', function () {
     $student = cutiUser(1);
     $prodi = cutiUser(12, 6);
@@ -194,4 +204,32 @@ test('the Cuti Akademik index is available only through authenticated module rol
     $this->actingAs($student)
         ->get(route('cuti-akademik.index'))
         ->assertOk();
+});
+
+test('a mahasiswa can open their own Cuti Akademik draft for editing', function () {
+    $student = cutiUser(1);
+    $letter = app(CutiAkademikService::class)->create($student, cutiPayload());
+
+    $this->actingAs($student)
+        ->get(route('cuti-akademik.edit', $letter))
+        ->assertOk();
+});
+
+test('an unchanged Cuti Akademik draft can be updated through Laravel method spoofing', function () {
+    $student = cutiUser(1);
+    $letter = app(CutiAkademikService::class)->create($student, cutiPayload());
+
+    $this->actingAs($student)
+        ->post(route('cuti-akademik.update', $letter), [
+            ...cutiPayload(['attachments' => []]),
+            '_method' => 'PUT',
+        ])
+        ->assertRedirect(route('cuti-akademik.show', $letter));
+
+    expect($letter->fresh()->meta)->toMatchArray([
+        'semester' => '5',
+        'tahun_akademik' => '2026/2027',
+        'nomor_hp' => '081234567890',
+        'nominal_ukt' => '2500000',
+    ]);
 });

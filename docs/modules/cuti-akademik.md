@@ -89,3 +89,10 @@ Its data table keeps Status and Stage separate: shared `Badge` with
 `type="status"` renders the Letter lifecycle, while `type="stage"` renders the
 current PRODI, AKADEMIK, KTU, DEKAN, RESEPSIONIS, or other configured approval
 stage.
+
+The Cuti Akademik detail page composes the shared
+`LetterWorkflowStatus.vue`. `LetterService::workflowDisplayContext()` supplies
+the configured approval chain, while persisted `letter_routes` provide the
+auditable newest-first approval history. This preserves a single workflow
+presentation for future Letter modules without copying role labels, progress
+rules, or history markup into each `Show.vue`.
