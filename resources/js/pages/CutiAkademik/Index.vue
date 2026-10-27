@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import Heading from '@/components/Heading.vue';
+import { showConfirmationAlert } from '@/components/alerts/SwalAlert';
 import Button from '@/components/ui/button/Button.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
-import Swal from 'sweetalert2';
 import { computed, ref } from 'vue';
 import DataTable from './DataTable.vue';
 import type { CutiAkademikActor, CutiAkademikFilters, CutiAkademikLetter, CutiAkademikPaginated, CutiAkademikTableQuery } from './ts/cutiAkademik.types';
@@ -24,8 +24,8 @@ function onView(letter: CutiAkademikLetter): void { router.get(route('cuti-akade
 function onEdit(letter: CutiAkademikLetter): void { router.get(route('cuti-akademik.edit', letter.id)); }
 function onReview(letter: CutiAkademikLetter): void { router.get(route('cuti-akademik.review', letter.id)); }
 function onDownload(letter: CutiAkademikLetter): void { window.open(route('cuti-akademik.download-final-letter', letter.id), '_blank', 'noopener'); }
-async function onDelete(letter: CutiAkademikLetter): Promise<void> { const result = await Swal.fire({ icon: 'warning', title: 'Hapus draft?', text: 'Draft dan dokumen pendukung akan dihapus.', showCancelButton: true, confirmButtonText: 'Hapus', cancelButtonText: 'Batal' }); if (result.isConfirmed) router.delete(route('cuti-akademik.destroy', letter.id), { preserveScroll: true }); }
-async function onSubmit(letter: CutiAkademikLetter): Promise<void> { const result = await Swal.fire({ icon: 'question', title: 'Kirim permohonan?', text: 'Permohonan yang dikirim tidak dapat diubah.', showCancelButton: true, confirmButtonText: 'Kirim', cancelButtonText: 'Batal' }); if (result.isConfirmed) router.put(route('cuti-akademik.submit', letter.id), {}, { preserveScroll: true }); }
+async function onDelete(letter: CutiAkademikLetter): Promise<void> { const result = await showConfirmationAlert({ variant: 'warning', title: 'Hapus draft?', text: 'Draft dan dokumen pendukung akan dihapus.', confirmButtonText: 'Hapus', destructive: true }); if (result.isConfirmed) router.delete(route('cuti-akademik.destroy', letter.id), { preserveScroll: true }); }
+async function onSubmit(letter: CutiAkademikLetter): Promise<void> { const result = await showConfirmationAlert({ title: 'Kirim permohonan?', text: 'Permohonan yang dikirim tidak dapat diubah.', confirmButtonText: 'Kirim' }); if (result.isConfirmed) router.put(route('cuti-akademik.submit', letter.id), {}, { preserveScroll: true }); }
 </script>
 
 <template>

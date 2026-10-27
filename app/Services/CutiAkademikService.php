@@ -66,7 +66,7 @@ class CutiAkademikService extends LetterService
     }
 
     /**
-     * @param  array{id: int, name: string, role: string}  $signatory
+     * @param  array{id: int, name: string, role: string, nim: string|null}  $signatory
      * @return array<string, mixed>
      */
     protected function pdfData(Letter $letter, array $signatory): array

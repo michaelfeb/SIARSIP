@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import { showErrorAlert, showSuccessAlert } from '@/components/alerts/SwalAlert';
 import LetterApprovalFlow from '@/components/letters/LetterApprovalFlow.vue';
 import LetterAttachmentUpload from '@/components/letters/LetterAttachmentUpload.vue';
 import Button from '@/components/ui/button/Button.vue';
@@ -31,12 +32,23 @@ const form = useForm({
 });
 
 function onSubmit(): void {
+    const visitOptions = {
+        forceFormData: true,
+        onSuccess: () => showSuccessAlert({
+            text: isEdit.value ? 'Draft Cuti Akademik berhasil diperbarui.' : 'Draft Cuti Akademik berhasil disimpan.',
+        }),
+        onError: () => showErrorAlert({
+            text: 'Periksa kembali data dan dokumen yang diunggah.',
+        }),
+    };
+
     if (isEdit.value) {
         form.transform((data) => ({ ...data, _method: 'put' }))
-            .post(route('cuti-akademik.update', props.letter?.id), { forceFormData: true });
+            .post(route('cuti-akademik.update', props.letter?.id), visitOptions);
         return;
     }
-    form.post(route('cuti-akademik.store'), { forceFormData: true });
+    form.post(route('cuti-akademik.store'), visitOptions);
+    
 }
 function onCancel(): void { router.get(route('cuti-akademik.index')); }
 function programStudiLabel(value: number | null | undefined): string { return ({ 1: 'Matematika', 2: 'Kimia', 3: 'Biologi', 4: 'Fisika', 5: 'Farmasi', 6: 'Ilmu Komputer', 7: 'Statistika', 8: 'Profesi Apoteker' }[value ?? 0] ?? '-'); }

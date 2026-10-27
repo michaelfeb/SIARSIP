@@ -38,7 +38,7 @@ class CutiAkademikController extends Controller
     {
         $letter = $service->create($request->user(), $request->payload());
 
-        return redirect()->route('cuti-akademik.show', $letter)->with('success', 'Draft Cuti Akademik berhasil disimpan.');
+        return redirect()->route('cuti-akademik.index', $letter)->with('success', 'Draft Cuti Akademik berhasil disimpan.');
     }
 
     public function show(Request $request, Letter $letter, CutiAkademikService $service): Response
@@ -68,7 +68,7 @@ class CutiAkademikController extends Controller
     {
         $service->update($letter, $request->user(), $request->payload());
 
-        return redirect()->route('cuti-akademik.show', $letter)->with('success', 'Draft Cuti Akademik berhasil diperbarui.');
+        return redirect()->route('cuti-akademik.index', $letter)->with('success', 'Draft Cuti Akademik berhasil diperbarui.');
     }
 
     public function destroy(Request $request, Letter $letter, CutiAkademikService $service): RedirectResponse
@@ -82,7 +82,7 @@ class CutiAkademikController extends Controller
     {
         $service->ajuan($letter, $request->user());
 
-        return redirect()->route('cuti-akademik.show', $letter)->with('success', 'Permohonan Cuti Akademik telah dikirim ke PRODI.');
+        return redirect()->route('cuti-akademik.index', $letter)->with('success', 'Permohonan Cuti Akademik telah dikirim ke PRODI.');
     }
 
     public function review(Request $request, Letter $letter, CutiAkademikService $service): Response
@@ -92,6 +92,7 @@ class CutiAkademikController extends Controller
         return Inertia::render('CutiAkademik/Ajuan', [
             'letter' => $letter,
             'signatories' => $service->isFinalizationStage($letter) ? $service->availableFinalSignatories($request->user(), $letter) : [],
+            'workflowContext' => $service->workflowDisplayContext($letter),
         ]);
     }
 

@@ -25,6 +25,7 @@ const emit = defineEmits<{
 const headers: DataTableHeader[] = [
     { text: 'Mahasiswa', value: 'applicant_name' },
     { text: 'Program Studi', value: 'program_studi' },
+    { text: 'Nomor Surat', value: 'letter_number' },
     { text: 'Semester', value: 'semester' },
     { text: 'Status', value: 'status' },
     { text: 'Stage', value: 'current_stage' },
@@ -109,6 +110,7 @@ function formatDate(value: string | null): string {
                 </div>
             </template>
             <template #item-program_studi="{ program_studi }">{{ program_studi ?? '—' }}</template>
+            <template #item-letter_number="{ letter_number }">{{ letter_number ?? '—' }}</template>
             <template #item-semester="{ meta }">{{ meta?.semester ?? '—' }}</template>
             <template #item-status="{ status: rowStatus }">
                 <Badge type="status" :value="rowStatus" />

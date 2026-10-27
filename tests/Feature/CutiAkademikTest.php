@@ -127,7 +127,8 @@ test('resepsionis finalises after DEKAN with a private generated PDF', function 
         ->and($finished->current_stage)->toBeNull()
         ->and($finished->letter_number)->toBe('123/UN8.1/CA/2026')
         ->and($finished->final_pdf_path)->not->toBeNull()
-        ->and($finished->meta['signatory']['id'])->toBe($dekan->id);
+        ->and($finished->meta['signatory']['id'])->toBe($dekan->id)
+        ->and($finished->meta['signatory']['nim'])->toBe($dekan->nim);
 
     Storage::disk('secure')->assertExists($finished->final_pdf_path);
     expect(Storage::disk('secure')->get($finished->final_pdf_path))->toStartWith('%PDF');

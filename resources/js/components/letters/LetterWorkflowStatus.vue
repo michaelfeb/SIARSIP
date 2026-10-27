@@ -225,7 +225,7 @@ function formatDate(value: string): string {
 
             <section v-if="status === 'ARCHIVED'" class="border-border border-t pt-7">
                 <h3 class="text-muted-foreground text-sm font-semibold tracking-wide uppercase">Surat Terarsipkan</h3>
-                <div class="border-border bg-muted/30 mt-4 flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="border border-orange-200 bg-orange-50/60 mt-4 flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <p class="text-muted-foreground text-xs font-semibold tracking-wide uppercase">Nomor Surat</p>
                         <p class="mt-1 font-semibold">{{ letterNumber ?? '—' }}</p>
@@ -234,13 +234,6 @@ function formatDate(value: string): string {
                         <Download class="size-4" aria-hidden="true" />
                         Unduh
                     </Button>
-                </div>
-                <div class="mt-4 flex gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
-                    <CircleCheck class="mt-0.5 size-5 shrink-0" aria-hidden="true" />
-                    <div class="text-sm">
-                        <p class="font-semibold">Surat Telah Diarsipkan</p>
-                        <p class="mt-1 leading-6">Permohonan telah disetujui dan surat resmi tersimpan dalam arsip.</p>
-                    </div>
                 </div>
             </section>
         </div>

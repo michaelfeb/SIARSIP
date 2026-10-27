@@ -35,7 +35,7 @@ abstract class LetterService
     /**
      * Build the saved letter data passed to this Letter Type's PDF Blade view.
      *
-     * @param  array{id: int, name: string, role: string}  $signatory
+     * @param  array{id: int, name: string, role: string, nim: string|null}  $signatory
      * @return array<string, mixed>
      */
     abstract protected function pdfData(Letter $letter, array $signatory): array;
@@ -226,8 +226,14 @@ abstract class LetterService
                     throw ValidationException::withMessages(['letter_number' => 'Nomor surat sudah digunakan.']);
                 }
 
-                $signatorySnapshot = ['id' => $signatory->id, 'name' => $signatory->nama, 'role' => $this->signatoryRole()];
+                $signatorySnapshot = [
+                    'id' => $signatory->id,
+                    'name' => $signatory->nama,
+                    'nim' => $signatory->nim,
+                    'role' => $this->signatoryRole(),
+                ];
                 $locked->load('letterType');
+                $locked->letter_number = $data['letter_number'];
                 $locked->issued_at = now()->toDateString();
                 $generatedPath = $this->finalPdfPath($locked);
                 $isPdfOperation = true;

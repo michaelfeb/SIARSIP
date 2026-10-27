@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
+import { showConfirmationAlert } from '@/components/alerts/SwalAlert';
+import LetterWorkflowStatus from '@/components/letters/LetterWorkflowStatus.vue';
 import Button from '@/components/ui/button/Button.vue';
 import Input from '@/components/ui/input/Input.vue';
 import { Label } from '@/components/ui/label';
@@ -7,19 +9,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import Swal from 'sweetalert2';
 import CutiAkademikAttachmentList from './components/CutiAkademikAttachmentList.vue';
 import CutiAkademikDetails from './components/CutiAkademikDetails.vue';
-import type { CutiAkademikLetter } from './ts/cutiAkademik.types';
+import type { CutiAkademikLetter, CutiAkademikWorkflowContext } from './ts/cutiAkademik.types';
 
-const props = defineProps<{ letter: CutiAkademikLetter; signatories: { id: number; name: string }[] }>();
+const props = defineProps<{ letter: CutiAkademikLetter; signatories: { id: number; name: string }[]; workflowContext: CutiAkademikWorkflowContext }>();
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Cuti Akademik', href: '/cuti-akademik' }, { title: 'Ajuan', href: `/cuti-akademik/${props.letter.id}/ajuan` }];
 const isFinalStage = props.letter.current_stage === 'RESEPSIONIS';
 const form = useForm({ decision: 'FORWARD', note: '', letter_number: '', signatory_id: '' as number | '' });
 function onCancel(): void { router.get(route('cuti-akademik.index')); }
 function onSignerChange(value: number): void { form.signatory_id = value; }
 function onSubmitDecision(decision: 'FORWARD' | 'REJECT'): void { form.decision = decision; if (isFinalStage && decision === 'FORWARD') { form.post(route('cuti-akademik.finalize', props.letter.id)); return; } form.post(route('cuti-akademik.decide', props.letter.id)); }
-async function onConfirmDecision(decision: 'FORWARD' | 'REJECT'): Promise<void> { const result = await Swal.fire({ icon: decision === 'REJECT' ? 'warning' : 'question', title: decision === 'REJECT' ? 'Tolak permohonan?' : isFinalStage ? 'Generate surat?' : 'Teruskan permohonan?', showCancelButton: true, confirmButtonText: decision === 'REJECT' ? 'Tolak' : 'Lanjutkan', cancelButtonText: 'Batal' }); if (result.isConfirmed) onSubmitDecision(decision); }
+async function onConfirmDecision(decision: 'FORWARD' | 'REJECT'): Promise<void> {
+    const isReject = decision === 'REJECT';
+    const result = await showConfirmationAlert({
+        variant: isReject ? 'warning' : 'info',
+        title: isReject ? 'Tolak permohonan?' : isFinalStage ? 'Generate surat?' : 'Teruskan permohonan?',
+        text: isReject
+            ? 'Permohonan akan ditolak dan tidak dapat dilanjutkan.'
+            : isFinalStage
+                ? 'Surat akan dibuat dan diarsipkan.'
+                : 'Permohonan akan diteruskan ke tahap berikutnya.',
+        confirmButtonText: isReject ? 'Tolak' : 'Lanjutkan',
+        destructive: isReject,
+    });
+
+    if (result.isConfirmed) onSubmitDecision(decision);
+}
 </script>
 
 <template>
@@ -36,6 +52,9 @@ async function onConfirmDecision(decision: 'FORWARD' | 'REJECT'): Promise<void> 
                 <div class="min-w-0 space-y-6">
                     <CutiAkademikDetails :letter="letter" />
                     <CutiAkademikAttachmentList :letter="letter" />
+                    <LetterWorkflowStatus :approval-chain="workflowContext.approvalChain" :status="letter.status"
+                        :current-stage="letter.current_stage" :routes="letter.routes"
+                        :letter-number="letter.letter_number" />
                 </div>
                 <aside class="xl:sticky xl:top-6">
                     <form class="overflow-hidden rounded-lg border border-border bg-card shadow-sm"
@@ -78,7 +97,7 @@ async function onConfirmDecision(decision: 'FORWARD' | 'REJECT'): Promise<void> 
                                     :disabled="form.processing" @click="onConfirmDecision('REJECT')">Tolak</Button>
                             </div><Button type="submit" class="w-full rounded-lg" :disabled="form.processing">
                                 {{ form.processing ? 'Memproses...' : isFinalStage ? 'Terima & Generate Surat' :
-                                'Teruskanke Tahap Berikutnya' }}</Button>
+                                    'Teruskan ke Tahap Berikutnya' }}</Button>
                         </footer>
                     </form>
                 </aside>

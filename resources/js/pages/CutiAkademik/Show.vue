@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { showErrorAlert, showSuccessAlert } from '@/components/alerts/SwalAlert';
 import Button from '@/components/ui/button/Button.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
@@ -28,7 +29,14 @@ function onEdit(): void {
     router.get(route('cuti-akademik.edit', props.letter.id));
 }
 function onSubmit(): void {
-    router.put(route('cuti-akademik.submit', props.letter.id));
+    router.put(route('cuti-akademik.submit', props.letter.id), {}, {
+        onSuccess: () => showSuccessAlert({
+            text: 'Permohonan Cuti Akademik berhasil dikirim.',
+        }),
+        onError: () => showErrorAlert({
+            text: 'Permohonan tidak dapat dikirim. Silakan periksa kembali data permohonan.',
+        }),
+    });
 }
 </script>
 
@@ -39,31 +47,31 @@ function onSubmit(): void {
             <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                 <div>
                     <h1 class="text-xl font-semibold">Detail Cuti Akademik</h1>
-                    <p class="text-muted-foreground mt-1 text-sm">Tinjau data permohonan, dokumen, dan riwayat proses.</p>
+                    <p class="text-muted-foreground mt-1 text-sm">Tinjau data permohonan, dokumen, dan riwayat proses.
+                    </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     <Badge type="status" :value="letter.status" />
-                    <template v-if="letter.current_stage"><Badge type="stage" :value="letter.current_stage" /></template>
+                    <template v-if="letter.current_stage">
+                        <Badge type="stage" :value="letter.current_stage" />
+                    </template>
                 </div>
             </div>
             <CutiAkademikDetails :letter="letter" />
             <CutiAkademikAttachmentList :letter="letter" />
-            <LetterWorkflowStatus
-                :approval-chain="workflowContext.approvalChain"
-                :status="letter.status"
-                :current-stage="letter.current_stage"
-                :routes="letter.routes"
-                :letter-number="letter.letter_number"
-                :download-url="capabilities.canDownload ? route('cuti-akademik.download-final-letter', letter.id) : null"
-            />
+            <LetterWorkflowStatus :approval-chain="workflowContext.approvalChain" :status="letter.status"
+                :current-stage="letter.current_stage" :routes="letter.routes" :letter-number="letter.letter_number"
+                :download-url="capabilities.canDownload ? route('cuti-akademik.download-final-letter', letter.id) : null" />
             <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                <Button type="button" class="w-full border border-orange-400 bg-white text-orange-500 hover:bg-orange-100 sm:w-auto" @click="onBack"
-                    >Kembali</Button
-                >
+                <Button type="button"
+                    class="w-full border border-orange-400 bg-white text-orange-500 hover:bg-orange-100 sm:w-auto"
+                    @click="onBack">Kembali</Button>
                 <div class="flex flex-col gap-3 sm:flex-row">
-                    <Button v-if="capabilities.canEdit" variant="outline" class="w-full rounded-lg sm:w-auto" @click="onEdit">
-                        <Pencil class="mr-1 size-4" />Ubah Draft </Button
-                    ><Button v-if="capabilities.canSubmit" class="w-full rounded-lg sm:w-auto" @click="onSubmit">
+                    <Button v-if="capabilities.canEdit" variant="outline" class="w-full rounded-lg sm:w-auto"
+                        @click="onEdit">
+                        <Pencil class="mr-1 size-4" />Ubah Draft
+                    </Button><Button v-if="capabilities.canSubmit" class="w-full rounded-lg sm:w-auto"
+                        @click="onSubmit">
                         <Send class="mr-1 size-4" />Kirim Permohonan
                     </Button>
                 </div>
