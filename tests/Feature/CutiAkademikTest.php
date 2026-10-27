@@ -3,6 +3,7 @@
 use App\Models\Letter;
 use App\Models\User;
 use App\Services\CutiAkademikService;
+use App\Services\LetterQrCodeService;
 use Database\Seeders\CutiAkademikLetterTypeSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -42,6 +43,20 @@ function cutiPayload(array $overrides = []): array
         ...$overrides,
     ];
 }
+
+test('a finalized letter QR code is generated as a PNG image', function () {
+    $letter = new Letter;
+    $letter->setRawAttributes([
+        'id' => 123,
+        'letter_number' => '123/UN8.1/CA/2026',
+    ]);
+
+    $qrCode = app(LetterQrCodeService::class)->forLetter($letter);
+    $image = base64_decode(explode(',', $qrCode, 2)[1], true);
+
+    expect($qrCode)->toStartWith('data:image/png;base64,')
+        ->and($image)->toStartWith("\x89PNG\r\n\x1a\n");
+});
 
 test('a mahasiswa creates a Cuti Akademik draft with a biodata snapshot and private attachment', function () {
     $student = cutiUser(1);
@@ -132,6 +147,32 @@ test('resepsionis finalises after DEKAN with a private generated PDF', function 
 
     Storage::disk('secure')->assertExists($finished->final_pdf_path);
     expect(Storage::disk('secure')->get($finished->final_pdf_path))->toStartWith('%PDF');
+});
+
+test('finalising a letter redirects the user to the Cuti Akademik index', function () {
+    $student = cutiUser(1);
+    $prodi = cutiUser(12, 6);
+    $akademik = cutiUser(6);
+    $ktu = cutiUser(5);
+    $dekan = cutiUser(3);
+    $resepsionis = cutiUser(2);
+    $service = app(CutiAkademikService::class);
+    $letter = $service->create($student, cutiPayload());
+
+    $service->ajuan($letter, $student);
+    $service->decide($letter->fresh(), $prodi, 'FORWARD', null);
+    $service->decide($letter->fresh(), $akademik, 'FORWARD', null);
+    $service->decide($letter->fresh(), $ktu, 'FORWARD', null);
+    $service->decide($letter->fresh(), $dekan, 'FORWARD', null);
+
+    $this->actingAs($resepsionis)
+        ->post(route('cuti-akademik.finalize', $letter), [
+            'decision' => 'FORWARD',
+            'letter_number' => '125/UN8.1/CA/2026',
+            'signatory_id' => $dekan->id,
+        ])
+        ->assertRedirect(route('cuti-akademik.index'))
+        ->assertSessionHas('success', 'Surat Cuti Akademik berhasil dibuat dan diarsipkan.');
 });
 
 test('super admin can administer every Cuti Akademik workflow stage but cannot become the signer', function () {

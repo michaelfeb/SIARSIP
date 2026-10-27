@@ -97,7 +97,7 @@
         <div class="signature-spacer"></div>
         <div class="signature">
             <p>Dekan,</p>
-            <div class="signature-space"></div>
+            <img class="signature-qr" src="{{ $signatoryQrCode }}" alt="QR surat {{ $letter->letter_number }}">
             <p class="signature-name">{{ $signatory['name'] }}</p>
             <p>NIP. {{ $signatory['nim'] ?? '-' }}</p>
         </div>

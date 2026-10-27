@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import Badge from '@/components/letters/Badge.vue';
-import { Check, ChevronRight, CircleAlert, CircleCheck, Clock3, Download, UserRound } from 'lucide-vue-next';
+import { Check, ChevronRight, CircleAlert, Clock3, Download, UserRound } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 type LetterWorkflowRoute = {

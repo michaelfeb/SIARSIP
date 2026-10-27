@@ -169,8 +169,11 @@
         line-height: 1.38;
     }
 
-    .signature-space {
-        height: 68px;
+    .signature-qr {
+        display: block;
+        width: 106px;
+        height: 106px;
+        margin: 8px 0 6px;
     }
 
     .signature-name {

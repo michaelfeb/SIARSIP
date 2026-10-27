@@ -26,6 +26,14 @@ class CutiAkademikService extends LetterService
         8 => 'Profesi Apoteker',
     ];
 
+    public function __construct(
+        LetterAttachmentService $attachments,
+        PdfGeneratorService $pdfGenerator,
+        private readonly LetterQrCodeService $qrCode,
+    ) {
+        parent::__construct($attachments, $pdfGenerator);
+    }
+
     protected function letterTypeCode(): string
     {
         return self::TYPE_CODE;
@@ -75,6 +83,7 @@ class CutiAkademikService extends LetterService
             'letter' => $letter,
             'meta' => $letter->meta ?? [],
             'signatory' => $signatory,
+            'signatoryQrCode' => $this->qrCode->forLetter($letter),
         ];
     }
 
