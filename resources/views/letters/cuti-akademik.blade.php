@@ -14,6 +14,9 @@
     @endphp
 
     @include('components.pdf.header')
+    @if ($isPreview ?? false)
+        <div class="preview-watermark">PRATINJAU - BELUM BERLAKU</div>
+    @endif
 
     <div class="reference">
         <div class="reference-left">
@@ -21,7 +24,7 @@
                 <tr>
                     <td class="reference-label">Nomor</td>
                     <td class="reference-colon">:</td>
-                    <td>{{ $letter->letter_number ?? '-' }}</td>
+                    <td>{{ ($isPreview ?? false) ? 'Akan ditetapkan setelah persetujuan' : ($letter->letter_number ?? '-') }}</td>
                 </tr>
                 <tr>
                     <td class="reference-label">Lampiran</td>
@@ -97,7 +100,11 @@
         <div class="signature-spacer"></div>
         <div class="signature">
             <p>Dekan,</p>
-            <img class="signature-qr" src="{{ $signatoryQrCode }}" alt="QR surat {{ $letter->letter_number }}">
+            @if ($isPreview ?? false)
+                <div class="signature-space"></div>
+            @else
+                <img class="signature-qr" src="{{ $signatoryQrCode }}" alt="QR surat {{ $letter->letter_number }}">
+            @endif
             <p class="signature-name">{{ $signatory['name'] }}</p>
             <p>NIP. {{ $signatory['nim'] ?? '-' }}</p>
         </div>

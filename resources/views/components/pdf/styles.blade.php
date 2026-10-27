@@ -176,6 +176,16 @@
         margin: 8px 0 6px;
     }
 
+    .signature-space { height: 106px; }
+
+    .preview-watermark {
+        color: #777;
+        font-size: 9pt;
+        font-weight: bold;
+        margin: -12px 0 12px;
+        text-align: center;
+    }
+
     .signature-name {
         font-weight: bold;
         text-decoration: underline;

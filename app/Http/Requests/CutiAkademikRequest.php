@@ -18,7 +18,7 @@ class CutiAkademikRequest extends FormRequest
     {
         return match ($this->route()?->getName()) {
             'cuti-akademik.index' => $this->indexRules(),
-            'cuti-akademik.store', 'cuti-akademik.update' => $this->draftRules(),
+            'cuti-akademik.store', 'cuti-akademik.update', 'cuti-akademik.preview' => $this->draftRules(),
             'cuti-akademik.decide' => $this->decideRules(),
             'cuti-akademik.finalize' => $this->finalizeRules(),
             default => [],

@@ -32,6 +32,7 @@ Route::get('/template-surat/download/{id}', [TemplateSuratController::class, 'do
 Route::middleware(['auth', 'role:1,2,3,5,6,8,12'])->prefix('cuti-akademik')->name('cuti-akademik.')->group(function () {
     Route::get('/', [CutiAkademikController::class, 'index'])->name('index');
     Route::get('/create', [CutiAkademikController::class, 'create'])->name('create')->middleware('role:1,8');
+    Route::post('/preview', [CutiAkademikController::class, 'preview'])->name('preview')->middleware('role:1,8');
     Route::post('/', [CutiAkademikController::class, 'store'])->name('store')->middleware('role:1,8');
     Route::get('/{letter}', [CutiAkademikController::class, 'show'])->name('show');
     Route::get('/{letter}/edit', [CutiAkademikController::class, 'edit'])->name('edit')->middleware('role:1,8');

@@ -87,6 +87,30 @@ class CutiAkademikService extends LetterService
         ];
     }
 
+    /** @param array<string, mixed> $data */
+    public function preview(User $actor, array $data): string
+    {
+        $this->ensureCanCreate($actor);
+        $type = $this->letterType();
+        $letter = new Letter([
+            'type_id' => $type->id,
+            'applicant_id' => $actor->id,
+            'applicant_name' => $actor->nama,
+            'applicant_id_number' => $actor->nim ?? (string) $actor->id,
+            'program_studi' => $this->programStudiLabel($actor->program_studi),
+            'category' => $type->category,
+            'purpose' => $data['alasan_cuti'],
+            'status' => 'DRAFT',
+            'issued_at' => now()->toDateString(),
+            'meta' => $this->buildMeta($actor, $data),
+        ]);
+        $letter->setRelation('letterType', $type);
+        $pdfData = $this->pdfData($letter, ['id' => 0, 'name' => 'Akan ditetapkan setelah persetujuan', 'nim' => null, 'role' => 'DEKAN']);
+        $pdfData['isPreview'] = true;
+
+        return $this->pdfGenerator->output($this->pdfView(), $pdfData, $this->pdfPaper(), $this->pdfOrientation());
+    }
+
     /**
      * Return the Cuti Akademik letters visible to an actor as a filtered, paginated list.
      *

@@ -41,6 +41,14 @@ class CutiAkademikController extends Controller
         return redirect()->route('cuti-akademik.index', $letter)->with('success', 'Draft Cuti Akademik berhasil disimpan.');
     }
 
+    public function preview(CutiAkademikRequest $request, CutiAkademikService $service)
+    {
+        return response($service->preview($request->user(), $request->payload()), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="pratinjau-cuti-akademik.pdf"',
+        ]);
+    }
+
     public function show(Request $request, Letter $letter, CutiAkademikService $service): Response
     {
         $letter = $service->findForDisplay($letter, $request->user());
