@@ -36,6 +36,10 @@ finalization role: it enters a unique official number and generates/archives
 the final PDF. DEKAN is separately configured as the signatory role selected
 for that PDF.
 
+## PDF preview
+
+Create and edit show **Pratinjau PDF** between Batal and Simpan Draft. It follows the shared [PDF preview contract](pdf-preview.md): validation is identical to Save, no data is persisted, and the rendered PDF shows a non-official notice. Number, Dekan signature, and QR code remain finalisation-only placeholders.
+
 ## Backend ownership
 
 `CutiAkademikController` is the HTTP/Inertia boundary. Its Form Requests own

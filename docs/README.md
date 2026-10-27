@@ -31,6 +31,7 @@ Berkas Persuratan and the old Jenis Surat module are retired. Their legacy URLs 
 - [Carousel](modules/carousel.md) — landing-page announcement image management.
 - [Link Landing Page](modules/link-landing-page.md) — landing-page shortcut management.
 - [Cuti Akademik](modules/cuti-akademik.md) — student application, staged review, private evidence, and final letter generation.
+- [Letter PDF preview contract](modules/pdf-preview.md) — mandatory draft-preview behavior for every active Letter module.
 - [Future letter services](modules/letter-services.md) — shared foundation and the remaining planned services.
 - [PRD 002](PRD/002_LEGACY_RETIREMENT_AND_TEMPLATE_SURAT_DECOUPLING.md) — approved legacy-retirement scope.
 - [PRD 003](PRD/003_LETTER_TYPES_AND_LETTERS_FOUNDATION.md) — reusable foundation for future letter services.

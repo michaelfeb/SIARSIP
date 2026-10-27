@@ -1,9 +1,9 @@
 # PRD 004 — Cuti Akademik Module
 
-**Status:** Implemented — pending production deployment  
-**Created:** 24 October 2026  
-**Plan status:** Implemented  
-**Plan version:** 1  
+**Status:** Complete
+**Created:** 24 October 2026
+**Plan status:** Implemented
+**Plan version:** 1
 **Mode:** Full stack
 
 ## Overview
@@ -30,7 +30,7 @@ Accepted product facts:
   owns the authoritative applicant name, NIM, or programme.
 - The service metadata is semester, tahun akademik, nomor hp, nominal ukt, and
   alasan cuti.
-- Supporting evidence is mandatory: one to five PDF, JPG, JPEG, or PNG files,
+- Supporting evidence is optional: zero to five PDF, JPG, JPEG, or PNG files,
   each at most 100 KB.
 - The fixed chain is PRODI → AKADEMIK → KTU → DEKAN → RESEPSIONIS.
 - Each stage can forward only to its immediate next stage; skipping is not
@@ -68,6 +68,7 @@ Accepted product facts:
 - Add Akademik → Cuti Akademik to the sidebar for applicable applicant,
   reviewer, and administrator roles.
 - Generate the final document synchronously with the installed DomPDF package.
+- Provide a validated, non-persistent PDF preview before a draft is saved.
 - Update the Letter-service, data-model, authorization, and development-base
   documentation.
 
@@ -77,8 +78,7 @@ Accepted product facts:
 - A Letter Type administration UI, approval-chain editor, or Markdown-notes
   editor.
 - Magang, Penurunan UKT, UKT 50%, Pengunduran Diri, and Bebas Ruang Baca.
-- Queues, new PDF dependencies, digital signatures, QR verification, and
-  automatic official-number allocation.
+- Queues, QR verification, and automatic official-number allocation.
 - Public file/PDF URLs.
 - Coupling Template Surat to Letter Types.
 - Generic repositories, base controllers, or base CRUD services.
@@ -206,6 +206,16 @@ consume its manual number. The service stores safe diagnostic state, removes
 only the newly-created orphan file if present, and leaves the request available
 for an authorized retry. An ARCHIVED applicant can download the final PDF;
 authorized staff use the same record-level policy.
+
+### Draft PDF preview
+
+Create and edit provide a `Pratinjau PDF` action using the same draft
+validation rules as Save. Preview builds an unsaved server-owned Letter and
+returns PDF bytes inline without storing a Letter, attachment, PDF, route, or
+log. The preview uses a visible non-official notice and placeholders for the
+official number, DEKAN signature, and QR code. The shared implementation is
+documented in `docs/modules/pdf-preview.md` and is required for future active
+Letter modules.
 
 ### Authorization and backend boundary
 
@@ -364,6 +374,7 @@ Use the route-name prefix cuti-akademik and Letter UUIDs.
 | Index | GET /cuti-akademik | index filters → datatable() |
 | Create | GET /cuti-akademik/create | server-built applicant/type props |
 | Store draft | POST /cuti-akademik | CutiAkademikRequest → create() |
+| Preview draft PDF | POST /cuti-akademik/preview | CutiAkademikRequest → preview() without persistence |
 | Show | GET /cuti-akademik/{letter} | findForDisplay() and policy |
 | Edit | GET /cuti-akademik/{letter}/edit | draft ownership guard |
 | Update | PUT /cuti-akademik/{letter} | CutiAkademikRequest → update() |
@@ -467,7 +478,7 @@ owns counts, type/size, secure paths, metadata, and cleanup.
 
 Acceptance criteria:
 
-- Submission requires one to five valid documents.
+- Submission permits zero to five valid documents.
 - Bypassing browser checks does not bypass server validation.
 - No guessed path, other attachment ID, or different Letter UUID can expose a
   private file.
@@ -542,7 +553,7 @@ Verification:
 | --- | --- | --- |
 | Activate only Cuti from the six planned services | 1 | Type seed/migration assertions |
 | Snapshot identity and collect approved metadata | 2, 5 | Feature/browser form checks |
-| Mandatory secure attachments | 3, 5 | Validation/authorization tests |
+| Optional secure attachments | 3, 5 | Validation/authorization tests |
 | Fixed immediate-stage chain/rejection history | 2, 4, 5 | Workflow tests |
 | Manual final number, DEKAN signer, private PDF | 4, 5 | Finalisation/PDF tests |
 | Consistent responsive module/sidebar | 5 | Build/browser checks |
@@ -553,7 +564,7 @@ Verification:
 
 | Scenario | Expected behavior |
 | --- | --- |
-| No document, more than five documents, invalid type, or over 100 KB | Server rejects with field-level validation errors. |
+| More than five documents, invalid type, or over 100 KB | Server rejects with field-level validation errors; no document is valid. |
 | Profile changes after creation | Letter retains server-built historical applicant snapshot. |
 | Student guesses another Letter UUID | Policy prevents data/file disclosure. |
 | Reviewer opens another stage | No decision action is allowed. |
@@ -582,11 +593,13 @@ Verification:
 - [x] Existing and fresh databases have exactly one active CUTI_AKADEMIK type
   with the approved notes and approval chain.
 - [x] Server snapshots biodata; only approved Cuti metadata is editable.
-- [x] Evidence is mandatory, limited, private, and Letter-authorized.
+- [x] Evidence is optional, limited, private, and Letter-authorized.
 - [x] Each stage forwards only to its immediate chain successor or rejects.
 - [x] RESEPSIONIS or SUPER ADMIN finalizes after DEKAN using a unique number
   and DEKAN signatory.
 - [x] Final PDFs are private and generation failure never archives the Letter.
+- [x] Draft PDF preview validates like Save, persists nothing, and marks the
+  preview as non-official with final-only placeholders.
 - [x] Pages, table, review layout, and sidebar meet the documented responsive
   UI convention.
 - [x] Cuti feature tests pass.
@@ -597,9 +610,11 @@ Verification:
 
 ## Completion record
 
-Implemented on 24 October 2026.
+Completed on 27 October 2026.
 
 - `php artisan test tests/Feature/CutiAkademikTest.php tests/Feature/LetterFoundationTest.php` passes with 10 tests and 50 assertions.
 - `php artisan migrate:fresh --seed --env=testing` passes, including the Cuti Letter Type data migration and idempotent fresh seed.
 - `pnpm build`, targeted ESLint, targeted Pint, and `git diff --check` pass.
+- Current focused Cuti verification passes: draft creation, final PDF
+  generation, and finalisation redirect (3 tests, 24 assertions).
 - The full Laravel suite retains 12 pre-existing authentication/settings failures caused by its stock-test assumptions conflicting with this application's custom NIM authentication, names, and password defaults. The Cuti change also updated Letter Foundation expectations from “no active types” to the approved active `CUTI_AKADEMIK` type.

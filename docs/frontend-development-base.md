@@ -110,6 +110,7 @@ Future letter modules should follow the Berkas Sidang Nol page shapes unless the
 - Render document uploaders with `grid gap-x-6 gap-y-8 md:grid-cols-2`. Six documents therefore form two columns and three rows on desktop, and one column on mobile.
 - A remote choice such as Mahasiswa remains a shared Select with its search input inside `SelectContent`; the page owns debounce, loading, and option state.
 - Keep secondary and primary form actions responsive with `flex-col-reverse` on mobile and a row layout from `sm` upward.
+- Every active Letter form must implement the shared [PDF preview contract](modules/pdf-preview.md). Place **Pratinjau PDF** between the back/cancel and save actions, and use `PdfPreviewDialog.vue` instead of a module-specific iframe/modal.
 
 ### Show — read-only record and documents
 
