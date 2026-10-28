@@ -195,20 +195,55 @@ class SidangNolService
 }
 ```
 
-Suggested method names for `SidangNolService`:
+### Service method contract
 
-| Need | Method name |
+Public service methods are an application contract. Use the following names and
+parameter order for ordinary module records. This is the required convention for
+new work and when a touched module is refactored.
+
+| Need | Required service method |
 | --- | --- |
-| Paginated index data | `datatable(User $user, array $filters)` |
-| One record for view/edit | `findForDisplay(int $id)` |
-| Create or update draft | `save(array $data, User $actor, ?BerkasSidangNol $berkas = null)` |
-| Send a draft | `submit(BerkasSidangNol $berkas, User $actor)` |
-| Accept or reject | `decide(BerkasSidangNol $berkas, array $data, User $actor)` |
-| Reset rejected record | `reset(BerkasSidangNol $berkas, User $actor)` |
-| Delete record and private files | `delete(BerkasSidangNol $berkas, User $actor)` |
-| Produce export | `export(array $filters)` |
+| Paginated index data | `datatable(User $actor, array $filters)` |
+| One record for view/edit | `findForDisplay(Model $record, User $actor)` or a similarly explicit, authorized finder |
+| Create a record or draft | `create(User $actor, array $data)` |
+| Update a record or draft | `update(Model $record, User $actor, array $data)` |
+| Delete a record and owned files | `delete(Model $record, User $actor)` |
+| Domain workflow | A specific verb such as `submit()`, `decide()`, `finalize()`, `resetPassword()`, or `download()` |
 
-`datatable()` is acceptable because it clearly represents the paginated table used by this application. Prefer similarly explicit names; avoid vague methods such as `process()`, `handle()`, or `data()`.
+Omit `User $actor` only when neither visibility nor authorization depends on the
+authenticated user, such as a public-template query already constrained by its
+own `publishedOnly` argument. Keep the remaining order: the existing model
+first, then actor, then data. Use the concrete model type in code rather than
+the `Model` placeholder shown above.
+
+These names are strict:
+
+- Use `datatable()` for the service method that returns paginated index data.
+  `paginate()` remains an Eloquent builder call inside that method; it is not a
+  public module-service method.
+- Use distinct `create()` and `update()` methods. A public `save()` method that
+  decides between creation and update is prohibited. Calling Eloquent's
+  `$model->save()` internally remains valid.
+- Use `delete()` for deletion and a descriptive domain verb for an action that
+  is not ordinary CRUD. Do not hide a workflow behind `process()`, `handle()`,
+  `data()`, `action()`, or another generic name.
+- Use descriptive parameter names (`$filters`, `$data`, `$user`,
+  `$templateSurat`) rather than abbreviations such as `$f`, `$d`, or `$u`.
+- Give every public service method an explicit return type. Add PHPDoc array
+  shapes when an input or return array has a defined contract.
+
+For example, a service that does not need an actor for its own authorization
+still uses the same CRUD names:
+
+```php
+public function datatable(array $filters, bool $publishedOnly = false): LengthAwarePaginator;
+
+/** @param array<string, mixed> $data */
+public function create(array $data): TemplateSurat;
+
+/** @param array<string, mixed> $data */
+public function update(TemplateSurat $templateSurat, array $data): TemplateSurat;
+```
 
 ## Letter PDF configuration
 
