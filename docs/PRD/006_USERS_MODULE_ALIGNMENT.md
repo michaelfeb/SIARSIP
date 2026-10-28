@@ -1,11 +1,12 @@
 # Users Module Alignment
 
-**Status**: Draft
-**Version**: 1.0
-**Plan Status**: Approved
+**Status**: Complete
+**Version**: 1.1
+**Plan Status**: Implemented
 **Plan Version**: 2
 **Mode**: full-stack
 **Created**: 28 October 2026
+**Completed**: 28 October 2026
 
 ## Overview
 
@@ -25,10 +26,10 @@ Align Users with the SIARSIP Vue/Inertia and Laravel Request/Service conventions
 
 ## Acceptance Criteria
 
-- [ ] `/users` defaults to Pegawai and supports `?audience=mahasiswa`.
-- [ ] List, form, show, delete, and reset use documented ownership boundaries.
-- [ ] Reset remains server-restricted to roles 6 and 8.
-- [ ] Existing role IDs and account fields remain compatible.
+- [x] `/users` defaults to Pegawai and supports `?audience=mahasiswa`.
+- [x] List, form, show, delete, and reset use documented ownership boundaries.
+- [x] Reset remains server-restricted to roles 6 and 8.
+- [x] Existing role IDs and account fields remain compatible.
 
 ## Implementation Tasks
 
@@ -39,8 +40,16 @@ Align Users with the SIARSIP Vue/Inertia and Laravel Request/Service conventions
 
 ## Final Verification
 
-- `pnpm exec prettier --check resources/js/pages/Users`
-- `pnpm exec eslint resources/js/pages/Users --max-warnings=0`
-- `pnpm run build`
-- `php artisan test tests/Feature/UserManagementTest.php`
-- `git diff --check`
+- [x] `pnpm exec prettier --check resources/js/pages/Users`
+- [x] `pnpm exec eslint resources/js/pages/Users --max-warnings=0`
+- [x] `pnpm run build`
+- [x] `php artisan test tests/Feature/UserManagementTest.php` — 3 passed, 11 assertions.
+- [x] `git diff --check`
+
+## Completion Notes
+
+- The unified Users index is implemented through `UserRequest` and
+  `UserService`, using the canonical `datatable()`, `create()`, `update()`,
+  `delete()`, and domain-specific `resetPassword()` service methods.
+- `docs/backend-development-base.md` now defines this service-method contract
+  as mandatory for new work and touched module refactors.

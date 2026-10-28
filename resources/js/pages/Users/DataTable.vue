@@ -47,7 +47,7 @@ function searchChange() {
                 :variant="audience === 'mahasiswa' ? 'default' : 'outline'"
                 @click="changeAudience('mahasiswa')">Mahasiswa</Button>
         </div>
-        <p class="text-xs font-semibold uppercase tracking-wide">Cari &amp; Filter</p>
+        <p class="text-xs font-semibold tracking-wide uppercase">Cari &amp; Filter</p>
         <div class="relative">
             <Search class="text-muted-foreground absolute top-3 left-3 size-4" /><Input v-model="search" class="pl-9"
                 placeholder="Cari nama atau email" @input="searchChange" />

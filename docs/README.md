@@ -37,7 +37,7 @@ Berkas Persuratan and the old Jenis Surat module are retired. Their legacy URLs 
 - [PRD 003](PRD/003_LETTER_TYPES_AND_LETTERS_FOUNDATION.md) — reusable foundation for future letter services.
 - [PRD 004](PRD/004_CUTI_AKADEMIK_MODULE.md) — approved Cuti Akademik module scope.
 - [PRD 005](PRD/005_TEMPLATE_SURAT_ALIGNMENT.md) — completed Template Surat alignment.
-- [PRD 006](PRD/006_USERS_MODULE_ALIGNMENT.md) — approved Users module alignment.
+- [PRD 006](PRD/006_USERS_MODULE_ALIGNMENT.md) — completed Users module alignment.
 
 ## Documentation conventions
 
