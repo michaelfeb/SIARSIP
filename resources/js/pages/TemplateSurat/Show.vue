@@ -1,86 +1,37 @@
 <script setup lang="ts">
-import Button from '@/components/ui/button/Button.vue';
+import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { BreadcrumbItem } from '@/types';
-import { router } from '@inertiajs/vue3'
-import { onMounted, ref } from 'vue';
+import type { BreadcrumbItem } from '@/types';
+import { Head, router } from '@inertiajs/vue3';
+import { Download } from 'lucide-vue-next';
+import TemplateSuratDetails from './components/TemplateSuratDetails.vue';
+import type { TemplateSurat } from './ts/templateSurat.types';
 
-const props = defineProps<{
-    templateSurat: any,
-}>()
-const show = ref(false)
-
+const props = defineProps<{ templateSurat: TemplateSurat }>();
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Template Surat',
-        href: '/template-surat',
-    },
-    {
-        title: 'Detail',
-        href: '/template-surat',
-    },
-]
-
-function toBack() {
-    router.visit(route('template-surat.index'))
+    { title: 'Template Surat', href: '/template-surat' },
+    { title: 'Detail', href: '/template-surat' },
+];
+function onDownload(): void {
+    window.open(route('template-surat.download', props.templateSurat.id), '_blank', 'noopener');
 }
-
-
-
-onMounted(() => {
-    setTimeout(() => {
-        show.value = true
-    }, 50)
-})
+function onCancel(): void {
+    router.get(route('template-surat.index'));
+}
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <Transition name="slide-up" mode="out-in">
-            <div v-if="show" class="p-4 space-y-4">
-                <h2 class="text-xl font-semibold">Detail Tempalte Surat</h2>
-                <table class="w-full table-auto border border-gray-300 mb-0">
-                    <tbody class="text-sm">
-                        <tr class="border-b">
-                            <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Nama Template</td>
-                            <td class="py-4 px-4 border border-gray-200">{{ props.templateSurat.nama || '-' }}</td>
-                        </tr>
-                        <tr class="border-b">
-                            <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Deskripsi</td>
-                            <td class="py-4 px-4 border border-gray-200">{{ props.templateSurat.deskripsi || '-' }}</td>
-                        </tr>
-                        <tr class="border-b">
-                            <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Status</td>
-                            <td class="py-4 px-4 border border-gray-200">
-                                <span :class="props.templateSurat.status ? 'text-green-600' : 'text-red-600'">
-                                    {{ props.templateSurat.status ? 'Aktif' : 'Tidak Aktif' }}
-                                </span>
-                            </td>
-                        </tr>
-                        <tr class="border-b">
-                            <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Tanggal Publish</td>
-                            <td class="py-4 px-4 border border-gray-200">{{ props.templateSurat.tanggal_publish || '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="py-4 px-4 font-medium text-gray-600 border border-gray-200">Dokumen</td>
-                            <td class="py-4 px-4 border border-gray-200">
-                                <a v-if="props.templateSurat.dokumen_path"
-                                    :href="`/storage/${props.templateSurat.dokumen_path}`" target="_blank"
-                                    class="text-blue-600 hover:underline">
-                                    Lihat Dokumen
-                                </a>
-                                <span v-else>-</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="w-full flex justify-end">
-                    <Button type="button" @click="toBack"
-                        class="mt-4 border border-orange-400 text-orange-500 hover:bg-orange-100 bg-white-500">
-                        <span>Kembali</span>
-                    </Button>
-                </div>
+    <Head title="Detail Template Surat" /><AppLayout :breadcrumbs="breadcrumbs"
+        ><div class="mx-auto w-full space-y-6 p-4 sm:p-6">
+            <div>
+                <h1 class="text-xl font-semibold">Detail Template Surat</h1>
+                <p class="text-muted-foreground mt-1 text-sm">Informasi dan dokumen template surat.</p>
             </div>
-        </Transition>
-    </AppLayout>
+            <TemplateSuratDetails :template-surat="templateSurat" />
+            <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <Button variant="outline" @click="onCancel">Kembali</Button
+                ><Button :disabled="!templateSurat.dokumen_path" @click="onDownload"><Download class="size-4" />Unduh Dokumen</Button>
+            </div>
+        </div></AppLayout
+    >
 </template>

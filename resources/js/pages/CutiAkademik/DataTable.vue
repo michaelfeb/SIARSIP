@@ -10,6 +10,7 @@ import Badge from '@/components/letters/Badge.vue';
 import { getCutiAkademikCapabilities } from './ts/cutiAkademik.capabilities';
 import { CUTI_AKADEMIK_STATUS } from './ts/cutiAkademik.constants';
 import type { CutiAkademikActor, CutiAkademikFilters, CutiAkademikLetter, CutiAkademikPaginated, CutiAkademikStatus, CutiAkademikTableQuery } from './ts/cutiAkademik.types';
+import { formatDate } from '@/utils/date';
 
 const props = defineProps<{ auth: { user: CutiAkademikActor }; letters: CutiAkademikPaginated<CutiAkademikLetter>; filters: CutiAkademikFilters; loading: boolean }>();
 const emit = defineEmits<{
@@ -72,9 +73,6 @@ function onSubmit(letter: CutiAkademikLetter): void { emit('submit', letter); }
 function onReview(letter: CutiAkademikLetter): void { emit('review', letter); }
 function onDownload(letter: CutiAkademikLetter): void { emit('download', letter); }
 
-function formatDate(value: string | null): string {
-    return value ? new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value)) : '—';
-}
 </script>
 
 <template>
@@ -115,7 +113,9 @@ function formatDate(value: string | null): string {
             <template #item-status="{ status: rowStatus }">
                 <Badge type="status" :value="rowStatus" />
             </template>
-            <template #item-current_stage="{ current_stage }"><Badge type="stage" :value="current_stage" /></template>
+            <template #item-current_stage="{ current_stage }">
+                <Badge type="stage" :value="current_stage" />
+            </template>
             <template #item-submitted_at="{ submitted_at }">{{ formatDate(submitted_at) }}</template>
             <template #item-id="{ id, ...rawLetter }">
                 <div class="flex min-w-max items-center gap-2"><Button variant="outline" size="icon"

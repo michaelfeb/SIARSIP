@@ -45,7 +45,7 @@ test('template surat is managed without the legacy letter-type relation', functi
     $staff = User::factory()->create(['role_id' => 2]);
 
     $this->actingAs($staff)
-        ->put(route('template-surat.save', ['id' => $template->id]), [
+        ->put(route('template-surat.update', ['templateSurat' => $template->id]), [
             'nama' => 'Template Cuti Akademik Diperbarui',
             'deskripsi' => 'Dokumen contoh terbaru.',
             'status' => true,
@@ -80,4 +80,3 @@ test('students are redirected to sidang nol while non-students can access dashbo
         ->get(route('dashboard'))
         ->assertOk();
 });
-

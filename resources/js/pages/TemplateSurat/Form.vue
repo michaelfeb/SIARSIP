@@ -1,189 +1,110 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue'
-import { useForm, router } from '@inertiajs/vue3'
-import InputError from '@/components/InputError.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { onMounted, ref } from 'vue'
-import Swal from 'sweetalert2'
-import { BreadcrumbItem } from '@/types'
-import vueFilePond from 'vue-filepond'
-import 'filepond/dist/filepond.min.css'
-import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css'
-import 'filepond-plugin-pdf-preview/dist/filepond-plugin-pdf-preview.css'
+import InputError from '@/components/InputError.vue';
+import { showErrorAlert, showSuccessAlert } from '@/components/alerts/SwalAlert';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import AppLayout from '@/layouts/AppLayout.vue';
+import type { BreadcrumbItem } from '@/types';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { computed, onMounted, ref } from 'vue';
+import TemplateSuratDocumentUpload from './components/TemplateSuratDocumentUpload.vue';
+import type { TemplateSurat, TemplateSuratFormData } from './ts/templateSurat.types';
 
-import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type'
-import FilePondPluginImagePreview from 'filepond-plugin-image-preview'
-import FilePondPluginPdfPreview from 'filepond-plugin-pdf-preview'
-import { LoaderCircle } from 'lucide-vue-next'
-
-
-const FilePond = vueFilePond(
-    FilePondPluginImagePreview,
-    FilePondPluginFileValidateType,
-    FilePondPluginPdfPreview,
-)
-
-function handleUpdateFiles(fileItems: any) {
-    form.dokumen_path = fileItems.length > 0 ? fileItems[0].file : null;
-}
-
-
-const today = new Date().toISOString().split('T')[0]
-
-const props = defineProps<{
-    templateSurat?: any,
-    mode: 'create' | 'edit'
-}>()
-const show = ref(false);
-
-const form = useForm({
+const props = defineProps<{ templateSurat?: TemplateSurat; mode: 'create' | 'edit' }>();
+const isEdit = computed(() => props.mode === 'edit');
+const today = new Date().toISOString().slice(0, 10);
+const form = useForm<TemplateSuratFormData>({
     nama: props.templateSurat?.nama ?? '',
     deskripsi: props.templateSurat?.deskripsi ?? '',
-    status: props.templateSurat?.status ?? 1,
-    dokumen_path: null as File | null,
-    tanggal_publish: props.templateSurat?.tanggal_publish ?? today,
-})
-
-
+    status: props.templateSurat?.status ?? true,
+    dokumen_path: null,
+    tanggal_publish: props.templateSurat?.tanggal_publish?.slice(0, 10) ?? today,
+});
+const files = ref<unknown[]>([]);
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Template Surat',
-        href: '/template-surat',
-    },
-    ...(props.mode === 'create'
-        ? [{ title: 'Tambah', href: '/template-surat' }]
-        : [{ title: 'Ubah', href: '/template-surat' }]
-    )
-]
-
-
-async function submit() {
-    const isEdit = props.mode === 'edit'
-    await form.post(route('template-surat.save', isEdit ? props.templateSurat.id : undefined), {
+    { title: 'Template Surat', href: '/template-surat' },
+    { title: isEdit.value ? 'Ubah' : 'Tambah', href: '/template-surat' },
+];
+function onDocumentUpdate(fileItems: unknown[]): void {
+    files.value = fileItems;
+    const first = fileItems[0] as { file?: File } | undefined;
+    form.dokumen_path = first?.file ?? null;
+}
+function onSubmit(): void {
+    const options = {
         forceFormData: true,
-        method: isEdit ? 'put' : 'post',
-        onSuccess: () => {
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil!',
-                text: isEdit ? 'Data telah diperbarui!' : 'Data telah ditambahkan!',
-                confirmButtonText: 'OK',
-                customClass: {
-                    confirmButton: 'swal-confirm-button',
-                },
-            })
-        },
-        onError: () => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal!',
-                text: isEdit ? 'Gagal memperbarui data!' : 'Gagal menambahkan data!',
-                confirmButtonText: 'OK',
-                customClass: {
-                    confirmButton: 'swal-confirm-button',
-                },
-            })
-        }
-    })
-}
-
-function toBack() {
-    router.visit(route('template-surat.index'))
-}
-
-const initialFiles = ref([]);
-onMounted(() => {
-    setTimeout(() => {
-        show.value = true
-    }, 50)
-
-    if (props.mode === 'edit' && props.templateSurat?.dokumen_path) {
-        initialFiles.value = [
-            {
-                source: `/storage/${props.templateSurat.dokumen_path}`,
-                options: {}
-            }
-        ];
+        onSuccess: () => showSuccessAlert({ text: isEdit.value ? 'Template surat berhasil diperbarui.' : 'Template surat berhasil ditambahkan.' }),
+        onError: () => showErrorAlert({ text: 'Periksa kembali data dan dokumen yang diunggah.' }),
+    };
+    if (isEdit.value) {
+        form.transform((data) => ({ ...data, _method: 'put' })).post(route('template-surat.update', props.templateSurat?.id), options);
+        return;
     }
-})
+    form.post(route('template-surat.store'), options);
+}
+function onCancel(): void {
+    router.get(route('template-surat.index'));
+}
+onMounted(() => {
+    if (props.templateSurat?.dokumen_path) files.value = [{ source: `/storage/${props.templateSurat.dokumen_path}`, options: { type: 'remote' } }];
+});
 </script>
 
 <template>
+
+    <Head :title="isEdit ? 'Ubah Template Surat' : 'Tambah Template Surat'" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Transition name="slide-up" mode="out-in">
-            <div v-if="show" class="p-4 space-y-4">
-
-                <div v-if="Object.keys(form.errors).length > 0" class="mb-4 rounded bg-red-100 p-4 text-red-600">
-                    <ul class="list-disc pl-5 space-y-1 text-sm">
-                        <li v-for="(error, key) in form.errors" :key="key">{{ error }}</li>
-                    </ul>
-                </div>
-                <h2 class="text-xl font-semibold">Tambah Template Surat</h2>
-
-                <form @submit.prevent="submit" class="space-y-4">
-                    <div class="space-y-2">
-                        <Label for="nama" class="gap-1">Nama<span class="text-red-500">*</span></Label>
-                        <Input v-model="form.nama" id="nama" type="text" placeholder="Nama" />
-                        <InputError :message="form.errors.nama" />
-                    </div>
-
-                    <div class="space-y-2">
-                        <Label for="deskripsi" class="gap-1">Deskripsi</Label>
-                        <textarea v-model="form.deskripsi" id="deskripsi" placeholder="Tulis deskripsi template"
-                            rows="4"
-                            class="w-full text-sm rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                        <InputError :message="form.errors.deskripsi" />
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Status<span class="text-red-500"> *</span></label>
-                        <div class="flex items-center gap-6">
-                            <label class="flex items-center space-x-1 text-sm">
-                                <input type="radio" value="1" v-model="form.status"
-                                    class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                                <span>Aktif</span>
-                            </label>
-                            <label class="flex items-center space-x-1 text-sm">
-                                <input type="radio" value="0" v-model="form.status"
-                                    class="w-4 h-4 text-red-600 focus:ring-red-500" />
-                                <span>Tidak Aktif</span>
-                            </label>
-                        </div>
-                        <InputError :message="form.errors.status" />
-                    </div>
-
-                    <div class="space-y-2">
-                        <Label for="dokumen_path" class="gap-1">Upload Dokumen<span class="text-red-500">*</span></Label>
-                        <FilePond name="dokumen_path"
-                            label-idle="Seret & lepas dokumen atau <span class='filepond--label-action'>Telusuri</span>"
-                            :allow-multiple="false"
-                            accepted-file-types="application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                            filePosterMaxHeight="250" @updatefiles="handleUpdateFiles" :files="initialFiles" />
-                        <InputError :message="form.errors.dokumen_path" />
-                    </div>
-
-
-                    <div class="space-y-2">
-                        <Label for="tanggal_publish" class="gap-1">Tanggal Publish<span class="text-red-500">*</span></Label>
-                        <Input id="tanggal_publish" type="date" v-model="form.tanggal_publish" />
-                        <InputError :message="form.errors.tanggal_publish" />
-                    </div>
-
-                    <div class="w-full flex justify-end gap-2">
-                        <Button type="submit" class="mt-4 hover:bg-blue-600 bg-blue-500" :tabindex="4"
-                            :disabled="form.processing">
-                            <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                            Simpan
-                        </Button>
-                        <Button type="button" @click="toBack"
-                            class="mt-4 border border-orange-400 text-orange-500 hover:bg-orange-100 bg-white-500">
-                            <span>Kembali</span>
-                        </Button>
-                    </div>
-                </form>
+        <div class="mx-auto w-full space-y-6 p-4 sm:p-6">
+            <div>
+                <h1 class="text-xl font-semibold">{{ isEdit ? 'Ubah Template Surat' : 'Tambah Template Surat' }}</h1>
+                <p class="text-muted-foreground mt-1 text-sm">Unggah dokumen template dalam format DOC atau DOCX.</p>
             </div>
-        </Transition>
+            <form class="space-y-6" @submit.prevent="onSubmit">
+                <section class="border-border bg-card rounded-lg border p-5 shadow-sm">
+                    <div class="grid gap-5 md:grid-cols-2">
+                        <div class="space-y-2 md:col-span-2">
+                            <Label for="nama">Nama Template <span class="text-destructive">*</span></Label><Input
+                                id="nama" v-model="form.nama" placeholder="Contoh: Template Cuti Akademik" />
+                            <InputError :message="form.errors.nama" />
+                        </div>
+                        <div class="space-y-2 md:col-span-2">
+                            <Label for="deskripsi">Deskripsi</Label><textarea id="deskripsi" v-model="form.deskripsi"
+                                rows="4" placeholder="Tulis deskripsi template"
+                                class="border-input focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-lg border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]" />
+                            <InputError :message="form.errors.deskripsi" />
+                        </div>
+                        <div class="space-y-2">
+                            <Label for="status">Status <span class="text-destructive">*</span></Label><Select
+                                v-model="form.status">
+                                <SelectTrigger id="status" class="h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem :value="true">Aktif</SelectItem>
+                                    <SelectItem :value="false">Tidak Aktif</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <InputError :message="form.errors.status" />
+                        </div>
+                        <div class="space-y-2">
+                            <Label for="tanggal_publish">Tanggal Publikasi <span
+                                    class="text-destructive">*</span></Label><Input id="tanggal_publish"
+                                v-model="form.tanggal_publish" type="date" />
+                            <InputError :message="form.errors.tanggal_publish" />
+                        </div>
+                        <div class="md:col-span-2">
+                            <TemplateSuratDocumentUpload :files="files" :required="!isEdit"
+                                :error="form.errors.dokumen_path" @update="onDocumentUpdate" />
+                        </div>
+                    </div>
+                </section>
+                <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <Button type="button" variant="outline" @click="onCancel">Kembali</Button><Button type="submit"
+                        :disabled="form.processing">{{ form.processing ? 'Menyimpan...' : 'Simpan' }}</Button>
+                </div>
+            </form>
+        </div>
     </AppLayout>
 </template>

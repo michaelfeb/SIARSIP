@@ -1,195 +1,81 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue'
-import { Head, router, ServerOptions } from '@inertiajs/vue3'
-import EasyDataTable, { Item } from 'vue3-easy-data-table'
-import { type BreadcrumbItem } from '@/types'
-import 'vue3-easy-data-table/dist/style.css'
-import Heading from '@/components/Heading.vue'
-import { ref, watch } from 'vue'
-import Button from '@/components/ui/button/Button.vue'
-import { Eye, Pencil, Trash2, Plus } from 'lucide-vue-next'
-import axios from 'axios'
-import Swal from 'sweetalert2'
+import Heading from '@/components/Heading.vue';
+import { showConfirmationAlert, showErrorAlert, showSuccessAlert } from '@/components/alerts/SwalAlert';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/AppLayout.vue';
+import type { BreadcrumbItem } from '@/types';
+import { Head, router } from '@inertiajs/vue3';
+import { Plus } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+import DataTable from './DataTable.vue';
+import { getTemplateSuratCapabilities } from './ts/templateSurat.capabilities';
+import type {
+    TemplateSurat,
+    TemplateSuratActor,
+    TemplateSuratFilters,
+    TemplateSuratPaginated,
+    TemplateSuratTableQuery,
+} from './ts/templateSurat.types';
 
-const headers = [
-    { text: "Nama", value: "nama" },
-    { text: "Deskripsi", value: "deskripsi" },
-    { text: "Status", value: "status" },
-    { text: "Tanggal terbit", value: "tanggal_publish" },
-    { text: "Aksi", value: "id", sortable: false },
-]
-
-const items = ref<Item[]>([]);
+const props = defineProps<{ auth: { user: TemplateSuratActor }; templates: TemplateSuratPaginated<TemplateSurat>; filters: TemplateSuratFilters }>();
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Template Surat', href: '/template-surat' }];
 const loading = ref(false);
-const serverItemsLength = ref(0);
-const serverOptions = ref<ServerOptions>({
-    page: 1,
-    rowsPerPage: 10,
-});
-const search = ref('')
-
-const loadFromServer = async () => {
-    loading.value = true
-
-    const { data } = await axios.get(route('template-surat.index'), {
-        params: {
-            page: serverOptions.value.page,
-            per_page: serverOptions.value.rowsPerPage,
-            search: search.value,
-        }
-    })
-
-    items.value = data.data
-    serverItemsLength.value = data.total
-    loading.value = false
-}
-
-
-loadFromServer();
-
-watch([serverOptions, search], () => { loadFromServer(); }, { deep: true });
-
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Template Surat',
-        href: '/template-surat',
-    },
-]
-
-function onSearch() {
-    serverOptions.value.page = 1 // Reset ke halaman 1 saat search
-}
-
-function onCreate() {
-    router.get(route('template-surat.create'))
-}
-
-function onDetail(id: number) {
-    router.visit(route('template-surat.show', id))
-}
-
-function onEdit(id: number) {
-    router.visit(route('template-surat.edit', id)
-    )
-}
-
-
-function onDelete(id: number) {
-
-    Swal.fire({
-        icon: 'warning',
-        title: 'Anda yakin?',
-        text: 'Data yang terhapus tidak dapat dikembalikan!',
-        showCancelButton: true,
-        confirmButtonText: 'Hapus',
-        cancelButtonText: 'Batalkan',
-        customClass: {
-            confirmButton: 'swal-confirm-button',
-            cancelButton: 'swal-cancel-button',
-            actions: 'swal-actions-button-group',
+const capabilities = computed(() => getTemplateSuratCapabilities(props.auth.user));
+function onDataTableQueryChange(query: TemplateSuratTableQuery): void {
+    loading.value = true;
+    router.get(
+        route('template-surat.index'),
+        { page: query.page, per_page: query.perPage, search: query.search || undefined },
+        {
+            only: ['templates', 'filters'],
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+            onFinish: () => {
+                loading.value = false;
+            },
         },
-        reverseButtons: true,
-        buttonsStyling: false
-    }).then((result) => {
-        if (result.isConfirmed) {
-            router.delete(route('template-surat.destroy', id), {
-                async onSuccess() {
-                    await loadFromServer();
-                    Swal.fire({
-                        title: 'Terhapus!',
-                        text: "Data telah dihapus!",
-                        icon: 'success',
-                        confirmButtonText: 'OK',
-                        customClass: {
-                            confirmButton: 'swal-confirm-button',
-                        },
-                    });
-                },
-            });
-        }
-    });
+    );
 }
-
+function onCreate(): void {
+    router.get(route('template-surat.create'));
+}
+function onView(templateSurat: TemplateSurat): void {
+    router.get(route('template-surat.show', templateSurat.id));
+}
+function onEdit(templateSurat: TemplateSurat): void {
+    router.get(route('template-surat.edit', templateSurat.id));
+}
+async function onDelete(templateSurat: TemplateSurat): Promise<void> {
+    const result = await showConfirmationAlert({
+        variant: 'warning',
+        title: 'Hapus template?',
+        text: 'Dokumen template juga akan dihapus dan tidak dapat dikembalikan.',
+        confirmButtonText: 'Hapus',
+        destructive: true,
+    });
+    if (result.isConfirmed)
+        router.delete(route('template-surat.destroy', templateSurat.id), {
+            preserveScroll: true,
+            onSuccess: () => showSuccessAlert({ text: 'Template surat berhasil dihapus.' }),
+            onError: () => showErrorAlert({ text: 'Template surat tidak dapat dihapus. Silakan coba lagi.' }),
+        });
+}
 </script>
 
 <template>
 
     <Head title="Template Surat" />
-
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="p-4 space-y-4">
-            <div class="container mx-auto flex items-center justify-between mb-4">
-                <Heading title="Template Surat" description="Daftar template surat yang telah terdaftar dalam sistem"
-                    class="!mb-0" />
-
-                <Button
-                    class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 transition flex items-center gap-1"
-                    @click="onCreate">
-                    <Plus class="h-4 w-4" />
-                    <span>Tambah</span>
+        <div class="mx-auto w-full space-y-7 p-4 sm:p-6">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <Heading title="Template Surat" description="Kelola template surat yang tersedia di sistem."
+                    class="!mb-0" /><Button v-if="capabilities.canCreate" class="w-full sm:w-auto" @click="onCreate">
+                    <Plus class="mr-1 size-4" />Tambah Template
                 </Button>
             </div>
-
-            <div class="container mx-auto flex items-center justify-end gap-4 mb-4">
-                <span class="text-sm font-medium whitespace-nowrap">Cari</span>
-                <input v-model="search" @input="onSearch" type="text" placeholder="Cari nama template"
-                    class="w-50 h-8 text-sm rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-
-            <EasyDataTable v-model:server-options="serverOptions" :server-items-length="serverItemsLength"
-                :loading="loading" :headers="headers" :items="items" show-index>
-                <template #loading>
-                    <img src="https://i.pinimg.com/originals/94/fd/2b/94fd2bf50097ade743220761f41693d5.gif"
-                        style="width: 100px; height: 80px;" />
-                </template>
-                <template #header-index>
-                    No
-                </template>
-                <template #item-nama="{ nama }">
-                    {{ nama || '-' }}
-                </template>
-
-                <template #item-status="{ status }">
-                    <span :class="[
-                        'text-xs inline-flex items-center gap-1 px-3 py-1 rounded-full font-medium',
-                        status == 1 ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-600'
-                    ]">
-                        {{ status == 1 ? 'Aktif' : 'Tidak Aktif' }}
-                    </span>
-                </template>
-
-                <template #item-role="{ role }">
-                    {{ role?.nama || '-' }}
-                </template>
-                <template #item-id="{ id }">
-                    <div class="flex items-center gap-2">
-                        <Button
-                            class="w-6 h-6 text-blue-500 hover:text-white hover:bg-blue-500 bg-white outline outline-1 outline-blue-500 p-1 rounded"
-                            title="Detail" @click="onDetail(id)">
-                            <Eye class="w-4 h-4" />
-                        </Button>
-
-                        <Button
-                            class="group w-6 h-6 bg-white text-yellow-500 outline outline-1 outline-yellow-500 p-1 rounded hover:bg-yellow-500 hover:outline-yellow-500"
-                            title="Edit" @click="onEdit(id)">
-                            <Pencil class="w-4 h-4 group-hover:text-white transition-colors duration-200" />
-                        </Button>
-
-                        <!-- <Button
-                            class="group w-6 h-6 bg-white text-orange-500 outline outline-1 outline-orange-500 p-1 rounded hover:bg-orange-500 hover:outline-orange-500"
-                            title="Reset Password" @click="onResetPassword(id)">
-                            <KeyRound class="w-4 h-4 group-hover:text-white transition-colors duration-200" />
-                        </Button> -->
-
-                        <Button
-                            class="group w-6 h-6 bg-white text-red-500 outline outline-1 outline-red-500 p-1 rounded hover:bg-red-500 hover:outline-red-500"
-                            title="Hapus" @click="onDelete(id)">
-                            <Trash2 class="w-4 h-4 group-hover:text-white transition-colors duration-200" />
-                        </Button>
-                    </div>
-                </template>
-            </EasyDataTable>
+            <DataTable :auth="auth" :templates="templates" :filters="filters" :loading="loading" audience="management"
+                @query-change="onDataTableQueryChange" @view="onView" @edit="onEdit" @delete="onDelete" />
         </div>
     </AppLayout>
 </template>

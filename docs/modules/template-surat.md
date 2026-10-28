@@ -13,7 +13,7 @@ Template Surat publishes standalone downloadable letter templates for students a
 | Create, edit, save, delete | routes under `/template-surat` | `auth`, roles `2,3,4,5,6,7,8` |
 | Download document | `GET /template-surat/download/{id}` | Public |
 
-The management list is searchable by template name and is paginated. The student-facing list filters to published templates (`status = 1`). The controller can return JSON for requests that explicitly expect it.
+The management list is searchable by template name and is paginated. The student-facing list filters to published templates (`status = 1`). Both list pages use Inertia paginator props, URL-driven search and pagination, and a module-local table coordinator over the shared data-table shell. The controller can still return JSON for requests that explicitly expect it.
 
 ## Template fields and validation
 
@@ -25,7 +25,7 @@ The management list is searchable by template name and is paginated. The student
 | Publish date (`tanggal_publish`) | Required date. |
 | Document (`dokumen`) | Required on create; `.doc` or `.docx`, maximum 2 MB. Existing documents can remain on edit. |
 
-Documents are stored on the Laravel `public` disk below `template_surat/`. Creation requires a document; edits may keep the existing document or upload a replacement. Deletion removes the associated stored file. Downloads are returned with a filename based on the template name.
+Documents are stored on the Laravel `public` disk below `template_surat/`. Creation requires a document; edits may keep the existing document or upload a replacement. A successful replacement removes the former file only after the new document and record have been persisted. Deletion removes the associated stored file. Downloads are returned with a filename based on the template name.
 
 ## Landing-page behavior
 

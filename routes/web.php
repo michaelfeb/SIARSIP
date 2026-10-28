@@ -27,7 +27,7 @@ Route::any('/api/berkas-persuratan/{path?}', static fn () => abort(410, 'Modul B
     ->where('path', '.*')
     ->withoutMiddleware(ValidateCsrfToken::class);
 
-Route::get('/template-surat/download/{id}', [TemplateSuratController::class, 'downloadTemplate'])->name('template-surat.download');
+Route::get('/template-surat/download/{templateSurat}', [TemplateSuratController::class, 'downloadTemplate'])->name('template-surat.download');
 
 Route::middleware(['auth', 'role:1,2,3,5,6,8,12'])->prefix('cuti-akademik')->name('cuti-akademik.')->group(function () {
     Route::get('/', [CutiAkademikController::class, 'index'])->name('index');
@@ -65,10 +65,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/template-surat', [TemplateSuratController::class, 'index'])->name('template-surat.index');
     Route::get('/template-surat-mahasiswa', [TemplateSuratController::class, 'indexMahasiswa'])->name('template-surat.mahasiswa');
     Route::get('/template-surat/create', [TemplateSuratController::class, 'create'])->name('template-surat.create')->middleware('role:2,3,4,5,6,7,8');
-    Route::match(['post', 'put'], '/template-surat/save/{id?}', [TemplateSuratController::class, 'save'])->name('template-surat.save')->middleware('role:2,3,4,5,6,7,8');
-    Route::get('/template-surat/{id}', [TemplateSuratController::class, 'show'])->name('template-surat.show');
-    Route::get('/template-surat/{id}/edit', [TemplateSuratController::class, 'edit'])->name('template-surat.edit')->middleware('role:2,3,4,5,6,7,8');
-    Route::delete('/template-surat/{id}', [TemplateSuratController::class, 'destroy'])->name('template-surat.destroy')->middleware('role:2,3,4,5,6,7,8');
+    Route::post('/template-surat/save', [TemplateSuratController::class, 'store'])->name('template-surat.store')->middleware('role:2,3,4,5,6,7,8');
+    Route::put('/template-surat/save/{templateSurat}', [TemplateSuratController::class, 'update'])->name('template-surat.update')->middleware('role:2,3,4,5,6,7,8');
+    Route::get('/template-surat/{templateSurat}', [TemplateSuratController::class, 'show'])->name('template-surat.show');
+    Route::get('/template-surat/{templateSurat}/edit', [TemplateSuratController::class, 'edit'])->name('template-surat.edit')->middleware('role:2,3,4,5,6,7,8');
+    Route::delete('/template-surat/{templateSurat}', [TemplateSuratController::class, 'destroy'])->name('template-surat.destroy')->middleware('role:2,3,4,5,6,7,8');
 });
 
 Route::middleware('auth')->group(function () {

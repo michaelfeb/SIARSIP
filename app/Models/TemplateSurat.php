@@ -19,4 +19,9 @@ class TemplateSurat extends Model
         'tanggal_publish',
     ];
 
+    protected function casts(): array
+    {
+        return ['status' => 'boolean', 'tanggal_publish' => 'date:Y-m-d'];
+    }
+
 }
