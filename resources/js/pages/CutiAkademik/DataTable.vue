@@ -118,7 +118,8 @@ function onDownload(letter: CutiAkademikLetter): void { emit('download', letter)
             </template>
             <template #item-submitted_at="{ submitted_at }">{{ formatDate(submitted_at) }}</template>
             <template #item-id="{ id, ...rawLetter }">
-                <div class="flex min-w-max items-center gap-2"><Button variant="outline" size="icon"
+                <div class="flex min-w-max items-center gap-2">
+                    <Button variant="outline" size="icon"
                         class="size-8 rounded-lg border-blue-200 bg-white text-blue-600 hover:bg-blue-600 hover:text-white"
                         title="Detail" aria-label="Detail" @click="onView({ id, ...rawLetter })">
                         <Eye class="size-4" />

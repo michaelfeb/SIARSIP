@@ -1,0 +1,6 @@
+<?php
+use App\Models\Role;use App\Models\User;use Illuminate\Foundation\Testing\RefreshDatabase;
+uses(RefreshDatabase::class);beforeEach(function(){foreach([1=>'MAHASISWA',2=>'RESEPSIONIS',6=>'AKADEMIK',8=>'SUPER ADMIN']as$id=>$nama){$r=new Role(['nama'=>$nama]);$r->id=$id;$r->save();}});
+test('one user index filters audience',function(){$staff=User::factory()->create(['role_id'=>2]);$student=User::factory()->create(['role_id'=>1]);$this->actingAs($staff)->getJson(route('users.index'))->assertOk()->assertJsonCount(1,'data')->assertJsonPath('data.0.role_id',2);$this->actingAs($staff)->getJson(route('users.index',['audience'=>'mahasiswa']))->assertOk()->assertJsonPath('data.0.id',$student->id);});
+test('user index rejects unknown audience',function(){$staff=User::factory()->create(['role_id'=>2]);$this->actingAs($staff)->getJson(route('users.index',['audience'=>'other']))->assertUnprocessable()->assertJsonValidationErrors('audience');});
+test('only akademik and super admin can reset password',function(){$target=User::factory()->create(['role_id'=>2]);$staff=User::factory()->create(['role_id'=>2]);$this->actingAs($staff)->post(route('users.reset-password',$target))->assertForbidden();$admin=User::factory()->create(['role_id'=>6]);$this->actingAs($admin)->post(route('users.reset-password',$target))->assertRedirect(route('users.index'));});

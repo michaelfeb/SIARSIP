@@ -48,13 +48,13 @@ Route::middleware(['auth', 'role:1,2,3,5,6,8,12'])->prefix('cuti-akademik')->nam
 
 Route::middleware(['auth', 'role:2,3,4,5,6,7,8'])->group(function () {
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::get('/users-mahasiswa', [UserController::class, 'indexMahasiswa'])->name('users-mahasiswa.index');
     Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-    Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
-    Route::match(['post', 'put'], '/users/save/{id?}', [UserController::class, 'save'])->name('users.save');
-    Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
-    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
-    Route::post('/user/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password')->middleware('role:6,8');
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::post('/users/save', [UserController::class, 'store'])->name('users.store');
+    Route::put('/users/save/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::post('/user/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password')->middleware('role:6,8');
 });
 
 Route::middleware(['auth'])->prefix('api')->name('api.users.')->group(function () {

@@ -1,11 +1,12 @@
 # Template Surat Alignment
 
-**Status**: Draft
+**Status**: Complete
 **Version**: 1.0
-**Plan Status**: Approved
+**Plan Status**: Implemented
 **Plan Version**: 1
 **Mode**: full-stack
 **Requirement Source**: Approved chat plan; `docs/frontend-development-base.md` and `docs/backend-development-base.md`
+**Completed**: 28 October 2026
 
 ---
 
@@ -55,12 +56,12 @@ Route → Controller → Form Request → Service flow for retained Laravel modu
 
 ## Acceptance Criteria
 
-- [ ] Admin list has debounced search, pagination, loading, empty, and responsive overflow states.
-- [ ] Student list uses its published-only endpoint and cannot receive inactive templates through its UI query.
-- [ ] Template Surat pages have no direct Axios requests, `vue3-easy-data-table` ownership, raw `any` props, or direct `Swal.fire` calls.
-- [ ] Create/update shows shared feedback, validates document requirements, and preserves an unchanged document on edit.
-- [ ] Show presents a readable definition list and downloads through the official endpoint.
-- [ ] Validation, query, and storage workflows live in the Form Request and Service.
+- [x] Admin list has debounced search, pagination, loading, empty, and responsive overflow states.
+- [x] Student list uses its published-only endpoint and cannot receive inactive templates through its UI query.
+- [x] Template Surat pages have no direct Axios requests, `vue3-easy-data-table` ownership, raw `any` props, or direct `Swal.fire` calls.
+- [x] Create/update shows shared feedback, validates document requirements, and preserves an unchanged document on edit.
+- [x] Show presents a readable definition list and downloads through the official endpoint.
+- [x] Validation, query, and storage workflows live in the Form Request and Service.
 
 ## Functional Requirements
 

@@ -1,0 +1,4 @@
+<?php
+namespace App\Services;
+use App\Models\User; use Illuminate\Contracts\Pagination\LengthAwarePaginator; use Illuminate\Support\Facades\Hash;
+class UserService { public function paginate(array $f): LengthAwarePaginator { return User::with('role')->when($f['audience']==='mahasiswa',fn($q)=>$q->where('role_id',1),fn($q)=>$q->where('role_id','!=',1))->when($f['search'],fn($q,$s)=>$q->where(fn($q)=>$q->where('nama','like',"%{$s}%")->orWhere('email','like',"%{$s}%")))->paginate($f['per_page'])->withQueryString(); } public function save(array $d,?User $u=null):User{$d['program_studi']=((int)$d['role_id']===1)?$d['program_studi']:null;if(empty($d['password']))unset($d['password']);return $u?tap($u)->update($d):User::create($d);} public function delete(User $u):void{$u->delete();} public function resetPassword(User $u):void{$u->update(['password'=>Hash::make('Password1234')]);} }
