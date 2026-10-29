@@ -17,6 +17,7 @@ export interface NavItem {
     icon?: LucideIcon;
     children?: NavItem[];
     isActive?: boolean;
+    comingSoon?: boolean;
 }
 
 export interface SharedData extends PageProps {

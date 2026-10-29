@@ -26,7 +26,14 @@ const sidangNol = {
 const akademik = {
     title: 'Akademik',
     icon: GraduationCap,
-    children: [{ title: 'Cuti Akademik', icon: Minus, href: '/cuti-akademik' }],
+    children: [
+        { title: 'Cuti Akademik', icon: Minus, href: '/cuti-akademik' },
+        { title: 'Magang', icon: Minus, href: '#', comingSoon: true },
+        { title: 'Penurunan UKT', icon: Minus, href: '#', comingSoon: true },
+        { title: 'UKT 50%', icon: Minus, href: '#', comingSoon: true },
+        { title: 'Pengunduran Diri', icon: Minus, href: '#', comingSoon: true },
+        { title: 'Bebas Ruang Baca', icon: Minus, href: '#', comingSoon: true },
+    ],
 };
 
 export const sidebars = {

@@ -72,7 +72,7 @@ const carouselConfig = {
 
 function redirectBasedOnLogin(mode: 'mahasiswa' | 'pegawai') {
     if (user.value?.role_id === 1) {
-        return router.get(route('berkas-persuratan.index'));
+        return router.get(route('berkas-sidang-nol.index'));
     }
 
     if (user.value) {
