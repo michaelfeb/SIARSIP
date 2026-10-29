@@ -2,123 +2,67 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CarouselRequest;
 use App\Models\Carousel;
+use App\Services\CarouselService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CarouselController extends Controller
 {
-    //
-    public function index(Request $request)
+    public function index(CarouselRequest $request, CarouselService $carouselService)
     {
-        $search = $request->input('search');
-        $perPage = $request->input('per_page', 10);
-
-        $query = Carousel::query()
-            ->when($search, function ($query) use ($search) {
-                $query->where('nama', 'like', "%{$search}%");
-            });
-
-        $carousel = $query->paginate($perPage)->withQueryString();
+        $filters = $request->filters();
+        $carousel = $carouselService->datatable($filters);
 
         if ($request->wantsJson()) {
             return response()->json($carousel);
         }
 
-        return Inertia::render('Carousel/Index', [
-            'carousel' => $carousel,
-        ]);
+        return Inertia::render('Carousel/Index', compact('carousel', 'filters'));
     }
 
     public function create()
     {
-        return Inertia::render('Carousel/Form',);
+        return Inertia::render('Carousel/Form', ['mode' => 'create']);
     }
 
-    public function save(Request $request, $id = null)
+    public function store(CarouselRequest $request, CarouselService $carouselService)
     {
+        $carouselService->create($request->user(), $request->validated());
 
-        $rules = [
-            'nama' => 'required|string|max:255',
-            'tanggal_publish' => 'required|date',
-            'status' => 'required|boolean',
-            'gambar' => $id ? 'nullable|image|mimes:jpeg,png,jpg|max:5120' : 'required|image|mimes:jpeg,png,jpg|max:5120',
-        ];
-
-        $messages = [
-            'nama.required' => 'Nama wajib diisi.',
-            'tanggal_publish.required' => 'Tanggal publikasi wajib diisi.',
-            'tanggal_publish.date' => 'Tanggal publikasi harus berupa tanggal yang valid.',
-            'status.required' => 'Status wajib diisi.',
-            'gambar.required' => 'Gambar wajib diunggah.',
-            'gambar.image' => 'File yang diunggah harus berupa gambar.',
-            'gambar.mimes' => 'Format gambar harus JPEG, PNG, atau JPG.',
-            'gambar.max' => 'Ukuran maksimal gambar adalah 5MB.',
-        ];
-
-        $validated = $request->validate($rules, $messages);
-
-        if ($request->hasFile('gambar')) {
-            $file = $request->file('gambar');
-            $path = $file->store('carousel', 'public');
-            $validated['gambar'] = $path;
-        }
-
-        if ($id) {
-            $carousel = \App\Models\Carousel::findOrFail($id);
-
-            if ($request->hasFile('gambar') && $carousel->gambar) {
-                Storage::disk('public')->delete($carousel->gambar);
-            }
-
-            $carousel->update($validated);
-        } else {
-            $carousel = \App\Models\Carousel::create($validated);
-        }
-
-        return redirect()->route('carousel.index')->with('success', 'Carousel berhasil disimpan.');
+        return redirect()->route('carousel.index')->with('success', 'Carousel berhasil ditambahkan.');
     }
 
-    public function edit($id)
+    public function edit(Carousel $carousel)
     {
-        $carousel = Carousel::findOrFail($id);
-
-        return Inertia::render('Carousel/Form', [
-            'carousel' => $carousel,
-            'mode' => 'edit',
-        ]);
+        return Inertia::render('Carousel/Form', ['carousel' => $carousel, 'mode' => 'edit']);
     }
 
-    public function toggle($id)
+    public function update(CarouselRequest $request, Carousel $carousel, CarouselService $carouselService)
     {
-        $carousel = \App\Models\Carousel::findOrFail($id);
-        $carousel->status = !$carousel->status;
-        $carousel->save();
+        $carouselService->update($carousel, $request->user(), $request->validated());
 
-        return response()->json(['success' => true]);
+        return redirect()->route('carousel.index')->with('success', 'Carousel berhasil diperbarui.');
     }
 
-    public function destroy($id)
+    public function toggle(Request $request, Carousel $carousel, CarouselService $carouselService)
     {
-        $carousel = Carousel::findOrFail($id);
+        $carouselService->toggleStatus($carousel, $request->user());
 
-        $carousel->delete();
-
-        return response()->json([
-            'message' => 'Carousel berhasil dihapus.',
-            'status' => 'success',
-        ]);
+        return redirect()->route('carousel.index')->with('success', 'Status carousel berhasil diperbarui.');
     }
 
-    public function showImage($filename)
-{
-    $path = "carousel/{$filename}";
+    public function destroy(Request $request, Carousel $carousel, CarouselService $carouselService)
+    {
+        $carouselService->delete($carousel, $request->user());
 
-    if (!Storage::disk('public')->exists($path)) {
-        abort(404, 'Gambar tidak ditemukan.');
+        return redirect()->route('carousel.index')->with('success', 'Carousel berhasil dihapus.');
     }
 
-    return response()->file(storage_path("app/public/{$path}"));
-}
+    public function showImage(string $filename, CarouselService $carouselService): StreamedResponse
+    {
+        return $carouselService->streamImage($filename);
+    }
 }

@@ -38,6 +38,7 @@ Berkas Persuratan and the old Jenis Surat module are retired. Their legacy URLs 
 - [PRD 004](PRD/004_CUTI_AKADEMIK_MODULE.md) — approved Cuti Akademik module scope.
 - [PRD 005](PRD/005_TEMPLATE_SURAT_ALIGNMENT.md) — completed Template Surat alignment.
 - [PRD 006](PRD/006_USERS_MODULE_ALIGNMENT.md) — completed Users module alignment.
+- [PRD 007](PRD/007_CAROUSEL_ALIGNMENT.md) — approved Carousel alignment scope.
 
 ## Documentation conventions
 

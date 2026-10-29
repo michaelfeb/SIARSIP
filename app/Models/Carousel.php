@@ -20,5 +20,6 @@ class Carousel extends Model
 
     protected $casts = [
         'tanggal_publish' => 'date',
+        'status' => 'boolean',
     ];
 }

@@ -107,10 +107,11 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:6,8'])->group(function () {
     Route::get('/carousel', [CarouselController::class, 'index'])->name('carousel.index');
     Route::get('/carousel/create', [CarouselController::class, 'create'])->name('carousel.create');
-    Route::match(['post', 'put'], '/carousel/save/{id?}', [CarouselController::class, 'save'])->name('carousel.save');
-    Route::get('/carousel/{id}/edit', [CarouselController::class, 'edit'])->name('carousel.edit');
-    Route::put('/carousel/{id}/toggle', [CarouselController::class, 'toggle'])->name('carousel.toggle');
-    Route::delete('/carousel/{id}', [CarouselController::class, 'destroy'])->name('carousel.destroy');
+    Route::post('/carousel/save', [CarouselController::class, 'store'])->name('carousel.store');
+    Route::put('/carousel/save/{carousel}', [CarouselController::class, 'update'])->name('carousel.update');
+    Route::get('/carousel/{carousel}/edit', [CarouselController::class, 'edit'])->name('carousel.edit');
+    Route::put('/carousel/{carousel}/toggle', [CarouselController::class, 'toggle'])->name('carousel.toggle');
+    Route::delete('/carousel/{carousel}', [CarouselController::class, 'destroy'])->name('carousel.destroy');
 });
 
 Route::get('/carousel-image/{filename}', [CarouselController::class, 'showImage'])->name('carousel.image');
