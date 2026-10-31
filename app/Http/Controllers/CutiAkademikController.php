@@ -126,7 +126,7 @@ class CutiAkademikController extends Controller
 
         return Storage::disk('secure')->response($attachment->file_path, $attachment->original_name, [
             'Content-Type' => $attachment->mime,
-            'Content-Disposition' => 'inline; filename="'.$attachment->original_name.'"',
+            'Content-Disposition' => 'inline; filename="' . $attachment->original_name . '"',
         ]);
     }
 
@@ -135,6 +135,6 @@ class CutiAkademikController extends Controller
         $letter = $service->findForDisplay($letter, $request->user());
         abort_unless($letter->status === 'ARCHIVED' && $letter->final_pdf_path && Storage::disk('secure')->exists($letter->final_pdf_path), 404, 'Surat belum tersedia.');
 
-        return Storage::disk('secure')->download($letter->final_pdf_path, 'surat-cuti-akademik-'.$letter->id.'.pdf');
+        return Storage::disk('secure')->download($letter->final_pdf_path, 'surat-cuti-akademik-' . $letter->id . '.pdf');
     }
 }

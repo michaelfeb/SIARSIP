@@ -141,7 +141,7 @@ class CutiAkademikService extends LetterService
                         ->orWhere('program_studi', 'like', "%{$search}%");
                 });
             })
-            ->when($filters['status'], fn (Builder $query, string $status) => $query->where('status', $status))
+            ->when($filters['status'], fn(Builder $query, string $status) => $query->where('status', $status))
             ->latest()
             ->paginate($filters['per_page'])
             ->withQueryString();
