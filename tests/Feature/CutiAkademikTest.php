@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Letter;
+use App\Models\LetterType;
 use App\Models\User;
 use App\Services\CutiAkademikService;
 use App\Services\LetterQrCodeService;
@@ -133,6 +134,7 @@ test('resepsionis finalises after DEKAN with a private generated PDF', function 
 
     $service->finalize($letter->fresh(), $resepsionis, [
         'letter_number' => '123/UN8.1/CA/2026',
+        'signatory_role' => 'DEKAN',
         'signatory_id' => $dekan->id,
         'note' => 'Selesai.',
     ]);
@@ -147,6 +149,86 @@ test('resepsionis finalises after DEKAN with a private generated PDF', function 
 
     Storage::disk('secure')->assertExists($finished->final_pdf_path);
     expect(Storage::disk('secure')->get($finished->final_pdf_path))->toStartWith('%PDF');
+});
+
+test('cuti akademik defaults the signer role to the stage before resepsionis', function () {
+    $student = cutiUser(1);
+    $prodi = cutiUser(12, 6);
+    $akademik = cutiUser(6);
+    $ktu = cutiUser(5);
+    $wd3 = cutiUser(11);
+    $resepsionis = cutiUser(2);
+    $service = app(CutiAkademikService::class);
+
+    LetterType::query()->where('code', 'CUTI_AKADEMIK')->update([
+        'approval_chain' => ['PRODI', 'AKADEMIK', 'KTU', 'WD3', 'RESEPSIONIS'],
+    ]);
+
+    $letter = $service->create($student, cutiPayload());
+    $service->ajuan($letter, $student);
+    $service->decide($letter->fresh(), $prodi, 'FORWARD', null);
+    $service->decide($letter->fresh(), $akademik, 'FORWARD', null);
+    $service->decide($letter->fresh(), $ktu, 'FORWARD', null);
+    $service->decide($letter->fresh(), $wd3, 'FORWARD', null);
+
+    expect($service->availableFinalSignatories($resepsionis, $letter->fresh()))
+        ->toContain(['id' => $wd3->id, 'name' => $wd3->nama]);
+    expect($service->finalizationContext($letter->fresh()))->toBe([
+        'finalizationRole' => 'RESEPSIONIS',
+        'defaultSignatoryRole' => 'WD3',
+        'signatoryRoles' => ['PRODI', 'AKADEMIK', 'KTU', 'WD3', 'RESEPSIONIS'],
+    ]);
+
+    $service->finalize($letter->fresh(), $resepsionis, [
+        'letter_number' => '126/UN8.1/CA/2026',
+        'signatory_role' => 'WD3',
+        'signatory_id' => $wd3->id,
+    ]);
+
+    expect($letter->fresh()->meta['signatory']['role'])->toBe('WD3')
+        ->and($letter->fresh()->meta['signatory']['id'])->toBe($wd3->id);
+});
+
+test('resepsionis can choose any approval-chain role as the document signer', function () {
+    $student = cutiUser(1);
+    $prodi = cutiUser(12, 6);
+    $akademik = cutiUser(6);
+    $ktu = cutiUser(5);
+    $dekan = cutiUser(3);
+    $resepsionis = cutiUser(2);
+    $service = app(CutiAkademikService::class);
+    $letter = $service->create($student, cutiPayload());
+
+    $service->ajuan($letter, $student);
+    $service->decide($letter->fresh(), $prodi, 'FORWARD', null);
+    $service->decide($letter->fresh(), $akademik, 'FORWARD', null);
+    $service->decide($letter->fresh(), $ktu, 'FORWARD', null);
+    $service->decide($letter->fresh(), $dekan, 'FORWARD', null);
+
+    expect($service->availableFinalSignatoriesByRole($resepsionis, $letter->fresh()))
+        ->toHaveKey('PRODI')
+        ->and($service->availableFinalSignatories($resepsionis, $letter->fresh(), 'PRODI'))
+        ->toContain(['id' => $prodi->id, 'name' => $prodi->nama]);
+
+    expect(fn () => $service->finalize($letter->fresh(), $resepsionis, [
+        'letter_number' => '127/UN8.1/CA/2026',
+        'signatory_role' => 'BAGIAN LAYANAN',
+        'signatory_id' => $prodi->id,
+    ]))->toThrow(ValidationException::class);
+    expect(fn () => $service->finalize($letter->fresh(), $resepsionis, [
+        'letter_number' => '127/UN8.1/CA/2026',
+        'signatory_role' => 'DEKAN',
+        'signatory_id' => $prodi->id,
+    ]))->toThrow(ValidationException::class);
+
+    $service->finalize($letter->fresh(), $resepsionis, [
+        'letter_number' => '127/UN8.1/CA/2026',
+        'signatory_role' => 'PRODI',
+        'signatory_id' => $prodi->id,
+    ]);
+
+    expect($letter->fresh()->meta['signatory'])
+        ->toMatchArray(['id' => $prodi->id, 'role' => 'PRODI']);
 });
 
 test('finalising a letter redirects the user to the Cuti Akademik index', function () {
@@ -169,6 +251,7 @@ test('finalising a letter redirects the user to the Cuti Akademik index', functi
         ->post(route('cuti-akademik.finalize', $letter), [
             'decision' => 'FORWARD',
             'letter_number' => '125/UN8.1/CA/2026',
+            'signatory_role' => 'DEKAN',
             'signatory_id' => $dekan->id,
         ])
         ->assertRedirect(route('cuti-akademik.index'))
@@ -206,6 +289,7 @@ test('super admin can administer every Cuti Akademik workflow stage but cannot b
 
     $service->finalize($letter->fresh(), $superAdmin, [
         'letter_number' => '124/UN8.1/CA/2026',
+        'signatory_role' => 'DEKAN',
         'signatory_id' => $dekan->id,
     ]);
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BerkasSidangNolController;
+use App\Http\Controllers\ApprovalWorkflowController;
 use App\Http\Controllers\CarouselController;
 use App\Http\Controllers\CutiAkademikController;
 use App\Http\Controllers\DashboardController;
@@ -105,6 +106,9 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'role:6,8'])->group(function () {
+    Route::get('/alur-persetujuan-surat', [ApprovalWorkflowController::class, 'index'])->name('approval-workflows.index');
+    Route::put('/alur-persetujuan-surat/{letterType}', [ApprovalWorkflowController::class, 'update'])->name('approval-workflows.update');
+
     Route::get('/carousel', [CarouselController::class, 'index'])->name('carousel.index');
     Route::get('/carousel/create', [CarouselController::class, 'create'])->name('carousel.create');
     Route::post('/carousel/save', [CarouselController::class, 'store'])->name('carousel.store');

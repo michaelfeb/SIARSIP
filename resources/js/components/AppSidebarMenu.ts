@@ -62,6 +62,7 @@ export const sidebars = {
             children: [
                 { title: 'Carousel', icon: Minus, href: '/carousel' },
                 { title: 'Link Landing Page', icon: Minus, href: '/link-landing-page' },
+                { title: 'Alur Persetujuan Surat', icon: Minus, href: '/alur-persetujuan-surat' },
             ],
         },
     ],
@@ -78,6 +79,7 @@ export const sidebars = {
             children: [
                 { title: 'Carousel', icon: Minus, href: '/carousel' },
                 { title: 'Link Landing Page', icon: Minus, href: '/link-landing-page' },
+                { title: 'Alur Persetujuan Surat', icon: Minus, href: '/alur-persetujuan-surat' },
             ],
         },
     ],

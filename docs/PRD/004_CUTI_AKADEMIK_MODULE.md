@@ -1,5 +1,12 @@
 # PRD 004 — Cuti Akademik Module
 
+> **Implementation amendment — 2026-10-31:** The fixed DEKAN-signatory rule
+> below has been superseded by `Alur Persetujuan Surat`. RESEPSIONIS remains
+> the Cuti finalizer. At finalization it may select any role in the configured
+> approval chain and then a user with that role; the role immediately before
+> RESEPSIONIS is the default. The selected role and user are stored in the
+> immutable letter signatory snapshot.
+
 **Status:** Complete
 **Created:** 24 October 2026
 **Plan status:** Implemented

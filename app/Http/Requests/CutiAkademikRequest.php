@@ -87,6 +87,7 @@ class CutiAkademikRequest extends FormRequest
     {
         return [
             'letter_number' => ['required', 'string', 'max:64', Rule::unique('letters', 'letter_number')],
+            'signatory_role' => ['required', 'string', 'max:100'],
             'signatory_id' => ['required', 'integer', Rule::exists(User::class, 'id')],
             'note' => ['nullable', 'string', 'max:2000'],
         ];

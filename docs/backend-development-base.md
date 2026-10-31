@@ -336,9 +336,12 @@ protected function pdfData(Letter $letter, array $signatory): array;
   `CUTI_AKADEMIK`.
 - `finalizationRole()` is the **last** approval-chain role. This actor enters
   the manual official number, generates the PDF, and archives the request.
-- `signatoryRole()` is the official document signer. It may be an earlier
-  approval role, such as DEKAN when RESEPSIONIS finalizes Cuti Akademik. For a
-  service such as Bebas Ruang Baca, both roles may be `RUANG BACA`.
+- `signatoryRole()` is the default official document signer role. It may be an
+  earlier approval role, such as DEKAN when RESEPSIONIS finalizes Cuti
+  Akademik. A module may expose a finalization-time role selector, but the
+  service must validate that the selected role belongs to that Letter's
+  approval chain and that the selected user has that role. For a service such
+  as Bebas Ruang Baca, both roles may be `RUANG BACA`.
 - `pdfView()` returns the Blade view name, such as `letters.cuti-akademik`.
 - `pdfData()` returns only the variables required by that Blade template. Use
   saved `Letter` fields, `Letter::meta`, and the signatory snapshot.
@@ -378,11 +381,11 @@ not a shortcut around Letter state: the request must still be a draft for draft
 actions, in progress for a decision, and at the configured finalization stage
 for `finalize()`.
 
-SUPER ADMIN does not bypass `signatoryRole()`. `availableFinalSignatories()`
-and `finalize()` must still return and validate only users with the configured
-official signer role. If SUPER ADMIN edits another applicant's draft, preserve
-the applicant snapshot and reviewer-scope metadata rather than replacing it
-with the administrator's profile.
+SUPER ADMIN does not bypass signer constraints. `availableFinalSignatories()`
+and `finalize()` must still return and validate only users with the selected
+approval-chain signer role. If SUPER ADMIN edits another applicant's draft,
+preserve the applicant snapshot and reviewer-scope metadata rather than
+replacing it with the administrator's profile.
 
 ## Queries, scopes, and transactions
 

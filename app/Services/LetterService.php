@@ -25,6 +25,12 @@ abstract class LetterService
 
     abstract protected function finalizationRole(): string;
 
+    /**
+     * Return the role preselected for finalisation.
+     *
+     * The selected signer role must still belong to the approval chain; this
+     * hook exists only to provide a sensible default in the finalisation UI.
+     */
     abstract protected function signatoryRole(): string;
 
     /**
@@ -105,8 +111,10 @@ abstract class LetterService
         $this->ensureDraftOwner($letter, $actor);
 
         DB::transaction(function () use ($letter, $actor): void {
+            $lockedType = LetterType::query()->lockForUpdate()->findOrFail($letter->type_id);
             $locked = $this->findLockedLetter($letter->id);
             $this->ensureDraftOwner($locked, $actor);
+            $locked->setRelation('letterType', $lockedType);
 
             if ($locked->attachments()->count() < $this->minimumRequiredAttachments()) {
                 throw ValidationException::withMessages([
@@ -173,20 +181,63 @@ abstract class LetterService
     }
 
     /**
-     * Return users eligible to sign a final letter at the final approval stage.
+     * Return all roles in this letter's configured approval chain that may be
+     * selected as a final document signer.
+     *
+     * @return array<int, string>
+     */
+    public function availableFinalSignatoryRoles(Letter $letter): array
+    {
+        $this->ensureLetterType($letter);
+
+        return array_values(array_unique($this->approvalChain($letter)));
+    }
+
+    /**
+     * Return users eligible to sign a final letter for a selected chain role.
+     * The default remains the module's configured default signer role.
      *
      * @return array<int, array{id: int, name: string}>
      */
-    public function availableFinalSignatories(User $actor, Letter $letter): array
+    public function availableFinalSignatories(User $actor, Letter $letter, ?string $signatoryRole = null): array
+    {
+        $this->ensureLetterType($letter);
+        $this->ensureFinalizationStage($letter, $actor);
+        $signatoryRole = $this->ensureAllowedFinalSignatoryRole($letter, $signatoryRole ?? $this->signatoryRole());
+
+        return User::query()->with('role')->get()
+            ->filter(fn (User $user) => $this->roleName($user) === $signatoryRole)
+            ->map(fn (User $user) => ['id' => $user->id, 'name' => $user->nama])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Return eligible signer users indexed by every role in the configured
+     * approval chain. This lets a finalizer change the signer role without a
+     * client-controlled lookup.
+     *
+     * @return array<string, array<int, array{id: int, name: string}>>
+     */
+    public function availableFinalSignatoriesByRole(User $actor, Letter $letter): array
     {
         $this->ensureLetterType($letter);
         $this->ensureFinalizationStage($letter, $actor);
 
-        return User::query()->with('role')->get()
-            ->filter(fn (User $user) => $this->roleName($user) === $this->signatoryRole())
-            ->map(fn (User $user) => ['id' => $user->id, 'name' => $user->nama])
-            ->values()
-            ->all();
+        $roles = $this->availableFinalSignatoryRoles($letter);
+        $signatories = array_fill_keys($roles, []);
+
+        User::query()->with('role')->get()
+            ->filter(fn (User $user) => in_array($this->roleName($user), $roles, true))
+            ->each(function (User $user) use (&$signatories): void {
+                $role = $this->roleName($user);
+
+                if ($role !== null) {
+                    $signatories[$role][] = ['id' => $user->id, 'name' => $user->nama];
+                }
+            });
+
+        return $signatories;
     }
 
     /**
@@ -202,7 +253,7 @@ abstract class LetterService
     /**
      * Render, store, and archive an approved letter using its Letter Type PDF configuration.
      *
-     * @param  array{letter_number: string, signatory_id: int, note?: string|null}  $data
+     * @param  array{letter_number: string, signatory_role: string, signatory_id: int, note?: string|null}  $data
      */
     public function finalize(Letter $letter, User $actor, array $data): void
     {
@@ -214,11 +265,12 @@ abstract class LetterService
             DB::transaction(function () use ($letter, $actor, $data, &$generatedPath, &$isPdfOperation): void {
                 $locked = $this->findLockedLetter($letter->id);
                 $this->ensureFinalizationStage($locked, $actor);
+                $signatoryRole = $this->ensureAllowedFinalSignatoryRole($locked, $data['signatory_role']);
 
                 $signatory = User::query()->with('role')->findOrFail($data['signatory_id']);
-                if ($this->roleName($signatory) !== $this->signatoryRole()) {
+                if ($this->roleName($signatory) !== $signatoryRole) {
                     throw ValidationException::withMessages([
-                        'signatory_id' => sprintf('Penandatangan harus memiliki peran %s.', $this->signatoryRole()),
+                        'signatory_id' => sprintf('Penandatangan harus memiliki peran %s.', $signatoryRole),
                     ]);
                 }
 
@@ -230,7 +282,7 @@ abstract class LetterService
                     'id' => $signatory->id,
                     'name' => $signatory->nama,
                     'nim' => $signatory->nim,
-                    'role' => $this->signatoryRole(),
+                    'role' => $signatoryRole,
                 ];
                 $locked->load('letterType');
                 $locked->letter_number = $data['letter_number'];
@@ -265,7 +317,11 @@ abstract class LetterService
                     'decided_by' => $actor->id,
                     'note' => $data['note'] ?? null,
                 ]);
-                $this->logWorkflowAction($locked, $actor, 'FINALISE', ['letter_number' => $data['letter_number'], 'signatory_id' => $signatory->id]);
+                $this->logWorkflowAction($locked, $actor, 'FINALISE', [
+                    'letter_number' => $data['letter_number'],
+                    'signatory_role' => $signatoryRole,
+                    'signatory_id' => $signatory->id,
+                ]);
             });
         } catch (\Throwable $exception) {
             if ($generatedPath !== null) {
@@ -406,6 +462,17 @@ abstract class LetterService
     protected function approvalChain(Letter $letter): array
     {
         return $letter->letterType?->approval_chain ?? $this->letterType()->approval_chain ?? [];
+    }
+
+    private function ensureAllowedFinalSignatoryRole(Letter $letter, string $signatoryRole): string
+    {
+        if (! in_array($signatoryRole, $this->availableFinalSignatoryRoles($letter), true)) {
+            throw ValidationException::withMessages([
+                'signatory_role' => 'Peran penandatangan harus terdaftar dalam alur persetujuan surat.',
+            ]);
+        }
+
+        return $signatoryRole;
     }
 
     /** @param array<string, mixed> $meta */

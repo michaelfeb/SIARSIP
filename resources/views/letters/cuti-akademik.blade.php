@@ -99,7 +99,7 @@
     <div class="signature-row">
         <div class="signature-spacer"></div>
         <div class="signature">
-            <p>Dekan,</p>
+            <p>{{ \Illuminate\Support\Str::headline(strtolower(str_replace('_', ' ', $signatory['role']))) }},</p>
             @if ($isPreview ?? false)
                 <div class="signature-space"></div>
             @else

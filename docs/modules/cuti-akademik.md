@@ -19,12 +19,12 @@ attachment ID.
 
 ## Lifecycle
 
-| Status | Meaning |
-| --- | --- |
-| DRAFT | Student may edit, add documents, delete, or submit. |
-| IN_PROGRESS | Waiting at the role in `current_stage`. |
-| REJECTED | A current-stage reviewer rejected it and supplied a note. |
-| ARCHIVED | Resepsionis generated and stored the final official PDF. |
+| Status      | Meaning                                                   |
+| ----------- | --------------------------------------------------------- |
+| DRAFT       | Student may edit, add documents, delete, or submit.       |
+| IN_PROGRESS | Waiting at the role in `current_stage`.                   |
+| REJECTED    | A current-stage reviewer rejected it and supplied a note. |
+| ARCHIVED    | Resepsionis generated and stored the final official PDF.  |
 
 The fixed approval sequence is:
 
@@ -33,12 +33,13 @@ The fixed approval sequence is:
 Every reviewer may forward only to the immediate next role or reject. PRODI is
 limited to the applicant's Program Studi. RESEPSIONIS is the configured
 finalization role: it enters a unique official number and generates/archives
-the final PDF. DEKAN is separately configured as the signatory role selected
-for that PDF.
+the final PDF. At finalization, it can choose the signatory role from any role
+in the configured approval chain, then a user with that role. The stage
+immediately before RESEPSIONIS is preselected as the default signer role.
 
 ## PDF preview
 
-Create and edit show **Pratinjau PDF** between Batal and Simpan Draft. It follows the shared [PDF preview contract](pdf-preview.md): validation is identical to Save, no data is persisted, and the rendered PDF shows a non-official notice. Number, Dekan signature, and QR code remain finalisation-only placeholders.
+Create and edit show **Pratinjau PDF** between Batal and Simpan Draft. It follows the shared [PDF preview contract](pdf-preview.md): validation is identical to Save, no data is persisted, and the rendered PDF shows a non-official notice. Number, configured signer signature, and QR code remain finalisation-only placeholders.
 
 ## Backend ownership
 
@@ -58,11 +59,12 @@ draft, submit it, and record a forward/reject decision at any in-progress
 stage. The approval chain remains intact: SUPER ADMIN can finalize only after
 the request reaches RESEPSIONIS, the configured finalization stage.
 
-Finalization still requires a selected user with the configured signatory role.
-For Cuti Akademik that role is DEKAN, so a SUPER ADMIN account cannot select
-itself unless it separately has that role. When SUPER ADMIN edits another
-applicant's draft, the original Program Studi snapshot is retained for PRODI
-scope checks.
+Finalization requires a selected signer role from the configured approval chain
+and a selected user that actually has that role. This is validated by the
+service, so a SUPER ADMIN cannot select itself unless its role is in that chain
+and it selects that same role. The selected role and person are saved in the
+immutable signatory snapshot. When SUPER ADMIN edits another applicant's draft,
+the original Program Studi snapshot is retained for PRODI scope checks.
 
 ## Frontend ownership
 

@@ -99,7 +99,8 @@ class CutiAkademikController extends Controller
 
         return Inertia::render('CutiAkademik/Ajuan', [
             'letter' => $letter,
-            'signatories' => $service->isFinalizationStage($letter) ? $service->availableFinalSignatories($request->user(), $letter) : [],
+            'signatories' => $service->isFinalizationStage($letter) ? $service->availableFinalSignatoriesByRole($request->user(), $letter) : (object) [],
+            'finalizationContext' => $service->finalizationContext($letter),
             'workflowContext' => $service->workflowDisplayContext($letter),
         ]);
     }

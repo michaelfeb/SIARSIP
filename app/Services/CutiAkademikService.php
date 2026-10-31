@@ -46,7 +46,15 @@ class CutiAkademikService extends LetterService
 
     protected function signatoryRole(): string
     {
-        return 'DEKAN';
+        $chain = $this->letterType()->approval_chain ?? [];
+        $resepsionisIndex = array_key_last($chain);
+        $signatoryRole = $resepsionisIndex === null ? null : ($chain[$resepsionisIndex - 1] ?? null);
+
+        if ($resepsionisIndex === null || $chain[$resepsionisIndex] !== 'RESEPSIONIS' || $signatoryRole === null) {
+            throw new \LogicException('Alur Cuti Akademik harus memiliki penandatangan sebelum RESEPSIONIS.');
+        }
+
+        return $signatoryRole;
     }
 
     protected function pdfView(): string
@@ -105,7 +113,7 @@ class CutiAkademikService extends LetterService
             'meta' => $this->buildMeta($actor, $data),
         ]);
         $letter->setRelation('letterType', $type);
-        $pdfData = $this->pdfData($letter, ['id' => 0, 'name' => 'Akan ditetapkan setelah persetujuan', 'nim' => null, 'role' => 'DEKAN']);
+        $pdfData = $this->pdfData($letter, ['id' => 0, 'name' => 'Akan ditetapkan setelah persetujuan', 'nim' => null, 'role' => $this->signatoryRole()]);
         $pdfData['isPreview'] = true;
 
         return $this->pdfGenerator->output($this->pdfView(), $pdfData, $this->pdfPaper(), $this->pdfOrientation());
@@ -137,6 +145,20 @@ class CutiAkademikService extends LetterService
             ->latest()
             ->paginate($filters['per_page'])
             ->withQueryString();
+    }
+
+    /**
+     * @return array{finalizationRole: string, defaultSignatoryRole: string, signatoryRoles: array<int, string>}
+     */
+    public function finalizationContext(Letter $letter): array
+    {
+        $this->ensureLetterType($letter);
+
+        return [
+            'finalizationRole' => $this->finalizationRole(),
+            'defaultSignatoryRole' => $this->signatoryRole(),
+            'signatoryRoles' => $this->availableFinalSignatoryRoles($letter),
+        ];
     }
 
     /**

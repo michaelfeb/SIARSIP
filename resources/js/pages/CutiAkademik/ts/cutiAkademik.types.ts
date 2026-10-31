@@ -48,6 +48,12 @@ export interface CutiAkademikWorkflowContext {
     approvalChain: string[];
 }
 
+export interface CutiAkademikFinalizationContext {
+    finalizationRole: string;
+    defaultSignatoryRole: string;
+    signatoryRoles: string[];
+}
+
 export interface CutiAkademikPaginated<T> {
     data: T[];
     current_page: number;
